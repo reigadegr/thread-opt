@@ -1,6 +1,6 @@
 /target
 /output
 **/*.bak
-thread_opt
+**/thread_opt
 **/*.pyc
 Cargo.lock

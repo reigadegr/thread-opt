@@ -1,7 +1,9 @@
 use dumpsys_rs::Dumpsys;
 use log::info;
-use std::time::Duration;
+use std::time::{Duration, Instant};
+// const REFRESH_TIME: Duration = Duration::from_millis(1000);
 
+// const REFRESH_TIME: Duration = Duration::from_secs(1);
 #[derive(Default)]
 pub struct ActivityInfo {
     pub pid: i32,
@@ -30,8 +32,9 @@ impl ActivityInfo {
 }
 
 pub struct TopAppUtils {
-    pub dumper: Dumpsys,
-    pub activity_info: ActivityInfo,
+    dumper: Dumpsys,
+    activity_info: ActivityInfo,
+    last_refresh: Instant,
 }
 
 impl TopAppUtils {
@@ -45,10 +48,23 @@ impl TopAppUtils {
         Self {
             dumper,
             activity_info: ActivityInfo::default(),
+            last_refresh: Instant::now(),
         }
     }
 
-    pub fn init_top_app_pid_name(&mut self) -> &ActivityInfo {
+    pub fn get_pid(&mut self) -> &i32 {
+        &self.set_top_app_pid_name().pid
+    }
+
+    pub fn get_top_app(&mut self) -> &str {
+        &self.set_top_app_pid_name().name
+    }
+
+    pub fn set_top_app_pid_name(&mut self) -> &ActivityInfo {
+        if self.last_refresh.elapsed() < Duration::from_millis(1000) {
+            return &self.activity_info;
+        }
+
         let dump = loop {
             match self.dumper.dump(&["lru"]) {
                 Ok(dump) => break dump,
@@ -59,6 +75,7 @@ impl TopAppUtils {
             }
         };
         self.activity_info = ActivityInfo::new(&dump);
+        self.last_refresh = Instant::now();
         &self.activity_info
     }
 }
