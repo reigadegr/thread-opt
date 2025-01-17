@@ -1,0 +1,29 @@
+[package]
+name = "thread_opt"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.93"
+dumpsys-rs = { git = "https://github.com/reigadegr/dumpsys-rs" }
+flexi_logger = "0.29.6"
+log = "0.4.22"
+once_cell = "1.20.2"
+parking_lot = "0.12.3"
+
+[profile.dev]
+overflow-checks = false
+strip = true
+debug = 0
+debug-assertions = false
+
+[profile.release]
+overflow-checks = false
+codegen-units = 1
+lto = "fat"
+opt-level = 3
+strip = true
+debug = 0
+debug-assertions = false
+panic = "abort"
+incremental = false
