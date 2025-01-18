@@ -4,7 +4,6 @@ use std::time::{Duration, Instant};
 #[derive(Default)]
 pub struct ActivityInfo {
     pub pid: i32,
-    pub name: String,
 }
 
 impl ActivityInfo {
@@ -21,13 +20,10 @@ impl ActivityInfo {
             .filter_map(|l| l.split('/').next())
             .collect::<String>();
 
-        let parts: Vec<&str> = dump.split(':').collect();
-        if parts.len() != 2 {
-            return ActivityInfo::default();
-        }
+        let pid = dump.split(':').next().unwrap_or("0");
+
         Self {
-            pid: parts[0].parse::<i32>().unwrap_or_default(),
-            name: parts[1].to_string(),
+            pid: pid.parse::<i32>().unwrap_or_default(),
         }
     }
 }
@@ -55,10 +51,6 @@ impl TopAppUtils {
 
     pub fn get_pid(&mut self) -> &i32 {
         &self.set_top_app_pid_name().pid
-    }
-
-    pub fn get_top_app(&mut self) -> &str {
-        &self.set_top_app_pid_name().name
     }
 
     pub fn set_top_app_pid_name(&mut self) -> &ActivityInfo {

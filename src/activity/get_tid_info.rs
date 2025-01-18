@@ -133,10 +133,11 @@ impl TidUtils {
 fn read_file(file: &Path) -> Result<String> {
     let mut s = String::new();
     File::open(file)?.read_to_string(&mut s)?;
+    let s = fs::read_to_string(file)?;
     Ok(s.trim().to_string())
 }
 
-pub fn get_process_name(pid: &i32) -> anyhow::Result<String> {
+pub fn get_process_name(pid: &i32) -> Result<String> {
     let cmdline = Path::new("/proc").join(pid.to_string()).join("cmdline");
     let cmdline = fs::read_to_string(cmdline)?;
     let cmdline = cmdline.split(':').next().unwrap_or_default();
