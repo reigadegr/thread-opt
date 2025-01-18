@@ -4,3 +4,4 @@
 **/thread_opt
 **/*.pyc
 Cargo.lock
+*.zip
