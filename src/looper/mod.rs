@@ -1,6 +1,5 @@
 use super::activity::get_top_app::TopAppUtils;
 use crate::activity::get_tid_info::TidUtils;
-use crate::activity::get_tid_info::get_tid_list;
 use log::info;
 use std::time::Duration;
 pub struct Looper {
@@ -25,7 +24,7 @@ impl Looper {
             let tids = self.tid_utils.get_task_map(pid);
             info!("{:?}", tids);
 
-            let tl2 = get_tid_list(pid);
+            let tl2 = self.tid_utils.get_tid_list(pid);
             info!("{:?}", tl2);
         }
     }
