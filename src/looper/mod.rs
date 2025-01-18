@@ -1,4 +1,4 @@
-use super::activity::get_top_app::TopAppUtils;
+use super::activity::get_top_tid::TopAppUtils;
 use crate::activity::get_tid_info::TidUtils;
 use crate::activity::get_tid_info::get_process_name;
 use log::info;
