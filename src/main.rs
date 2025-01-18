@@ -1,7 +1,6 @@
 mod activity;
 mod looper;
 mod misc;
-// use activity::get_top_app::TopAppUtils;
 use log::info;
 use looper::Looper;
 use misc::logger::init_log;

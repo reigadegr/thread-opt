@@ -15,17 +15,19 @@ impl Looper {
         }
     }
 
-    pub fn enter_loop(&mut self) -> anyhow::Result<()> {
+    pub fn enter_loop(&mut self) {
         loop {
             let name = self.windows_info.get_top_app();
             info!("{}", name);
-            std::thread::sleep(Duration::from_millis(500));
+
             let pid = self.windows_info.get_pid();
             let tids = self.tid_utils.get_task_map(pid);
             info!("{:?}", tids);
 
             let tl2 = self.tid_utils.get_tid_list(pid);
             info!("{:?}", tl2);
+
+            std::thread::sleep(Duration::from_millis(500));
         }
     }
 }
