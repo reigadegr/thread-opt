@@ -1,9 +1,6 @@
 use dumpsys_rs::Dumpsys;
 use log::info;
 use std::time::{Duration, Instant};
-// const REFRESH_TIME: Duration = Duration::from_millis(1000);
-
-// const REFRESH_TIME: Duration = Duration::from_secs(1);
 #[derive(Default)]
 pub struct ActivityInfo {
     pub pid: i32,
@@ -12,6 +9,10 @@ pub struct ActivityInfo {
 
 impl ActivityInfo {
     pub fn new(dump: &str) -> Self {
+        if !dump.contains(" TOP") {
+            return Self::default();
+        }
+
         let dump = dump
             .lines()
             .filter(|l| l.contains(" TOP"))
