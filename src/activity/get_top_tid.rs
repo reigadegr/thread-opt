@@ -39,7 +39,7 @@ impl TopAppUtils {
         let dumper = loop {
             match Dumpsys::new("activity") {
                 Some(d) => break d,
-                None => std::thread::sleep(Duration::from_millis(1000)),
+                None => std::thread::sleep(Duration::from_millis(100)),
             }
         };
         Self {
@@ -63,7 +63,7 @@ impl TopAppUtils {
                 Ok(dump) => break dump,
                 Err(e) => {
                     info!("Failed to dump windows: {}, retrying", e);
-                    std::thread::sleep(Duration::from_millis(1000));
+                    std::thread::sleep(Duration::from_millis(100));
                 }
             }
         };
