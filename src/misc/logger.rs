@@ -1,8 +1,9 @@
 //From shadow3aaa fas-rs
 use anyhow::Result;
 use flexi_logger::{DeferredNow, LogSpecification, Logger, Record};
+use std::fs;
 use std::io::{self, prelude::*};
-
+use std::process;
 pub fn init_log() -> Result<()> {
     unsafe {
         std::env::set_var("RUST_LOG", "info");
@@ -22,4 +23,10 @@ fn log_format(
 ) -> Result<(), io::Error> {
     let time = now.format("%Y-%m-%d %H:%M:%S");
     write!(write, "[{time}] {}: {}", record.level(), record.args())
+}
+
+pub fn init_misc() {
+    let _ = init_log();
+    let self_pid = process::id();
+    let _ = fs::write("/dev/cpuset/background/tasks", self_pid.to_string());
 }

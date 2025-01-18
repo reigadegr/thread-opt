@@ -1,6 +1,6 @@
+use super::activity::get_tid_info::TidUtils;
+use super::activity::get_tid_info::get_process_name;
 use super::activity::get_top_tid::TopAppUtils;
-use crate::activity::get_tid_info::TidUtils;
-use crate::activity::get_tid_info::get_process_name;
 use log::info;
 use std::time::Duration;
 pub struct Looper {
@@ -18,8 +18,6 @@ impl Looper {
 
     pub fn enter_loop(&mut self) {
         loop {
-            // let name = self.top_app_utils.get_top_app();
-
             let pid = self.top_app_utils.get_pid();
             let name = get_process_name(pid).unwrap_or_default();
             info!("包名:-{}-", name);

@@ -1,5 +1,5 @@
 use anyhow::Result;
-use log::info;
+// use log::info;
 use std::collections::HashMap;
 use std::fs;
 use std::fs::File;
@@ -38,10 +38,8 @@ impl TidUtils {
             Err(_) => return &self.set_task_map(pid).task_map,
         };
         if self.tid_info.task_map_name == name {
-            info!("使用缓存");
             return &self.tid_info.task_map;
         }
-        info!("不使用缓存");
         self.tid_info.task_map_name = name;
         &self.set_task_map(pid).task_map
     }
@@ -52,10 +50,8 @@ impl TidUtils {
             Err(_) => return &self.set_tid_list(pid).tid_list,
         };
         if self.tid_info.tid_list_name == name {
-            info!("使用缓存tidlist");
             return &self.tid_info.tid_list;
         }
-        info!("不使用缓存tidlist");
         self.tid_info.tid_list_name = name;
         &self.set_tid_list(pid).tid_list
     }
