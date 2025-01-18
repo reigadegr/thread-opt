@@ -34,7 +34,7 @@ impl ActivityInfo {
 
 pub struct TopAppUtils {
     dumper: Dumpsys,
-    activity_info: ActivityInfo,
+    pub activity_info: ActivityInfo,
     last_refresh: Instant,
 }
 

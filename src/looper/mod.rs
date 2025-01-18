@@ -3,24 +3,24 @@ use crate::activity::get_tid_info::TidUtils;
 use log::info;
 use std::time::Duration;
 pub struct Looper {
-    windows_info: TopAppUtils,
+    top_app_utils: TopAppUtils,
     tid_utils: TidUtils,
 }
 
 impl Looper {
     pub fn new() -> Self {
         Self {
-            windows_info: TopAppUtils::new(),
+            top_app_utils: TopAppUtils::new(),
             tid_utils: TidUtils::new(),
         }
     }
 
     pub fn enter_loop(&mut self) {
         loop {
-            let name = self.windows_info.get_top_app();
+            let name = self.top_app_utils.get_top_app();
             info!("{}", name);
 
-            let pid = self.windows_info.get_pid();
+            let pid = self.top_app_utils.get_pid();
             let tids = self.tid_utils.get_task_map(pid);
             info!("{:?}", tids);
 
