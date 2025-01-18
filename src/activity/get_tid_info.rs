@@ -2,8 +2,6 @@ use anyhow::Result;
 // use log::info;
 use std::collections::HashMap;
 use std::fs;
-use std::fs::File;
-use std::io::Read;
 use std::path::Path;
 use std::time::Duration;
 
@@ -66,11 +64,9 @@ impl TidUtils {
         };
 
         for entry in dp {
-            let file_name = loop {
-                match entry {
-                    Ok(name) => break name.file_name(),
-                    Err(_) => std::thread::sleep(Duration::from_millis(1000)),
-                };
+            let file_name = match entry {
+                Ok(name) => name.file_name(),
+                Err(_) => return &self.tid_info,
             };
 
             if let Some(tid) = file_name.to_str() {
@@ -78,12 +74,11 @@ impl TidUtils {
                     continue;
                 }
                 let comm_path = format!("/proc/{}/task/{}/comm", pid, tid);
-                let comm = loop {
-                    match read_file(Path::new(&comm_path)) {
-                        Ok(comm) => break comm,
-                        Err(_) => std::thread::sleep(Duration::from_millis(1000)),
-                    };
+                let comm = match read_file(Path::new(&comm_path)) {
+                    Ok(comm) => comm,
+                    Err(_) => return &self.tid_info,
                 };
+
                 let tid = tid.parse::<i32>();
                 match tid {
                     Ok(tid) => task_map.insert(tid, comm),
@@ -104,11 +99,9 @@ impl TidUtils {
             Err(_) => return &self.tid_info,
         };
         for entry in dp {
-            let file_name = loop {
-                match entry {
-                    Ok(name) => break name.file_name(),
-                    Err(_) => std::thread::sleep(Duration::from_millis(1000)),
-                };
+            let file_name = match entry {
+                Ok(name) => name.file_name(),
+                Err(_) => return &self.tid_info,
             };
             if let Some(tid) = file_name.to_str() {
                 if tid.starts_with('.') {
@@ -126,9 +119,7 @@ impl TidUtils {
     }
 }
 
-fn read_file(file: &Path) -> Result<String> {
-    let mut s = String::new();
-    File::open(file)?.read_to_string(&mut s)?;
+pub fn read_file(file: &Path) -> Result<String> {
     let s = fs::read_to_string(file)?;
     Ok(s.trim().to_string())
 }
