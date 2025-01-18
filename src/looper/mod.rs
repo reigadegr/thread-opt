@@ -1,5 +1,6 @@
 use super::activity::get_tid_info::get_task_map;
 use super::activity::get_top_app::TopAppUtils;
+use crate::activity::get_tid_info::get_tid_list;
 use log::info;
 use std::time::Duration;
 pub struct Looper {
@@ -19,8 +20,11 @@ impl Looper {
             info!("{}", name);
             std::thread::sleep(Duration::from_millis(500));
             let pid = self.windows_info.get_pid();
-            let tids = get_task_map(pid.to_string().as_str());
+            let tids = get_task_map(pid);
             info!("{:?}", tids);
+
+            let tl2 = get_tid_list(pid);
+            info!("{:?}", tl2);
         }
     }
 }

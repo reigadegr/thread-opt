@@ -10,7 +10,7 @@ fn read_file(file: &Path) -> Result<String> {
     Ok(s.trim().to_string()) // 返回trim后的字符串
 }
 
-pub fn get_task_map(pid: &str) -> Result<HashMap<i32, String>> {
+pub fn get_task_map(pid: &i32) -> Result<HashMap<i32, String>> {
     // println!("开始获取map,pid={}", pid);
     let task_dir = format!("/proc/{}/task", pid);
     let mut task_map = HashMap::new();
@@ -35,7 +35,7 @@ pub fn get_task_map(pid: &str) -> Result<HashMap<i32, String>> {
     Ok(task_map)
 }
 
-pub fn get_tid_list(pid: &str) -> Result<Vec<i32>> {
+pub fn get_tid_list(pid: &i32) -> Result<Vec<i32>> {
     // println!("开始获取map,pid={}", pid);
     let task_dir = format!("/proc/{}/task", pid);
     let mut tid_list = Vec::new();
