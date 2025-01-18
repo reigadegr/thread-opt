@@ -1,7 +1,9 @@
 //From shadow3aaa fas-rs
 use anyhow::Result;
 use flexi_logger::{DeferredNow, LogSpecification, Logger, Record};
+use log::info;
 use std::io::{self, prelude::*};
+
 pub fn init_log() -> Result<()> {
     unsafe {
         std::env::set_var("RUST_LOG", "info");

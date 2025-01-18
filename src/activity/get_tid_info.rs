@@ -32,7 +32,6 @@ pub fn get_task_map(pid: &str) -> Result<HashMap<i32, String>> {
             };
         };
     }
-
     Ok(task_map)
 }
 
