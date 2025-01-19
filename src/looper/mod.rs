@@ -35,7 +35,6 @@ impl Looper {
     fn start_bind(&mut self) {
         loop {
             let pid = self.top_app_utils.get_pid();
-            // let name = get_process_name(pid).unwrap_or_default();
             if pid != &self.pid {
                 info!("退出游戏");
                 let tid_list = self.tid_utils.get_tid_list(&self.pid);
@@ -61,7 +60,6 @@ impl Looper {
             let name = get_process_name(pid).unwrap_or_default();
 
             if global_package == name {
-                // info!("直接返回: 包名:-{}-", name);
                 std::thread::sleep(Duration::from_millis(1000));
                 continue;
             }

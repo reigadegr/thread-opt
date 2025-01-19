@@ -26,8 +26,6 @@ pub fn analysis_cgroup() -> anyhow::Result<()> {
                 .and_then(|f| f.to_str())
                 .is_some_and(|f| f.contains("related_cpus"))
             {
-                // info!("-{:?}-", path);
-                // 读取文件内容
                 let content = match read_file(&path) {
                     Ok(number) => number,
                     Err(_) => "0".to_string(),

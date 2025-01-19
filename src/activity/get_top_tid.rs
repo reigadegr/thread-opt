@@ -4,7 +4,7 @@ use std::time::{Duration, Instant};
 
 #[derive(Default)]
 pub struct ActivityInfo {
-    pub pid: i32,
+    pid: i32,
 }
 
 impl ActivityInfo {
@@ -31,7 +31,7 @@ impl ActivityInfo {
 
 pub struct TopAppUtils {
     dumper: Dumpsys,
-    pub activity_info: ActivityInfo,
+    activity_info: ActivityInfo,
     last_refresh: Instant,
 }
 
