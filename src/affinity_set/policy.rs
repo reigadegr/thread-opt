@@ -15,7 +15,7 @@ pub enum CmdType {
     All,
     Top,
     Middle,
-    Backend,
+    Background,
 }
 
 pub fn get_cmd_type(thread_name: &str) -> CmdType {
@@ -28,7 +28,7 @@ pub fn get_cmd_type(thread_name: &str) -> CmdType {
     }
 
     if BACKEND_THREADS.contains(&thread_name) {
-        return CmdType::Backend;
+        return CmdType::Background;
     }
 
     CmdType::All
@@ -38,7 +38,7 @@ pub fn execute_task(cmd_type: CmdType, tid: &i32) {
     match cmd_type {
         CmdType::Top => write_node(get_top_dir(), tid),
         CmdType::Middle => write_node(get_middle_dir(), tid),
-        CmdType::Backend => write_node(get_background_dir(), tid),
+        CmdType::Background => write_node(get_background_dir(), tid),
         _ => write_node_origin(WORK_DIR, tid),
     }
 }
