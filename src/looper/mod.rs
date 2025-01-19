@@ -28,7 +28,7 @@ impl Looper {
             let tl2 = self.tid_utils.get_tid_list(pid);
             info!("{:?}", tl2);
 
-            std::thread::sleep(Duration::from_millis(385));
+            std::thread::sleep(Duration::from_millis(1000));
         }
     }
 }

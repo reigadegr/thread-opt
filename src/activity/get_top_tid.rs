@@ -1,6 +1,7 @@
 use dumpsys_rs::Dumpsys;
 use log::info;
 use std::time::{Duration, Instant};
+
 #[derive(Default)]
 pub struct ActivityInfo {
     pub pid: i32,

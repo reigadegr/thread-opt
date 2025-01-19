@@ -5,7 +5,7 @@ use std::fs;
 use std::path::Path;
 pub mod dir_ctrl;
 use crate::fs_utils::dir_ctrl::create_parent_dir;
-use crate::fs_utils::dir_ctrl::create_work_space;
+use crate::fs_utils::dir_ctrl::create_sub_work_space;
 pub fn analysis_cgroup() -> anyhow::Result<()> {
     create_parent_dir();
     let cgroup = "/sys/devices/system/cpu/cpufreq";
@@ -47,12 +47,12 @@ pub fn analysis_cgroup() -> anyhow::Result<()> {
                     // 生成所需字符串
                     if first_num != last_num {
                         let result = format!("{}-{}", first_num, last_num);
-                        println!("{}: {}", path.display(), result);
-                        create_work_space(&result);
+                        info!("{}: {}", path.display(), result);
+                        create_sub_work_space(&result);
                     } else {
                         let result = format!("{}", first_num);
-                        println!("{}: {}", path.display(), result);
-                        create_work_space(&result);
+                        info!("{}: {}", path.display(), result);
+                        create_sub_work_space(&result);
                     }
                 }
             }
