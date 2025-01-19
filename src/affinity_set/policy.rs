@@ -1,4 +1,8 @@
-use crate::fs_utils::node_writer::node_writer;
+use crate::fs_utils::dir_ctrl::WORK_DIR;
+use crate::fs_utils::node_writer::write_node;
+use crate::fs_utils::node_writer::write_node_origin;
+use crate::get_background_dir;
+use crate::get_middle_dir;
 use crate::get_top_dir;
 
 const TOP_THREADS: [&str; 2] = ["Unity", "UnityMain"];
@@ -30,13 +34,11 @@ pub fn get_cmd_type(thread_name: &str) -> CmdType {
     CmdType::All
 }
 
-pub fn execute_task(cmd_type: CmdType, tid: &i32) -> anyhow::Result<()> {
+pub fn execute_task(cmd_type: CmdType, tid: &i32) {
     match cmd_type {
-        CmdType::All => node_writer(get_top_dir(), tid),
-        // CmdType::Top => println!("(tid: {}) executing Top task", tid),
-        // CmdType::Middle => println!("(tid: {}) executing Middle task", tid),
-        // CmdType::Backend => println!("(tid: {}) executing Backend task", tid),
-        _ => node_writer(get_top_dir(), tid),
-    };
-    Ok(())
+        CmdType::Top => write_node(get_top_dir(), tid),
+        CmdType::Middle => write_node(get_middle_dir(), tid),
+        CmdType::Backend => write_node(get_background_dir(), tid),
+        _ => write_node_origin(WORK_DIR, tid),
+    }
 }
