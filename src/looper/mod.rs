@@ -32,11 +32,12 @@ impl Looper {
         }
     }
 
-    fn start_bind(&mut self, origin_name: &str) {
+    fn start_bind(&mut self) {
         loop {
             let pid = self.top_app_utils.get_pid();
-            let name = get_process_name(pid).unwrap_or_default();
-            if name != origin_name {
+            // let name = get_process_name(pid).unwrap_or_default();
+            if pid != &self.pid {
+                info!("退出游戏");
                 let tid_list = self.tid_utils.get_tid_list(&self.pid);
                 for tid in tid_list {
                     write_node(get_background_dir(), tid);
@@ -64,12 +65,12 @@ impl Looper {
                 std::thread::sleep(Duration::from_millis(1000));
                 continue;
             }
-            global_package = name.clone();
+            global_package = name;
             for i in PACKAGE {
-                if i == name {
-                    info!("监听到目标App: {}", name);
+                if i == global_package {
+                    info!("监听到目标App: {}", global_package);
                     self.pid = *pid;
-                    self.start_bind(&global_package);
+                    self.start_bind();
                     break;
                 }
             }
