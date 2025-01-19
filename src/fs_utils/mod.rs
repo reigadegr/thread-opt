@@ -27,7 +27,7 @@ pub fn analysis_cgroup() -> anyhow::Result<()> {
                 .and_then(|f| f.to_str())
                 .is_some_and(|f| f.contains("related_cpus"))
             {
-                info!("-{:?}-", path);
+                // info!("-{:?}-", path);
                 // 读取文件内容
                 let content = match read_file(&path) {
                     Ok(number) => number,
@@ -47,11 +47,11 @@ pub fn analysis_cgroup() -> anyhow::Result<()> {
                     // 生成所需字符串
                     if first_num != last_num {
                         let result = format!("{}-{}", first_num, last_num);
-                        info!("{}: {}", path.display(), result);
+                        // info!("{}: {}", path.display(), result);
                         create_sub_work_space(&result);
                     } else {
                         let result = format!("{}", first_num);
-                        info!("{}: {}", path.display(), result);
+                        // info!("{}: {}", path.display(), result);
                         create_sub_work_space(&result);
                     }
                 }
