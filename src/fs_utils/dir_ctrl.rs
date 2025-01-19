@@ -43,10 +43,14 @@ pub fn middle_dir_ctrl() -> Result<()> {
     info!("top_dir_a: {}", top_dir_a);
     info!("backend_dir_b: {}", backend_dir_b);
     if top_dir_a - backend_dir_b > 1 {
+        info!("需要创建中间目录");
         let cpus = format!("{}-{}", backend_dir_b + 1, top_dir_a - 1);
         let sub_dir = format!("{}/{}", WORK_DIR, cpus);
         init_dir(&sub_dir, &cpus);
         MIDDLE_DIR.get_or_init(|| sub_dir.clone());
+    } else {
+        let backend_dir = get_backend_dir()?;
+        MIDDLE_DIR.get_or_init(|| backend_dir.clone());
     }
     Ok(())
 }

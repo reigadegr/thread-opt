@@ -4,6 +4,7 @@ use anyhow::Result;
 enum CmdType {
     All,
     Top,
+    Middle,
     Backend,
 }
 
@@ -20,6 +21,7 @@ impl Executable for App {
         match self.cmd_type {
             CmdType::All => {}
             CmdType::Top => {}
+            CmdType::Middle => {}
             CmdType::Backend => {}
         }
     }
@@ -33,7 +35,7 @@ pub fn from_str(comm: &str, tid: i32) -> App {
             tid,
         },
         "UnityGfxDeviceW" | "UnityMultiRende" | "NativeThread" => App {
-            cmd_type: CmdType::Backend,
+            cmd_type: CmdType::Middle,
             tid,
         },
         _ => App {
