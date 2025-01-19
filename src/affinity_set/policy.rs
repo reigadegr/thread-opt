@@ -5,10 +5,10 @@ use crate::get_background_dir;
 use crate::get_middle_dir;
 use crate::get_top_dir;
 
-const TOP_THREADS: [&str; 2] = ["Unity", "UnityMain"];
+const TOP_THREADS: [&str; 3] = ["RenderThread", "UnityMain", "UnityGfxDeviceW"];
 const MIDDLE_THREADS: [&str; 1] = ["RenderThread"];
 const BACKEND_THREADS: [&str; 0] = [];
-
+const REGEX_THREADS: [&str; 1] = ["Thread-"];
 #[derive(Debug)]
 pub enum CmdType {
     All,
@@ -31,9 +31,12 @@ pub fn get_cmd_type(thread_name: &str) -> CmdType {
     }
 
     // 使用 starts_with 方法匹配后台线程
-    if thread_name.starts_with("Thread-") {
-        return CmdType::Middle;
+    for prev_name in REGEX_THREADS {
+        if thread_name.starts_with(prev_name) {
+            return CmdType::Middle;
+        }
     }
+
     CmdType::All
 }
 

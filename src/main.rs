@@ -14,7 +14,7 @@ use misc::logger::init_misc;
 
 fn main() -> anyhow::Result<()> {
     init_misc();
-    analysis_cgroup();
+    let _ = analysis_cgroup();
     let rs = middle_dir_ctrl();
     if rs.is_err() {
         info!("出错");

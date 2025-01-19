@@ -7,10 +7,10 @@ pub fn write_node(path: Result<String>, value: &i32) {
         Err(_) => WORK_DIR.to_string(),
     };
     let node = format!("{}/tasks", path);
-    fs::write(node, value.to_string());
+    let _ = fs::write(node, value.to_string());
 }
 
 pub fn write_node_origin(path: &str, value: &i32) {
     let node = format!("{}/tasks", path);
-    fs::write(node, value.to_string());
+    let _ = fs::write(node, value.to_string());
 }

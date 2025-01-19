@@ -6,8 +6,6 @@ use std::path::Path;
 
 pub const WORK_DIR: &str = "/dev/cpuset/thread-opt";
 
-const GLOBAL_NODE: &str = "/dev/cpuset/thread-opt/tasks";
-
 static TOP_DIR: OnceCell<String> = OnceCell::new();
 
 static MIDDLE_DIR: OnceCell<String> = OnceCell::new();
@@ -101,7 +99,7 @@ pub fn create_sub_work_space(cpus: &str) {
 
 fn init_node(path: &str, cpus: &str) {
     let cpus_path = format!("{}/cpus", path);
-    fs::write(cpus_path, cpus);
+    let _ = fs::write(cpus_path, cpus);
     let path = format!("{}/mems", path);
-    fs::write(path, "0");
+    let _ = fs::write(path, "0");
 }
