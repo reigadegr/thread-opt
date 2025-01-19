@@ -6,7 +6,13 @@ use crate::affinity_set::policy::get_cmd_type;
 use log::info;
 use std::time::Duration;
 
-const PACKAGE: [&str; 3] = ["bin.mt.plus", "com.miHoYo.Yuanshen", "com.example.app3"];
+const PACKAGE: [&str; 5] = [
+    "bin.mt.plus",
+    "com.miHoYo.Yuanshen",
+    "com.tencent.tmgp.sgame",
+    "com.miHoYo.Nap",
+    "com.kurogame.mingchao",
+];
 
 pub struct Looper {
     top_app_utils: TopAppUtils,
