@@ -1,5 +1,11 @@
 use super::Executable;
 use anyhow::Result;
+
+const TOP_THREADS: [&str; 2] = ["Unity", "UnityMain"];
+const MIDDLE_THREADS: [&str; 1] = ["RenderThread"];
+const BACKEND_THREADS: [&str; 0] = [];
+const ALL_THREADS: [&str; 0] = [];
+
 #[derive(Debug)]
 pub enum CmdType {
     All,
@@ -7,10 +13,6 @@ pub enum CmdType {
     Middle,
     Backend,
 }
-const TOP_THREADS: [&str; 2] = ["Unity", "UnityMain"];
-const MIDDLE_THREADS: [&str; 1] = ["RenderThread"];
-const BACKEND_THREADS: [&str; 0] = [];
-const ALL_THREADS: [&str; 0] = [];
 
 pub fn get_cmd_type(thread_name: &str) -> CmdType {
     if TOP_THREADS.contains(&thread_name) {
@@ -20,6 +22,11 @@ pub fn get_cmd_type(thread_name: &str) -> CmdType {
     if MIDDLE_THREADS.contains(&thread_name) {
         return CmdType::Middle;
     }
+
+    if BACKEND_THREADS.contains(&thread_name) {
+        return CmdType::Backend;
+    }
+
     return CmdType::All;
 }
 
