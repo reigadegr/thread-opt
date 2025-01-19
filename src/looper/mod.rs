@@ -6,7 +6,7 @@ use crate::affinity_set::policy::get_cmd_type;
 use log::info;
 use std::time::Duration;
 
-const PACKAGE: [&str; 5] = [
+const PACKAGE: [&str; 6] = [
     "bin.mt.plus",
     "com.miHoYo.Yuanshen",
     "com.miHoYo.hkrpg",

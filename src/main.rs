@@ -19,7 +19,7 @@ fn main() -> anyhow::Result<()> {
     let rs1 = get_top_dir()?;
     let rs2 = get_background_dir()?;
     let rs3 = get_middle_dir()?;
-    info!("\top:{}\nbackground:{}\nmiddle:{}", rs1, rs2, rs3);
+    info!("\ntop: {}\nbackground: {}\nmiddle: {}", rs1, rs2, rs3);
     Looper::new().enter_loop();
     Ok(())
 }
