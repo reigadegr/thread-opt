@@ -43,15 +43,15 @@ impl Looper {
                 if i == name {
                     info!("包名:-{}-", name);
 
-                    let tids = self.tid_utils.get_task_map(pid);
+                    let task_map = self.tid_utils.get_task_map(pid);
                     // info!("{:?}", tids);
-                    for (j, k) in tids {
-                        let thread_type = get_cmd_type(k);
-                        execute_task(thread_type, j);
+                    for (tid, comm) in task_map {
+                        let thread_type = get_cmd_type(comm);
+                        execute_task(thread_type, tid);
                     }
 
-                    let tl2 = self.tid_utils.get_tid_list(pid);
-                    info!("{:?}", tl2);
+                    // let tl2 = self.tid_utils.get_tid_list(pid);
+                    // info!("{:?}", tl2);
                     break;
                 }
             }

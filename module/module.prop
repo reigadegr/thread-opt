@@ -1,6 +1,6 @@
 id=thread_opt
 name=thread_opt
-version=v0.0.1
+version=v0.1.1
 versionCode=1
 author=Nigger
-description=Opt cpus for games thread.
+description=Hard Affinity policy for games thread.
