@@ -1,6 +1,8 @@
 use super::activity::get_tid_info::TidUtils;
 use super::activity::get_tid_info::get_process_name;
 use super::activity::get_top_tid::TopAppUtils;
+use crate::affinity_set::policy::execute_task;
+use crate::affinity_set::policy::get_cmd_type;
 use log::info;
 use std::time::Duration;
 
@@ -36,7 +38,11 @@ impl Looper {
                     info!("包名:-{}-", name);
 
                     let tids = self.tid_utils.get_task_map(pid);
-                    info!("{:?}", tids);
+                    // info!("{:?}", tids);
+                    for (j, k) in tids {
+                        let thread_type = get_cmd_type(k);
+                        execute_task(thread_type, j);
+                    }
 
                     let tl2 = self.tid_utils.get_tid_list(pid);
                     info!("{:?}", tl2);
