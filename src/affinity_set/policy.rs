@@ -8,7 +8,6 @@ use crate::get_top_dir;
 const TOP_THREADS: [&str; 2] = ["Unity", "UnityMain"];
 const MIDDLE_THREADS: [&str; 1] = ["RenderThread"];
 const BACKEND_THREADS: [&str; 0] = [];
-const ALL_THREADS: [&str; 0] = [];
 
 #[derive(Debug)]
 pub enum CmdType {
@@ -31,6 +30,10 @@ pub fn get_cmd_type(thread_name: &str) -> CmdType {
         return CmdType::Background;
     }
 
+    // 使用 starts_with 方法匹配后台线程
+    if thread_name.starts_with("Thread-") {
+        return CmdType::Middle;
+    }
     CmdType::All
 }
 
