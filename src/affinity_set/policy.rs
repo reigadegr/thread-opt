@@ -8,7 +8,7 @@ use crate::get_top_dir;
 const TOP_THREADS: [&str; 4] = ["GameThread", "RHIThread", "UnityMain", "UnityGfxDeviceW"];
 const MIDDLE_THREADS: [&str; 1] = ["RenderThread"];
 const BACKEND_THREADS: [&str; 0] = [];
-const MIDDLE_REGEX_THREADS: [&str; 3] = ["Thread-", "Job.worker", "RenderThread"];
+const MIDDLE_REGEX_THREADS: [&str; 3] = ["Thread-", "Job.Worker", "RenderThread"];
 #[derive(Debug)]
 pub enum CmdType {
     All,
