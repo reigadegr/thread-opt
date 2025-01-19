@@ -8,7 +8,7 @@ use crate::get_top_dir;
 const TOP_THREADS: [&str; 3] = ["GameThread", "RHIThread", "UnityMain"];
 const MIDDLE_THREADS: [&str; 1] = ["UnityGfxDeviceW"];
 const BACKEND_THREADS: [&str; 0] = [];
-const ALL_THREADS: [&str; 1] = [""];
+const ALL_THREADS: [&str; 0] = [];
 const MIDDLE_REGEX_THREADS: [&str; 3] = ["Thread-", "Job.Worker", "RenderThread"];
 
 pub enum CmdType {
@@ -30,7 +30,7 @@ pub fn get_cmd_type(thread_name: &str) -> CmdType {
     if BACKEND_THREADS.contains(&thread_name) {
         return CmdType::Background;
     }
-    
+
     if ALL_THREADS.contains(&thread_name) {
         return CmdType::All;
     }

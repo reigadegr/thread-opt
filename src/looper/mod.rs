@@ -8,7 +8,8 @@ use crate::get_background_dir;
 use log::info;
 use std::time::Duration;
 
-const PACKAGE: [&str; 5] = [
+const PACKAGE: [&str; 6] = [
+    "com.yongshi.tenojo.ys",
     "com.miHoYo.Yuanshen",
     "com.miHoYo.hkrpg",
     "com.tencent.tmgp.sgame",
