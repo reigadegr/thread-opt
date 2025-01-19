@@ -3,6 +3,8 @@ use super::activity::get_tid_info::get_process_name;
 use super::activity::get_top_tid::TopAppUtils;
 use crate::affinity_set::policy::execute_task;
 use crate::affinity_set::policy::get_cmd_type;
+use crate::fs_utils::node_writer::write_node;
+use crate::get_background_dir;
 use log::info;
 use std::time::Duration;
 
@@ -15,6 +17,7 @@ const PACKAGE: [&str; 5] = [
 ];
 
 pub struct Looper {
+    pid: i32,
     top_app_utils: TopAppUtils,
     tid_utils: TidUtils,
 }
@@ -22,6 +25,7 @@ pub struct Looper {
 impl Looper {
     pub fn new() -> Self {
         Self {
+            pid: 0,
             top_app_utils: TopAppUtils::new(),
             tid_utils: TidUtils::new(),
         }
@@ -32,17 +36,18 @@ impl Looper {
             let pid = self.top_app_utils.get_pid();
             let name = get_process_name(pid).unwrap_or_default();
             if name != origin_name {
+                let tid_list = self.tid_utils.get_tid_list(&self.pid);
+                for tid in tid_list {
+                    write_node(get_background_dir(), tid);
+                }
                 return;
             }
             let task_map = self.tid_utils.get_task_map(pid);
-            // info!("{:?}", tids);
             for (tid, comm) in task_map {
                 let thread_type = get_cmd_type(comm);
                 execute_task(thread_type, tid);
             }
 
-            // let tl2 = self.tid_utils.get_tid_list(pid);
-            // info!("{:?}", tl2);
             std::thread::sleep(Duration::from_millis(1000));
         }
     }
@@ -62,6 +67,7 @@ impl Looper {
             for i in PACKAGE {
                 if i == name {
                     info!("监听到目标App: {}", name);
+                    self.pid = *pid;
                     self.start_bind(&global_package);
                     break;
                 }
