@@ -24,6 +24,6 @@ wait_until_login() {
 }
 
 wait_until_login
-killall -15 pdd_disabler; rm $LOG
-chmod +x ${0%/*}/pdd_disabler
-RUST_BACKTRACE=1 nohup $MODDIR/pdd_disabler >$LOG 2>&1 &
+killall -15 thread_opt; rm $LOG
+chmod +x ${0%/*}/thread_opt
+RUST_BACKTRACE=1 nohup $MODDIR/thread_opt >$LOG 2>&1 &

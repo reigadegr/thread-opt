@@ -2,6 +2,7 @@ use crate::activity::get_tid_info::read_file;
 use anyhow::Context;
 use std::fs;
 pub mod dir_ctrl;
+pub mod node_writer;
 use crate::fs_utils::dir_ctrl::create_parent_dir;
 use crate::fs_utils::dir_ctrl::create_sub_work_space;
 pub fn analysis_cgroup() -> anyhow::Result<()> {
