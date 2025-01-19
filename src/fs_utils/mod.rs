@@ -1,8 +1,6 @@
 use crate::activity::get_tid_info::read_file;
 use anyhow::Context;
-use log::info;
 use std::fs;
-use std::path::Path;
 pub mod dir_ctrl;
 use crate::fs_utils::dir_ctrl::create_parent_dir;
 use crate::fs_utils::dir_ctrl::create_sub_work_space;

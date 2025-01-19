@@ -1,5 +1,3 @@
-use super::Executable;
-use anyhow::Result;
 
 const TOP_THREADS: [&str; 2] = ["Unity", "UnityMain"];
 const MIDDLE_THREADS: [&str; 1] = ["RenderThread"];
@@ -27,7 +25,7 @@ pub fn get_cmd_type(thread_name: &str) -> CmdType {
         return CmdType::Backend;
     }
 
-    return CmdType::All;
+    CmdType::All
 }
 
 pub fn execute_task(cmd_type: CmdType, tid: &i32) {

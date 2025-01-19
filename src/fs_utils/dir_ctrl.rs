@@ -15,10 +15,7 @@ static MIDDLE_DIR: OnceCell<String> = OnceCell::new();
 static BACKEND_DIR: OnceCell<String> = OnceCell::new();
 
 fn basename(path: &str) -> String {
-    let file_name = match Path::new(path).file_name().and_then(|s| s.to_str()) {
-        Some(cpus) => cpus,
-        None => "0-7",
-    };
+    let file_name = Path::new(path).file_name().and_then(|s| s.to_str()).unwrap_or("0-7");
     file_name.to_string()
 }
 
