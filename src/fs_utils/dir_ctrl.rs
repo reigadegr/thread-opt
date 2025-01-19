@@ -5,6 +5,8 @@ use std::fs;
 
 const WORK_DIR: &str = "/dev/cpuset/thread-opt";
 
+const GLOBAL_NODE: &str = "/dev/cpuset/thread-opt/tasks";
+
 static TOP_DIR: OnceCell<String> = OnceCell::new();
 
 static BACKEND_DIR: OnceCell<String> = OnceCell::new();

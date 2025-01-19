@@ -1,4 +1,5 @@
 mod activity;
+mod affinity_set;
 mod fs_utils;
 mod looper;
 use crate::fs_utils::analysis_cgroup;
@@ -15,6 +16,6 @@ fn main() -> anyhow::Result<()> {
     let rs1 = get_top_dir()?;
     let rs2 = get_backend_dir()?;
     info!("{}-{}", rs1, rs2);
-    // Looper::new().enter_loop();
+    Looper::new().enter_loop();
     Ok(())
 }
