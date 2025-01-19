@@ -5,11 +5,12 @@ use crate::get_background_dir;
 use crate::get_middle_dir;
 use crate::get_top_dir;
 
-const TOP_THREADS: [&str; 4] = ["GameThread", "RHIThread", "UnityMain", "UnityGfxDeviceW"];
-const MIDDLE_THREADS: [&str; 1] = ["RenderThread"];
+const TOP_THREADS: [&str; 3] = ["GameThread", "RHIThread", "UnityMain"];
+const MIDDLE_THREADS: [&str; 1] = ["UnityGfxDeviceW"];
 const BACKEND_THREADS: [&str; 0] = [];
+const ALL_THREADS: [&str; 1] = [""];
 const MIDDLE_REGEX_THREADS: [&str; 3] = ["Thread-", "Job.Worker", "RenderThread"];
-#[derive(Debug)]
+
 pub enum CmdType {
     All,
     Top,
@@ -29,6 +30,10 @@ pub fn get_cmd_type(thread_name: &str) -> CmdType {
     if BACKEND_THREADS.contains(&thread_name) {
         return CmdType::Background;
     }
+    
+    if ALL_THREADS.contains(&thread_name) {
+        return CmdType::All;
+    }
 
     // 使用 starts_with 方法匹配后台线程
     for prev_name in MIDDLE_REGEX_THREADS {
@@ -36,8 +41,7 @@ pub fn get_cmd_type(thread_name: &str) -> CmdType {
             return CmdType::Middle;
         }
     }
-
-    CmdType::All
+    CmdType::Middle
 }
 
 pub fn execute_task(cmd_type: CmdType, tid: &i32) {
@@ -45,6 +49,6 @@ pub fn execute_task(cmd_type: CmdType, tid: &i32) {
         CmdType::Top => write_node(get_top_dir(), tid),
         CmdType::Middle => write_node(get_middle_dir(), tid),
         CmdType::Background => write_node(get_background_dir(), tid),
-        _ => write_node_origin(WORK_DIR, tid),
+        CmdType::All => write_node_origin(WORK_DIR, tid),
     }
 }
