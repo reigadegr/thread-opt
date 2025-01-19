@@ -1,4 +1,5 @@
 use anyhow::Result;
+use std::time::Instant;
 // use log::info;
 use std::collections::HashMap;
 use std::fs;
@@ -21,16 +22,23 @@ impl TidInfo {
 
 pub struct TidUtils {
     tid_info: TidInfo,
+    last_refresh: Instant,
 }
 
 impl TidUtils {
     pub fn new() -> Self {
         Self {
             tid_info: TidInfo::new(),
+            last_refresh: Instant::now(),
         }
     }
 
     pub fn get_task_map(&mut self, pid: &i32) -> &HashMap<i32, String> {
+        if self.last_refresh.elapsed() > Duration::from_millis(5000) {
+            self.last_refresh = Instant::now();
+            return &self.set_task_map(pid).task_map;
+        }
+
         let name = match get_process_name(pid) {
             Ok(name) => name,
             Err(_) => return &self.set_task_map(pid).task_map,
@@ -43,6 +51,10 @@ impl TidUtils {
     }
 
     pub fn get_tid_list(&mut self, pid: &i32) -> &Vec<i32> {
+        if self.last_refresh.elapsed() > Duration::from_millis(5000) {
+            self.last_refresh = Instant::now();
+            return &self.set_tid_list(pid).tid_list;
+        }
         let name = match get_process_name(pid) {
             Ok(name) => name,
             Err(_) => return &self.set_tid_list(pid).tid_list,

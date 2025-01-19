@@ -20,11 +20,11 @@ fn main() -> anyhow::Result<()> {
         info!("出错");
     } else {
         info!("没出");
-    }    
+    }
     let rs1 = get_top_dir()?;
     let rs2 = get_backend_dir()?;
     let rs3 = get_middle_dir()?;
     info!("\nrs1:{}\nrs2:{}\nrs3:{}", rs1, rs2, rs3);
-    // Looper::new().enter_loop();
+    Looper::new().enter_loop();
     Ok(())
 }

@@ -4,7 +4,7 @@ use super::activity::get_top_tid::TopAppUtils;
 use log::info;
 use std::time::Duration;
 
-const PACKAGE: [&str; 3] = ["bin.mt.plus", "com.miHoYo.YuanShen", "com.example.app3"];
+const PACKAGE: [&str; 3] = ["bin.mt.plus", "com.miHoYo.Yuanshen", "com.example.app3"];
 
 pub struct Looper {
     top_app_utils: TopAppUtils,
