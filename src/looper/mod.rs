@@ -9,6 +9,7 @@ use std::time::Duration;
 const PACKAGE: [&str; 5] = [
     "bin.mt.plus",
     "com.miHoYo.Yuanshen",
+    "com.miHoYo.hkrpg",
     "com.tencent.tmgp.sgame",
     "com.miHoYo.Nap",
     "com.kurogame.mingchao",
@@ -34,15 +35,14 @@ impl Looper {
             let name = get_process_name(pid).unwrap_or_default();
 
             if global_package == name {
-                info!("直接返回: 包名:-{}-", name);
+                // info!("直接返回: 包名:-{}-", name);
                 std::thread::sleep(Duration::from_millis(1000));
                 continue;
             }
             global_package = name.clone();
             for i in PACKAGE {
                 if i == name {
-                    info!("包名:-{}-", name);
-
+                    info!("监听到目标App: {}", name);
                     let task_map = self.tid_utils.get_task_map(pid);
                     // info!("{:?}", tids);
                     for (tid, comm) in task_map {
