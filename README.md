@@ -61,3 +61,10 @@ export ANDROID_NDK_HOME=$(realpath ~/ndk_temp)
 export ANDROID_NDK_ROOT=$ANDROID_NDK_HOME
 ```
 全部设置完毕后，执行`sh release.sh` 即可
+
+### 致谢
+- [fas-rs] https://github.com/shadow3aaa/fas-rs
+```txt
+采用了其读取包名，和缓存的逻辑，面向对象的设计范式，以及其开发的dumpsys-rs库。
+使用了fas-rs的Python构建脚本
+```
