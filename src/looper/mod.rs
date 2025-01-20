@@ -74,18 +74,15 @@ impl Looper {
     }
     pub fn enter_loop(&mut self) {
         'outer: loop {
-            {
-                let pid = self.top_app_utils.get_pid();
-                let name = get_process_name(pid).unwrap_or_default();
-
-                if self.global_package == name {
-                    std::thread::sleep(Duration::from_millis(1000));
-                    continue 'outer;
-                }
-                self.global_package = name;
-            }
-
             let pid = self.top_app_utils.get_pid();
+            let name = get_process_name(pid).unwrap_or_default();
+
+            if self.global_package == name {
+                std::thread::sleep(Duration::from_millis(1000));
+                continue 'outer;
+            }
+            self.global_package = name;
+
             for i in NORMAL_PACKAGE {
                 if i == self.global_package {
                     info!("监听到目标App: {}", self.global_package);
