@@ -1,7 +1,7 @@
 use super::activity::get_tid_info::TidUtils;
 use super::activity::get_tid_info::get_process_name;
 use super::activity::get_top_tid::TopAppUtils;
-use crate::affinity_set::{policy_normal, policy_pubg};
+use crate::affinity_policy::{policy_normal, policy_pubg};
 use crate::fs_utils::node_writer::write_node;
 use crate::get_background_dir;
 use log::info;

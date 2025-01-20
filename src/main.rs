@@ -1,5 +1,5 @@
 mod activity;
-mod affinity_set;
+mod affinity_policy;
 mod fs_utils;
 use crate::fs_utils::dir_ctrl::get_middle_dir;
 mod looper;
