@@ -1,8 +1,7 @@
 use super::activity::get_tid_info::TidUtils;
 use super::activity::get_tid_info::get_process_name;
 use super::activity::get_top_tid::TopAppUtils;
-use crate::affinity_set::policy::execute_task;
-use crate::affinity_set::policy::get_cmd_type;
+use crate::affinity_set::{policy_normal, policy_pubg};
 use crate::fs_utils::node_writer::write_node;
 use crate::get_background_dir;
 use log::info;
@@ -49,8 +48,8 @@ impl Looper {
             }
             let task_map = self.tid_utils.get_task_map(pid);
             for (tid, comm) in task_map {
-                let thread_type = get_cmd_type(comm);
-                execute_task(thread_type, tid);
+                let thread_type = policy_normal::get_cmd_type(comm);
+                policy_normal::execute_task(thread_type, tid);
             }
             std::thread::sleep(Duration::from_millis(1000));
         }
@@ -68,8 +67,8 @@ impl Looper {
             }
             let task_map = self.tid_utils.get_task_map(pid);
             for (tid, comm) in task_map {
-                let thread_type = get_cmd_type(comm);
-                execute_task(thread_type, tid);
+                let thread_type = policy_pubg::get_cmd_type(comm);
+                policy_pubg::execute_task(thread_type, tid);
             }
             std::thread::sleep(Duration::from_millis(1000));
         }
@@ -97,7 +96,6 @@ impl Looper {
                 }
             }
 
-            // let pid = self.top_app_utils.get_pid();
             for i in PUBG_PACKAGE {
                 if i == self.global_package {
                     info!("监听到目标App: {}", self.global_package);
