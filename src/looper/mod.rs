@@ -7,13 +7,12 @@ use crate::get_background_dir;
 use log::info;
 use std::time::Duration;
 
-const NORMAL_PACKAGE: [&str; 7] = [
+const NORMAL_PACKAGE: [&str; 6] = [
     "com.miHoYo.Yuanshen",
     "com.miHoYo.hkrpg",
     "com.tencent.tmgp.sgame",
     "com.miHoYo.Nap",
     "com.kurogame.mingchao",
-    "com.tencent.tmgp.pubgmhd",
     "com.yongshi.tenojo.ys",
 ];
 
@@ -51,7 +50,7 @@ impl Looper {
                 let thread_type = policy_normal::get_cmd_type(comm);
                 policy_normal::execute_task(thread_type, tid);
             }
-            std::thread::sleep(Duration::from_millis(1000));
+            std::thread::sleep(Duration::from_millis(2000));
         }
     }
     fn start_bind_pubg(&mut self) {
@@ -70,7 +69,7 @@ impl Looper {
                 let thread_type = policy_pubg::get_cmd_type(comm);
                 policy_pubg::execute_task(thread_type, tid);
             }
-            std::thread::sleep(Duration::from_millis(1000));
+            std::thread::sleep(Duration::from_millis(2000));
         }
     }
     pub fn enter_loop(&mut self) {
