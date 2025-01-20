@@ -8,13 +8,14 @@ use crate::get_background_dir;
 use log::info;
 use std::time::Duration;
 
-const PACKAGE: [&str; 6] = [
-    "com.yongshi.tenojo.ys",
+const PACKAGE: [&str; 7] = [
     "com.miHoYo.Yuanshen",
     "com.miHoYo.hkrpg",
     "com.tencent.tmgp.sgame",
     "com.miHoYo.Nap",
     "com.kurogame.mingchao",
+    "com.tencent.tmgp.pubgmhd",
+    "com.yongshi.tenojo.ys",
 ];
 
 pub struct Looper {
