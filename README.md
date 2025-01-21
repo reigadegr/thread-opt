@@ -1,6 +1,5 @@
 # thread_opt
-设置线程绑核，rust实现。为affinity_rs重构版。
-
+设置线程绑核，rust实现。为affinity_rs重构版。通过在/dev/cpuset下创建目录，设置策略后写入tid到tasks实现自定义的线程放置
 ### 编译
 #### 基础环境配置
 - 下载容器
