@@ -1,13 +1,14 @@
 use crate::looper::policy_normal;
 use crate::looper::policy_pubg;
 use std::sync::LazyLock;
-const NORMAL_PACKAGE: [&str; 6] = [
+const NORMAL_PACKAGE: [&str; 7] = [
     "com.miHoYo.Yuanshen",
     "com.miHoYo.hkrpg",
     "com.tencent.tmgp.sgame",
     "com.miHoYo.Nap",
     "com.kurogame.mingchao",
     "com.yongshi.tenojo.ys",
+    "com.tencent.tmgp.speedmobile",
 ];
 
 const PUBG_PACKAGE: [&str; 1] = ["com.tencent.tmgp.pubgmhd"];
