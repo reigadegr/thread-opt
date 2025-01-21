@@ -5,30 +5,9 @@ use crate::affinity_policy::{policy_normal, policy_pubg};
 use crate::fs_utils::node_writer::write_node;
 use crate::get_background_dir;
 use log::info;
-use std::sync::LazyLock;
+mod pkg_cfg;
+use pkg_cfg::PACKAGE_CONFIGS;
 use std::time::Duration;
-
-const NORMAL_PACKAGE: [&str; 6] = [
-    "com.miHoYo.Yuanshen",
-    "com.miHoYo.hkrpg",
-    "com.tencent.tmgp.sgame",
-    "com.miHoYo.Nap",
-    "com.kurogame.mingchao",
-    "com.yongshi.tenojo.ys",
-];
-
-const PUBG_PACKAGE: [&str; 1] = ["com.tencent.tmgp.pubgmhd"];
-
-type ConfigTuple<'a> = (&'a [&'a str], fn(&i32, &str));
-static PACKAGE_CONFIGS: LazyLock<[ConfigTuple; 2]> = LazyLock::new(|| {
-    [
-        (
-            &NORMAL_PACKAGE[..],
-            policy_normal::start_task as fn(&i32, &str),
-        ),
-        (&PUBG_PACKAGE[..], policy_pubg::start_task as fn(&i32, &str)),
-    ]
-});
 
 pub struct Looper {
     pid: i32,
