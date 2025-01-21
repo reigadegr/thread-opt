@@ -68,12 +68,12 @@ impl Looper {
         'outer: loop {
             {
                 let pid = self.top_app_utils.get_pid();
-                let name = get_process_name(pid).unwrap_or_default();
-
-                if self.global_package == name {
+                if self.pid == *pid {
                     std::thread::sleep(Duration::from_millis(1000));
                     continue 'outer;
                 }
+                self.pid = *pid;
+                let name = get_process_name(pid).unwrap_or_default();
                 self.global_package = name;
             }
             for (package_list, start_task) in PACKAGE_CONFIGS.iter() {
