@@ -10,6 +10,7 @@ const MIDDLE_THREADS: [&str; 1] = ["UnityGfxDeviceW"];
 const BACKEND_THREADS: [&str; 0] = [];
 const ALL_THREADS: [&str; 0] = [];
 const MIDDLE_REGEX_THREADS: [&str; 3] = ["Thread-", "Job.Worker", "RenderThread"];
+const TOP_REGEX_THREADS: [&str; 1] = ["BuildPa-ller"];
 
 enum CmdType {
     All,
@@ -39,6 +40,12 @@ fn get_cmd_type(thread_name: &str) -> CmdType {
     for prev_name in MIDDLE_REGEX_THREADS {
         if thread_name.starts_with(prev_name) {
             return CmdType::Middle;
+        }
+    }
+
+    for prev_name in TOP_REGEX_THREADS {
+        if thread_name.starts_with(prev_name) {
+            return CmdType::Top;
         }
     }
     CmdType::Middle

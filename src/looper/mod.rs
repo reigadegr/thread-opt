@@ -1,12 +1,10 @@
 use super::activity::get_tid_info::TidUtils;
 use super::activity::get_tid_info::get_process_name;
 use super::activity::get_top_tid::TopAppUtils;
-use crate::affinity_policy::{policy_normal, policy_pubg};
+use crate::affinity_policy::pkg_cfg::PACKAGE_CONFIGS;
 use crate::fs_utils::dir_ctrl::get_background_dir;
 use crate::fs_utils::node_writer::write_node;
 use log::info;
-mod pkg_cfg;
-use pkg_cfg::PACKAGE_CONFIGS;
 use std::time::Duration;
 
 pub struct Looper {
