@@ -41,7 +41,7 @@ pub fn middle_dir_ctrl() -> Result<()> {
     // info!("top_dir_a: {}", top_dir_a);
     // info!("background_dir_b: {}", background_dir_b);
     if top_dir_a - background_dir_b > 1 {
-        info!("需要创建Middle目录");
+        info!("集群数量大于或等于三个，需要创建Middle目录");
         let cpus = format!("{}-{}", background_dir_b + 1, top_dir_a - 1);
         let sub_dir = format!("{}/{}", WORK_DIR, cpus);
         init_node(&sub_dir, &cpus);
