@@ -65,6 +65,9 @@ export ANDROID_NDK_ROOT=$ANDROID_NDK_HOME
 ### 致谢
 - [fas-rs] https://github.com/shadow3aaa/fas-rs
 ```txt
-采用了其读取包名，和缓存的逻辑，面向对象的设计范式，以及其开发的dumpsys-rs库。
-使用了fas-rs的Python构建脚本
+采用了其: 
+1，读取包名，缓存逻辑
+2，面向对象的设计范式
+3，其开发的dumpsys-rs库
+4，fas-rs的Python构建系统
 ```

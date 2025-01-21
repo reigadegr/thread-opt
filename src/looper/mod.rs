@@ -51,7 +51,7 @@ impl Looper {
             }
             let task_map = self.tid_utils.get_task_map(pid);
             for (tid, comm) in task_map {
-                start_task(tid, comm); // 调用传入的 start_task 函数
+                start_task(tid, comm);
             }
             std::thread::sleep(Duration::from_millis(2000));
         }
@@ -86,10 +86,10 @@ impl Looper {
             }
 
             if self.handle_package_list(&NORMAL_PACKAGE, policy_normal::start_task) {
-                continue;
+                continue 'outer;
             }
             if self.handle_package_list(&PUBG_PACKAGE, policy_pubg::start_task) {
-                continue;
+                continue 'outer;
             }
             std::thread::sleep(Duration::from_millis(1000));
         }
