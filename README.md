@@ -25,10 +25,11 @@ yes | pacman -Sy
 yes | pacman -S llvm clang python glibc make cmake
 ```
 安装glibc是防止以下问题:
-```
+```txt
 = note: cc: /usr/lib/libc.so.6: version `GLIBC_2.36' not found (required by cc)
       cc: /usr/lib/libc.so.6: version `GLIBC_2.38' not found (required by cc)
 ```
+
 - 安装rust
 > 默认为nightly，default
 ```shell
