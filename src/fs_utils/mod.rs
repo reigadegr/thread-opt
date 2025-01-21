@@ -1,10 +1,26 @@
 use crate::activity::get_tid_info::read_file;
 use anyhow::Context;
+use log::info;
 use std::fs;
 pub mod dir_ctrl;
+use crate::fs_utils::dir_ctrl::get_background_dir;
+use crate::fs_utils::dir_ctrl::get_middle_dir;
+use crate::fs_utils::dir_ctrl::get_top_dir;
+use crate::fs_utils::dir_ctrl::middle_dir_ctrl;
 pub mod node_writer;
 use crate::fs_utils::dir_ctrl::create_parent_dir;
 use crate::fs_utils::dir_ctrl::create_sub_work_space;
+
+pub fn init_working_directory() -> anyhow::Result<()> {
+    let _ = analysis_cgroup();
+    let _ = middle_dir_ctrl();
+    let rs1 = get_top_dir()?;
+    let rs2 = get_background_dir()?;
+    let rs3 = get_middle_dir()?;
+    info!("\ntop: {}\nbackground: {}\nmiddle: {}", rs1, rs2, rs3);
+    Ok(())
+}
+
 pub fn analysis_cgroup() -> anyhow::Result<()> {
     create_parent_dir();
     let cgroup = "/sys/devices/system/cpu/cpufreq";
