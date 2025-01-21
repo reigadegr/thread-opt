@@ -47,12 +47,13 @@ impl Looper {
             }
             let task_map = self.tid_utils.get_task_map(pid);
             for (tid, comm) in task_map {
-                let thread_type = policy_normal::get_cmd_type(comm);
-                policy_normal::execute_task(thread_type, tid);
+                // let thread_type = policy_normal::get_cmd_type(comm);
+                policy_normal::start_task(tid, comm);
             }
             std::thread::sleep(Duration::from_millis(2000));
         }
     }
+
     fn start_bind_pubg(&mut self) {
         loop {
             let pid = self.top_app_utils.get_pid();
@@ -66,12 +67,13 @@ impl Looper {
             }
             let task_map = self.tid_utils.get_task_map(pid);
             for (tid, comm) in task_map {
-                let thread_type = policy_pubg::get_cmd_type(comm);
-                policy_pubg::execute_task(thread_type, tid);
+                // let thread_type = policy_pubg::get_cmd_type(comm);
+                policy_pubg::start_task(tid, comm);
             }
             std::thread::sleep(Duration::from_millis(2000));
         }
     }
+
     pub fn enter_loop(&mut self) {
         'outer: loop {
             let pid = self.top_app_utils.get_pid();
