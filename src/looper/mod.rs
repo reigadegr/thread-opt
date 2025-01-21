@@ -34,7 +34,12 @@ impl Looper {
         }
     }
 
-    fn start_bind_normal(&mut self) {
+    // 通用的绑定函数
+    fn start_bind_common<F>(&mut self, start_task: F)
+    where
+        // start_task 函数的签名
+        F: Fn(&i32, &str),
+    {
         loop {
             let pid = self.top_app_utils.get_pid();
             if pid != &self.pid {
@@ -47,32 +52,19 @@ impl Looper {
             }
             let task_map = self.tid_utils.get_task_map(pid);
             for (tid, comm) in task_map {
-                // let thread_type = policy_normal::get_cmd_type(comm);
-                policy_normal::start_task(tid, comm);
+                start_task(tid, comm); // 调用传入的 start_task 函数
             }
             std::thread::sleep(Duration::from_millis(2000));
         }
     }
 
-    fn start_bind_pubg(&mut self) {
-        loop {
-            let pid = self.top_app_utils.get_pid();
-            if pid != &self.pid {
-                info!("退出游戏");
-                let tid_list = self.tid_utils.get_tid_list(&self.pid);
-                for tid in tid_list {
-                    write_node(get_background_dir(), tid);
-                }
-                return;
-            }
-            let task_map = self.tid_utils.get_task_map(pid);
-            for (tid, comm) in task_map {
-                // let thread_type = policy_pubg::get_cmd_type(comm);
-                policy_pubg::start_task(tid, comm);
-            }
-            std::thread::sleep(Duration::from_millis(2000));
-        }
-    }
+    // fn start_bind_normal(&mut self) {
+    // self.start_bind_common(policy_normal::start_task);
+    // }
+
+    // fn start_bind_pubg(&mut self) {
+    // self.start_bind_common(policy_pubg::start_task);
+    // }
 
     pub fn enter_loop(&mut self) {
         'outer: loop {
@@ -89,7 +81,7 @@ impl Looper {
                 if i == self.global_package {
                     info!("监听到目标App: {}", self.global_package);
                     self.pid = *pid;
-                    self.start_bind_normal();
+                    self.start_bind_common(policy_normal::start_task);
                     continue 'outer;
                 }
             }
@@ -98,7 +90,7 @@ impl Looper {
                 if i == self.global_package {
                     info!("监听到目标App: {}", self.global_package);
                     self.pid = *pid;
-                    self.start_bind_pubg();
+                    self.start_bind_common(policy_pubg::start_task);
                     continue 'outer;
                 }
             }
