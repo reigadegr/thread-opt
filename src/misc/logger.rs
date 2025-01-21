@@ -4,7 +4,8 @@ use flexi_logger::{DeferredNow, LogSpecification, Logger, Record};
 use std::fs;
 use std::io::{self, prelude::*};
 use std::process;
-pub fn init_log() -> Result<()> {
+
+fn init_log() -> Result<()> {
     unsafe {
         std::env::set_var("RUST_LOG", "info");
     }
