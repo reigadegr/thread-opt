@@ -37,9 +37,6 @@ pub fn middle_dir_ctrl() -> Result<()> {
     let top_dir_a: i32 = top_dir_parts[0].parse()?;
     let background_dir_b: i32 = background_dir_parts[1].parse()?;
 
-    // 打印结果
-    // info!("top_dir_a: {}", top_dir_a);
-    // info!("background_dir_b: {}", background_dir_b);
     if top_dir_a - background_dir_b > 1 {
         info!("集群数量大于或等于三个，需要创建Middle目录");
         let cpus = format!("{}-{}", background_dir_b + 1, top_dir_a - 1);
