@@ -5,6 +5,7 @@ use crate::affinity_policy::{policy_normal, policy_pubg};
 use crate::fs_utils::node_writer::write_node;
 use crate::get_background_dir;
 use log::info;
+use std::sync::LazyLock;
 use std::time::Duration;
 
 const NORMAL_PACKAGE: [&str; 6] = [
@@ -17,6 +18,17 @@ const NORMAL_PACKAGE: [&str; 6] = [
 ];
 
 const PUBG_PACKAGE: [&str; 1] = ["com.tencent.tmgp.pubgmhd"];
+
+type ConfigTuple<'a> = (&'a [&'a str], fn(&i32, &str));
+static PACKAGE_CONFIGS: LazyLock<[ConfigTuple; 2]> = LazyLock::new(|| {
+    [
+        (
+            &NORMAL_PACKAGE[..],
+            policy_normal::start_task as fn(&i32, &str),
+        ),
+        (&PUBG_PACKAGE[..], policy_pubg::start_task as fn(&i32, &str)),
+    ]
+});
 
 pub struct Looper {
     pid: i32,
@@ -74,14 +86,6 @@ impl Looper {
     }
 
     pub fn enter_loop(&mut self) {
-        // 定义一个通用的结构来存储包列表和对应的策略函数
-        let package_configs = [
-            (
-                &NORMAL_PACKAGE[..],
-                policy_normal::start_task as fn(&i32, &str),
-            ),
-            (&PUBG_PACKAGE[..], policy_pubg::start_task as fn(&i32, &str)),
-        ];
         'outer: loop {
             {
                 let pid = self.top_app_utils.get_pid();
@@ -93,17 +97,11 @@ impl Looper {
                 }
                 self.global_package = name;
             }
-            for (package_list, start_task) in &package_configs {
+            for (package_list, start_task) in PACKAGE_CONFIGS.iter() {
                 if self.handle_package_list(package_list, *start_task) {
                     continue 'outer;
                 }
             }
-            // if self.handle_package_list(&NORMAL_PACKAGE, policy_normal::start_task) {
-            // continue 'outer;
-            // }
-            // if self.handle_package_list(&PUBG_PACKAGE, policy_pubg::start_task) {
-            // continue 'outer;
-            // }
             std::thread::sleep(Duration::from_millis(1000));
         }
     }
