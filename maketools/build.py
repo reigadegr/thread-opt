@@ -3,7 +3,6 @@ import os
 import shutil
 from pathlib import Path
 from maketools.toolchains import Buildtools
-from maketools.misc import eprint
 import zipfile
 from datetime import datetime
 
@@ -87,13 +86,11 @@ def task(args):
     try:
         tools = Buildtools()
     except Exception as err:
-        eprint(err)
         exit(-1)
 
     try:
         (check, clean, release, nightly, verbose) = __parse_args(args)
     except Exception as err:
-        eprint(err)
         exit(-1)
 
     if clean:

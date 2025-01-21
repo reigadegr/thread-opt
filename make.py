@@ -3,7 +3,6 @@ import sys
 import maketools.build as build
 import maketools.fix as fix
 import maketools.update as update
-from maketools.misc import eprint
 
 help_text = """\
 ./make.py:
@@ -23,8 +22,6 @@ help_text = """\
 try:
     arg = sys.argv[1]
 except IndexError:
-    eprint("Missing argument")
-    eprint(help_text)
     exit(-1)
 
 match arg:
@@ -37,6 +34,4 @@ match arg:
     case "update":
         update.task()
     case _:
-        eprint("Invalid argument")
-        eprint(help_text)
         exit(-1)

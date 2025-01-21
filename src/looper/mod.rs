@@ -17,6 +17,7 @@ const NORMAL_PACKAGE: [&str; 6] = [
 ];
 
 const PUBG_PACKAGE: [&str; 1] = ["com.tencent.tmgp.pubgmhd"];
+
 pub struct Looper {
     pid: i32,
     global_package: String,
@@ -73,6 +74,14 @@ impl Looper {
     }
 
     pub fn enter_loop(&mut self) {
+        // 定义一个通用的结构来存储包列表和对应的策略函数
+        let package_configs = [
+            (
+                &NORMAL_PACKAGE[..],
+                policy_normal::start_task as fn(&i32, &str),
+            ),
+            (&PUBG_PACKAGE[..], policy_pubg::start_task as fn(&i32, &str)),
+        ];
         'outer: loop {
             {
                 let pid = self.top_app_utils.get_pid();
@@ -84,13 +93,17 @@ impl Looper {
                 }
                 self.global_package = name;
             }
-
-            if self.handle_package_list(&NORMAL_PACKAGE, policy_normal::start_task) {
-                continue 'outer;
+            for (package_list, start_task) in &package_configs {
+                if self.handle_package_list(package_list, *start_task) {
+                    continue 'outer;
+                }
             }
-            if self.handle_package_list(&PUBG_PACKAGE, policy_pubg::start_task) {
-                continue 'outer;
-            }
+            // if self.handle_package_list(&NORMAL_PACKAGE, policy_normal::start_task) {
+            // continue 'outer;
+            // }
+            // if self.handle_package_list(&PUBG_PACKAGE, policy_pubg::start_task) {
+            // continue 'outer;
+            // }
             std::thread::sleep(Duration::from_millis(1000));
         }
     }
