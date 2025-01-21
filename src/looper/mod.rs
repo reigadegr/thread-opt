@@ -10,7 +10,7 @@ use pkg_cfg::PACKAGE_CONFIGS;
 use std::time::Duration;
 
 pub struct Looper {
-    pid: i32,
+    pid: u32,
     global_package: String,
     top_app_utils: TopAppUtils,
     tid_utils: TidUtils,
@@ -29,7 +29,7 @@ impl Looper {
     fn start_bind_common<F>(&mut self, start_task: F)
     where
         // 传入函数的签名
-        F: Fn(&i32, &str),
+        F: Fn(&u32, &str),
     {
         loop {
             let pid = self.top_app_utils.get_pid();
@@ -51,7 +51,7 @@ impl Looper {
 
     fn handle_package_list<F>(&mut self, package_list: &[&str], start_task: F) -> bool
     where
-        F: Fn(&i32, &str),
+        F: Fn(&u32, &str),
     {
         for &package in package_list {
             if package == self.global_package {

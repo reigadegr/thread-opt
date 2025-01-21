@@ -50,10 +50,10 @@ pub fn analysis_cgroup() -> anyhow::Result<()> {
                 // 解析文件内容，提取第一个和最后一个数字
                 let nums: Vec<&str> = content.split_whitespace().collect();
                 if let (Some(first), Some(last)) = (nums.first(), nums.last()) {
-                    let first_num = first.parse::<i32>().with_context(|| {
+                    let first_num = first.parse::<u32>().with_context(|| {
                         format!("Failed to parse first number in file: {}", path.display())
                     })?;
-                    let last_num = last.parse::<i32>().with_context(|| {
+                    let last_num = last.parse::<u32>().with_context(|| {
                         format!("Failed to parse last number in file: {}", path.display())
                     })?;
 

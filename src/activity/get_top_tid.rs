@@ -4,7 +4,7 @@ use std::time::{Duration, Instant};
 
 #[derive(Default)]
 pub struct ActivityInfo {
-    pid: i32,
+    pid: u32,
 }
 
 impl ActivityInfo {
@@ -24,7 +24,7 @@ impl ActivityInfo {
         let pid = dump.split(':').next().unwrap_or("0");
 
         Self {
-            pid: pid.parse::<i32>().unwrap_or_default(),
+            pid: pid.parse::<u32>().unwrap_or_default(),
         }
     }
 }
@@ -50,7 +50,7 @@ impl TopAppUtils {
         }
     }
 
-    pub fn get_pid(&mut self) -> &i32 {
+    pub fn get_pid(&mut self) -> &u32 {
         &self.set_top_app_pid_name().pid
     }
 

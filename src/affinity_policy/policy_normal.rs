@@ -44,7 +44,7 @@ fn get_cmd_type(thread_name: &str) -> CmdType {
     CmdType::Middle
 }
 
-fn execute_task(cmd_type: CmdType, tid: &i32) {
+fn execute_task(cmd_type: CmdType, tid: &u32) {
     match cmd_type {
         CmdType::Top => write_node(get_top_dir(), tid),
         CmdType::Middle => write_node(get_middle_dir(), tid),
@@ -53,7 +53,7 @@ fn execute_task(cmd_type: CmdType, tid: &i32) {
     }
 }
 
-pub fn start_task(tid: &i32, thread_name: &str) {
+pub fn start_task(tid: &u32, thread_name: &str) {
     let thread_type = get_cmd_type(thread_name);
     execute_task(thread_type, tid);
 }

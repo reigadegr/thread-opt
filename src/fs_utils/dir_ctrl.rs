@@ -33,9 +33,9 @@ pub fn middle_dir_ctrl() -> Result<()> {
     let top_dir_parts: Vec<&str> = top_dir.split('-').collect();
     let background_dir_parts: Vec<&str> = background_dir.split('-').collect();
 
-    // 提取数字并转换为 i32
-    let top_dir_a: i32 = top_dir_parts[0].parse()?;
-    let background_dir_b: i32 = background_dir_parts[1].parse()?;
+    // 提取数字并转换为 u32
+    let top_dir_a: u32 = top_dir_parts[0].parse()?;
+    let background_dir_b: u32 = background_dir_parts[1].parse()?;
 
     if top_dir_a - background_dir_b > 1 {
         info!("集群数量大于或等于三个，需要创建Middle目录");
