@@ -34,10 +34,9 @@ impl Looper {
         }
     }
 
-    // 通用的绑定函数
     fn start_bind_common<F>(&mut self, start_task: F)
     where
-        // start_task 函数的签名
+        // 传入函数的签名
         F: Fn(&i32, &str),
     {
         loop {
@@ -58,43 +57,40 @@ impl Looper {
         }
     }
 
-    // fn start_bind_normal(&mut self) {
-    // self.start_bind_common(policy_normal::start_task);
-    // }
-
-    // fn start_bind_pubg(&mut self) {
-    // self.start_bind_common(policy_pubg::start_task);
-    // }
+    fn handle_package_list<F>(&mut self, package_list: &[&str], start_task: F) -> bool
+    where
+        F: Fn(&i32, &str),
+    {
+        for &package in package_list {
+            if package == self.global_package {
+                info!("监听到目标App: {}", self.global_package);
+                self.pid = *self.top_app_utils.get_pid();
+                self.start_bind_common(start_task);
+                return true;
+            }
+        }
+        false
+    }
 
     pub fn enter_loop(&mut self) {
         'outer: loop {
-            let pid = self.top_app_utils.get_pid();
-            let name = get_process_name(pid).unwrap_or_default();
+            {
+                let pid = self.top_app_utils.get_pid();
+                let name = get_process_name(pid).unwrap_or_default();
 
-            if self.global_package == name {
-                std::thread::sleep(Duration::from_millis(1000));
-                continue 'outer;
-            }
-            self.global_package = name;
-
-            for i in NORMAL_PACKAGE {
-                if i == self.global_package {
-                    info!("监听到目标App: {}", self.global_package);
-                    self.pid = *pid;
-                    self.start_bind_common(policy_normal::start_task);
+                if self.global_package == name {
+                    std::thread::sleep(Duration::from_millis(1000));
                     continue 'outer;
                 }
+                self.global_package = name;
             }
 
-            for i in PUBG_PACKAGE {
-                if i == self.global_package {
-                    info!("监听到目标App: {}", self.global_package);
-                    self.pid = *pid;
-                    self.start_bind_common(policy_pubg::start_task);
-                    continue 'outer;
-                }
+            if self.handle_package_list(&NORMAL_PACKAGE, policy_normal::start_task) {
+                continue;
             }
-
+            if self.handle_package_list(&PUBG_PACKAGE, policy_pubg::start_task) {
+                continue;
+            }
             std::thread::sleep(Duration::from_millis(1000));
         }
     }
