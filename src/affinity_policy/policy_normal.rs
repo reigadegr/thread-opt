@@ -35,7 +35,7 @@ fn get_cmd_type(thread_name: &str) -> CmdType {
         return CmdType::All;
     }
 
-    // 使用 starts_with 方法匹配后台线程
+    // 使用 starts_with 方法匹配线程
     for prev_name in MIDDLE_REGEX_THREADS {
         if thread_name.starts_with(prev_name) {
             return CmdType::Middle;
