@@ -1,5 +1,4 @@
-use super::policy_normal;
-use super::policy_pubg;
+use super::{policy_normal, policy_pubg};
 use libc::pid_t;
 use std::sync::LazyLock;
 const NORMAL_PACKAGE: [&str; 8] = [

@@ -1,9 +1,9 @@
-use super::activity::get_tid_info::TidUtils;
-use super::activity::get_tid_info::get_process_name;
-use super::activity::get_top_tid::TopAppUtils;
+use super::activity::{
+    get_tid_info::{TidUtils, get_process_name},
+    get_top_tid::TopAppUtils,
+};
 use super::affinity_policy::pkg_cfg::PACKAGE_CONFIGS;
-use super::fs_utils::dir_ctrl::get_background_dir;
-use super::fs_utils::node_writer::write_node;
+use super::fs_utils::{dir_ctrl::get_background_dir, node_writer::write_node};
 use libc::pid_t;
 use log::info;
 use std::time::Duration;

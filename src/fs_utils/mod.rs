@@ -4,13 +4,11 @@ use libc::pid_t;
 use log::info;
 use std::fs;
 pub mod dir_ctrl;
-use super::fs_utils::dir_ctrl::get_background_dir;
-use super::fs_utils::dir_ctrl::get_middle_dir;
-use super::fs_utils::dir_ctrl::get_top_dir;
-use super::fs_utils::dir_ctrl::middle_dir_ctrl;
+use super::fs_utils::dir_ctrl::{
+    create_parent_dir, create_sub_work_space, get_background_dir, get_middle_dir, get_top_dir,
+    middle_dir_ctrl,
+};
 pub mod node_writer;
-use super::fs_utils::dir_ctrl::create_parent_dir;
-use super::fs_utils::dir_ctrl::create_sub_work_space;
 
 pub fn init_working_directory() -> anyhow::Result<()> {
     let _ = analysis_cgroup();

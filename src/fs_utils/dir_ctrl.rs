@@ -2,8 +2,7 @@ use anyhow::{Result, anyhow};
 use libc::pid_t;
 use log::info;
 use once_cell::sync::OnceCell;
-use std::fs;
-use std::path::Path;
+use std::{fs, path::Path};
 
 pub const WORK_DIR: &str = "/dev/cpuset/thread-opt";
 
