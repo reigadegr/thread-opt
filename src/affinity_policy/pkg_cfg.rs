@@ -12,7 +12,7 @@ const NORMAL_PACKAGE: [&str; 8] = [
     "com.papegames.infinitynikki",
 ];
 
-const PUBG_PACKAGE: [&str; 1] = ["com.tencent.tmgp.pubgmhd"];
+const PUBG_PACKAGE: [&str; 2] = ["com.tencent.tmgp.pubgmhd", "com.netease.yyslscn"];
 
 type ConfigTuple<'a> = (&'a [&'a str], fn(&pid_t, &str));
 pub static PACKAGE_CONFIGS: LazyLock<[ConfigTuple; 2]> = LazyLock::new(|| {
