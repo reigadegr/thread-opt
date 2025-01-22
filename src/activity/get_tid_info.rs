@@ -1,11 +1,11 @@
 use anyhow::Result;
 use libc::pid_t;
-use std::time::Instant;
-// use log::info;
-use std::collections::HashMap;
-use std::fs;
-use std::path::Path;
-use std::time::Duration;
+use std::{
+    collections::HashMap,
+    fs,
+    path::Path,
+    time::{Duration, Instant},
+};
 
 #[derive(Default)]
 pub struct TidInfo {
