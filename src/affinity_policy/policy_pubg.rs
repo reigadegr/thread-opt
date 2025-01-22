@@ -1,5 +1,5 @@
 use crate::fs_utils::{
-    dir_ctrl::{WORK_DIR, get_background_dir, get_middle_dir, get_top_dir},
+    dir_ctrl::{get_background_dir, get_middle_dir, get_top_dir, WORK_DIR},
     node_writer::{write_node, write_node_origin},
 };
 use libc::pid_t;

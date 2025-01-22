@@ -1,5 +1,5 @@
 use super::activity::{
-    get_tid_info::{TidUtils, get_process_name},
+    get_tid_info::{get_process_name, TidUtils},
     get_top_tid::TopAppUtils,
 };
 use super::affinity_policy::pkg_cfg::PACKAGE_CONFIGS;
