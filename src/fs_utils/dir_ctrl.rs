@@ -1,4 +1,5 @@
 use anyhow::{Result, anyhow};
+use libc::pid_t;
 use log::info;
 use once_cell::sync::OnceCell;
 use std::fs;
@@ -33,9 +34,9 @@ pub fn middle_dir_ctrl() -> Result<()> {
     let top_dir_parts: Vec<&str> = top_dir.split('-').collect();
     let background_dir_parts: Vec<&str> = background_dir.split('-').collect();
 
-    // 提取数字并转换为 u32
-    let top_dir_a: u32 = top_dir_parts[0].parse()?;
-    let background_dir_b: u32 = background_dir_parts[1].parse()?;
+    // 提取数字并转换为 pid_t
+    let top_dir_a: pid_t = top_dir_parts[0].parse()?;
+    let background_dir_b: pid_t = background_dir_parts[1].parse()?;
 
     if top_dir_a - background_dir_b > 1 {
         info!("集群数量大于或等于三个，需要创建Middle目录");

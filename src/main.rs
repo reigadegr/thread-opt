@@ -3,7 +3,7 @@ mod affinity_policy;
 mod fs_utils;
 mod looper;
 mod misc;
-use crate::fs_utils::init_working_directory;
+use fs_utils::init_working_directory;
 use looper::Looper;
 use misc::logger::init_misc;
 

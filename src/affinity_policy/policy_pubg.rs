@@ -4,6 +4,7 @@ use crate::fs_utils::dir_ctrl::get_middle_dir;
 use crate::fs_utils::dir_ctrl::get_top_dir;
 use crate::fs_utils::node_writer::write_node;
 use crate::fs_utils::node_writer::write_node_origin;
+use libc::pid_t;
 const TOP_THREADS: [&str; 0] = [];
 const MIDDLE_THREADS: [&str; 1] = ["RHIThread"];
 const BACKEND_THREADS: [&str; 0] = [];
@@ -49,7 +50,7 @@ fn get_cmd_type(thread_name: &str) -> CmdType {
     CmdType::Middle
 }
 
-fn execute_task(cmd_type: CmdType, tid: &u32) {
+fn execute_task(cmd_type: CmdType, tid: &pid_t) {
     match cmd_type {
         CmdType::Top => write_node(get_top_dir(), tid),
         CmdType::Middle => write_node(get_middle_dir(), tid),
@@ -58,7 +59,7 @@ fn execute_task(cmd_type: CmdType, tid: &u32) {
     }
 }
 
-pub fn start_task(tid: &u32, thread_name: &str) {
+pub fn start_task(tid: &pid_t, thread_name: &str) {
     let thread_type = get_cmd_type(thread_name);
     execute_task(thread_type, tid);
 }

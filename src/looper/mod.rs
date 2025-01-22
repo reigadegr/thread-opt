@@ -1,14 +1,15 @@
 use super::activity::get_tid_info::TidUtils;
 use super::activity::get_tid_info::get_process_name;
 use super::activity::get_top_tid::TopAppUtils;
-use crate::affinity_policy::pkg_cfg::PACKAGE_CONFIGS;
-use crate::fs_utils::dir_ctrl::get_background_dir;
-use crate::fs_utils::node_writer::write_node;
+use super::affinity_policy::pkg_cfg::PACKAGE_CONFIGS;
+use super::fs_utils::dir_ctrl::get_background_dir;
+use super::fs_utils::node_writer::write_node;
+use libc::pid_t;
 use log::info;
 use std::time::Duration;
 
 pub struct Looper {
-    pid: u32,
+    pid: pid_t,
     global_package: String,
     top_app_utils: TopAppUtils,
     tid_utils: TidUtils,
@@ -27,7 +28,7 @@ impl Looper {
     fn start_bind_common<F>(&mut self, start_task: F)
     where
         // 传入函数的签名
-        F: Fn(&u32, &str),
+        F: Fn(&pid_t, &str),
     {
         loop {
             let pid = self.top_app_utils.get_pid();
@@ -49,7 +50,7 @@ impl Looper {
 
     fn handle_package_list<F>(&mut self, package_list: &[&str], start_task: F) -> bool
     where
-        F: Fn(&u32, &str),
+        F: Fn(&pid_t, &str),
     {
         for &package in package_list {
             if package == self.global_package {

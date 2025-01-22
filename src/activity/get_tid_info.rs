@@ -1,4 +1,5 @@
 use anyhow::Result;
+use libc::pid_t;
 use std::time::Instant;
 // use log::info;
 use std::collections::HashMap;
@@ -10,8 +11,8 @@ use std::time::Duration;
 pub struct TidInfo {
     task_map_name: String,
     tid_list_name: String,
-    task_map: HashMap<u32, String>,
-    tid_list: Vec<u32>,
+    task_map: HashMap<pid_t, String>,
+    tid_list: Vec<pid_t>,
 }
 
 impl TidInfo {
@@ -33,7 +34,7 @@ impl TidUtils {
         }
     }
 
-    pub fn get_task_map(&mut self, pid: &u32) -> &HashMap<u32, String> {
+    pub fn get_task_map(&mut self, pid: &pid_t) -> &HashMap<pid_t, String> {
         if self.last_refresh.elapsed() > Duration::from_millis(5000) {
             self.last_refresh = Instant::now();
             return &self.set_task_map(pid).task_map;
@@ -50,7 +51,7 @@ impl TidUtils {
         &self.set_task_map(pid).task_map
     }
 
-    pub fn get_tid_list(&mut self, pid: &u32) -> &Vec<u32> {
+    pub fn get_tid_list(&mut self, pid: &pid_t) -> &Vec<pid_t> {
         if self.last_refresh.elapsed() > Duration::from_millis(5000) {
             self.last_refresh = Instant::now();
             return &self.set_tid_list(pid).tid_list;
@@ -66,7 +67,7 @@ impl TidUtils {
         &self.set_tid_list(pid).tid_list
     }
 
-    pub fn set_task_map(&mut self, pid: &u32) -> &TidInfo {
+    pub fn set_task_map(&mut self, pid: &pid_t) -> &TidInfo {
         let task_dir = format!("/proc/{}/task", pid);
         let mut task_map = HashMap::new();
 
@@ -91,7 +92,7 @@ impl TidUtils {
                     Err(_) => return &self.tid_info,
                 };
 
-                let tid = tid.parse::<u32>();
+                let tid = tid.parse::<pid_t>();
                 match tid {
                     Ok(tid) => task_map.insert(tid, comm),
                     Err(_) => continue,
@@ -102,7 +103,7 @@ impl TidUtils {
         &self.tid_info
     }
 
-    pub fn set_tid_list(&mut self, pid: &u32) -> &TidInfo {
+    pub fn set_tid_list(&mut self, pid: &pid_t) -> &TidInfo {
         let task_dir = format!("/proc/{}/task", pid);
         let mut tid_list = Vec::new();
 
@@ -119,7 +120,7 @@ impl TidUtils {
                 if tid.starts_with('.') {
                     continue;
                 }
-                let tid = tid.parse::<u32>();
+                let tid = tid.parse::<pid_t>();
                 match tid {
                     Ok(tid) => tid_list.push(tid),
                     Err(_) => continue,
@@ -136,7 +137,7 @@ pub fn read_file(file: &Path) -> Result<String> {
     Ok(s.trim().to_string())
 }
 
-pub fn get_process_name(pid: &u32) -> Result<String> {
+pub fn get_process_name(pid: &pid_t) -> Result<String> {
     let cmdline = Path::new("/proc").join(pid.to_string()).join("cmdline");
     let cmdline = fs::read_to_string(cmdline)?;
     let cmdline = cmdline.split(':').next().unwrap_or_default();

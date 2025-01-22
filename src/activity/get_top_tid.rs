@@ -1,10 +1,11 @@
 use dumpsys_rs::Dumpsys;
+use libc::pid_t;
 use log::info;
 use std::time::{Duration, Instant};
 
 #[derive(Default)]
 pub struct ActivityInfo {
-    pid: u32,
+    pid: pid_t,
 }
 
 impl ActivityInfo {
@@ -24,7 +25,7 @@ impl ActivityInfo {
         let pid = dump.split(':').next().unwrap_or("0");
 
         Self {
-            pid: pid.parse::<u32>().unwrap_or_default(),
+            pid: pid.parse::<pid_t>().unwrap_or_default(),
         }
     }
 }
@@ -50,7 +51,7 @@ impl TopAppUtils {
         }
     }
 
-    pub fn get_pid(&mut self) -> &u32 {
+    pub fn get_pid(&mut self) -> &pid_t {
         &self.set_top_app_pid_name().pid
     }
 
