@@ -82,21 +82,25 @@ impl TidUtils {
                 Err(_) => return &self.tid_info,
             };
 
-            if let Some(tid) = file_name.to_str() {
-                if tid.starts_with('.') {
-                    continue;
-                }
-                let comm_path = format!("/proc/{}/task/{}/comm", pid, tid);
-                let comm = match read_file(Path::new(&comm_path)) {
-                    Ok(comm) => comm,
-                    Err(_) => return &self.tid_info,
-                };
+            let tid = match file_name.to_str() {
+                Some(tid) => tid,
+                None => continue,
+            };
 
-                let tid = tid.parse::<pid_t>();
-                match tid {
-                    Ok(tid) => task_map.insert(tid, comm),
-                    Err(_) => continue,
-                };
+            if tid.starts_with('.') {
+                continue;
+            }
+
+            let comm_path = format!("/proc/{}/comm", tid);
+            let comm = match read_file(Path::new(&comm_path)) {
+                Ok(comm) => comm,
+                Err(_) => return &self.tid_info,
+            };
+
+            let tid = tid.parse::<pid_t>();
+            match tid {
+                Ok(tid) => task_map.insert(tid, comm),
+                Err(_) => continue,
             };
         }
         self.tid_info.task_map = task_map;
@@ -116,15 +120,17 @@ impl TidUtils {
                 Ok(name) => name.file_name(),
                 Err(_) => return &self.tid_info,
             };
-            if let Some(tid) = file_name.to_str() {
-                if tid.starts_with('.') {
-                    continue;
-                }
-                let tid = tid.parse::<pid_t>();
-                match tid {
-                    Ok(tid) => tid_list.push(tid),
-                    Err(_) => continue,
-                }
+            let tid = match file_name.to_str() {
+                Some(tid) => tid,
+                None => continue,
+            };
+            if tid.starts_with('.') {
+                continue;
+            }
+            let tid = tid.parse::<pid_t>();
+            match tid {
+                Ok(tid) => tid_list.push(tid),
+                Err(_) => continue,
             }
         }
         self.tid_info.tid_list = tid_list;
