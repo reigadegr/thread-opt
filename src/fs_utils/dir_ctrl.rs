@@ -25,9 +25,9 @@ pub fn middle_dir_ctrl() -> Result<()> {
     let background_dir = get_background_dir()?;
 
     // 重新声明 top_dir 和 background_dir，提取文件名（basename）
-    let top_dir = basename(&top_dir);
+    let top_dir = basename(top_dir);
 
-    let background_dir = basename(&background_dir);
+    let background_dir = basename(background_dir);
 
     // 分割 top_dir 和 background_dir
     let top_dir_parts: Vec<&str> = top_dir.split('-').collect();
@@ -45,27 +45,21 @@ pub fn middle_dir_ctrl() -> Result<()> {
         MIDDLE_DIR.get_or_init(|| sub_dir.clone());
     } else {
         let background_dir = get_background_dir()?;
-        MIDDLE_DIR.get_or_init(|| background_dir);
+        MIDDLE_DIR.get_or_init(|| (&background_dir).to_string());
     }
     Ok(())
 }
 
-pub fn get_top_dir() -> Result<String> {
-    TOP_DIR.get().ok_or(anyhow!("TOP_DIR not found")).cloned()
+pub fn get_top_dir<'a>() -> Result<&'a String> {
+    TOP_DIR.get().ok_or(anyhow!("TOP_DIR not found"))
 }
 
-pub fn get_middle_dir() -> Result<String> {
-    MIDDLE_DIR
-        .get()
-        .ok_or(anyhow!("MIDDLE_DIR not found"))
-        .cloned()
+pub fn get_middle_dir<'a>() -> Result<&'a String> {
+    MIDDLE_DIR.get().ok_or(anyhow!("MIDDLE_DIR not found"))
 }
 
-pub fn get_background_dir() -> Result<String> {
-    BACKEND_DIR
-        .get()
-        .ok_or(anyhow!("BACKEND_DIR not found"))
-        .cloned()
+pub fn get_background_dir<'a>() -> Result<&'a String> {
+    BACKEND_DIR.get().ok_or(anyhow!("BACKEND_DIR not found"))
 }
 
 pub fn create_parent_dir() {
