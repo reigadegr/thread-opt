@@ -1,5 +1,6 @@
 mod activity;
 mod affinity_policy;
+mod affinity_utils;
 mod fs_utils;
 mod looper;
 mod misc;

@@ -1,9 +1,11 @@
 //From shadow3aaa fas-rs
 use anyhow::Result;
 use flexi_logger::{DeferredNow, LogSpecification, Logger, Record};
-use std::fs;
-use std::io::{self, prelude::*};
-use std::process;
+use std::{
+    fs,
+    io::{self, prelude::*},
+    process,
+};
 
 fn init_log() -> Result<()> {
     unsafe {
