@@ -45,7 +45,7 @@ pub fn middle_dir_ctrl() -> Result<()> {
         MIDDLE_DIR.get_or_init(|| sub_dir.clone());
     } else {
         let background_dir = get_background_dir()?;
-        MIDDLE_DIR.get_or_init(|| (&background_dir).to_string());
+        MIDDLE_DIR.get_or_init(|| background_dir.to_string());
     }
     Ok(())
 }
