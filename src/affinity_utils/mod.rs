@@ -1,5 +1,3 @@
-pub mod analysis;
-pub mod group_info;
 use libc::{cpu_set_t, pid_t, sched_setaffinity, CPU_SET, CPU_ZERO};
 use std::mem;
 

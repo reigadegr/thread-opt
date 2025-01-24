@@ -1,6 +1,6 @@
-use crate::affinity_utils::{
-    bind_thread_to_cpu,
-    group_info::{get_background_group, get_middle_group, get_top_group},
+use crate::{
+    affinity_utils::bind_thread_to_cpu,
+    cgroup::group_info::{get_background_group, get_middle_group, get_top_group},
 };
 use libc::pid_t;
 const TOP_THREADS: [&str; 3] = ["GameThread", "RHIThread", "UnityMain"];

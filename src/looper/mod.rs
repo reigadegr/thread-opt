@@ -4,8 +4,9 @@ use super::{
         get_top_tid::TopAppUtils,
     },
     affinity_policy::pkg_cfg::PACKAGE_CONFIGS,
-    affinity_utils::{bind_tid_list_to_cgroup, group_info::get_background_group},
+    affinity_utils::bind_tid_list_to_cgroup,
 };
+use crate::cgroup::group_info::get_background_group;
 use libc::pid_t;
 use log::info;
 use std::time::Duration;

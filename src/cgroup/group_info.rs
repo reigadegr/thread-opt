@@ -1,4 +1,4 @@
-use crate::affinity_utils::analysis::{BACKEND_GROUP, MIDDLE_GROUP, TOP_GROUP};
+use crate::cgroup::analysis::{BACKEND_GROUP, MIDDLE_GROUP, TOP_GROUP};
 use log::info;
 
 pub fn get_top_group() -> &'static [u8] {
