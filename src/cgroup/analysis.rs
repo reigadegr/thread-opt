@@ -33,10 +33,7 @@ pub fn analysis_cgroup_new() -> Result<()> {
                 .and_then(|f| f.to_str())
                 .is_some_and(|f| f.contains("related_cpus"))
             {
-                let content = match read_file(&path) {
-                    Ok(number) => number,
-                    Err(_) => "0".to_string(),
-                };
+                let content = read_file(&path).unwrap_or_else(|_| "0".to_string());
 
                 // 解析文件内容
                 let nums: Vec<&str> = content.split_whitespace().collect();

@@ -1,4 +1,5 @@
 #![deny(clippy::pedantic)]
+#![warn(clippy::nursery)]
 mod activity;
 mod affinity_policy;
 mod affinity_utils;
