@@ -4,7 +4,7 @@ use super::{
         get_top_tid::TopAppUtils,
     },
     affinity_policy::pkg_cfg::PACKAGE_CONFIGS,
-    fs_utils::{dir_ctrl::get_background_dir, node_writer::write_node},
+    affinity_utils::{analysis::get_background_group, bind_thread_to_cpu},
 };
 use libc::pid_t;
 use log::info;
@@ -38,7 +38,7 @@ impl Looper {
                 info!("退出游戏");
                 let tid_list = self.tid_utils.get_tid_list(&self.pid);
                 for tid in tid_list {
-                    write_node(get_background_dir(), tid);
+                    bind_thread_to_cpu(get_background_group(), tid);
                 }
                 return;
             }
