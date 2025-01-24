@@ -31,19 +31,19 @@ impl Looper {
     fn start_bind_common<F>(&mut self, start_task: F)
     where
         // 传入函数的签名
-        F: Fn(&pid_t, &str),
+        F: Fn(pid_t, &str),
     {
         loop {
             let pid = self.top_app_utils.get_pid();
             if pid != &self.pid {
                 info!("退出游戏");
-                let tid_list = self.tid_utils.get_tid_list(&self.pid);
+                let tid_list = self.tid_utils.get_tid_list(self.pid);
                 bind_tid_list_to_cgroup(get_background_group(), tid_list);
                 return;
             }
-            let task_map = self.tid_utils.get_task_map(pid);
+            let task_map = self.tid_utils.get_task_map(*pid);
             for (tid, comm) in task_map {
-                start_task(tid, comm);
+                start_task(*tid, comm);
             }
             std::thread::sleep(Duration::from_millis(2000));
         }
@@ -51,7 +51,7 @@ impl Looper {
 
     fn handle_package_list<F>(&mut self, package_list: &[&str], start_task: F) -> bool
     where
-        F: Fn(&pid_t, &str),
+        F: Fn(pid_t, &str),
     {
         for &package in package_list {
             if package == self.global_package {
@@ -73,7 +73,7 @@ impl Looper {
                     continue 'outer;
                 }
                 self.pid = *pid;
-                let name = get_process_name(pid).unwrap_or_default();
+                let name = get_process_name(*pid).unwrap_or_default();
                 self.global_package = name;
             }
             for (package_list, start_task) in PACKAGE_CONFIGS.iter() {

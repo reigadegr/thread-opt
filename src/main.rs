@@ -1,3 +1,4 @@
+#![deny(clippy::pedantic)]
 mod activity;
 mod affinity_policy;
 mod affinity_utils;
@@ -9,10 +10,9 @@ use crate::cgroup::{analysis::analysis_cgroup_new, group_info::print_group_core}
 use looper::Looper;
 use misc::logger::init_misc;
 
-fn main() -> anyhow::Result<()> {
+fn main() {
     init_misc();
     let _ = analysis_cgroup_new();
     print_group_core();
     Looper::new().enter_loop();
-    Ok(())
 }

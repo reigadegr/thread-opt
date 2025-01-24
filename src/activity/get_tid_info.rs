@@ -38,7 +38,7 @@ impl TidUtils {
         }
     }
 
-    pub fn get_task_map(&mut self, pid: &pid_t) -> &HashMap<pid_t, String> {
+    pub fn get_task_map(&mut self, pid: pid_t) -> &HashMap<pid_t, String> {
         if self.last_refresh_task_map.elapsed() > Duration::from_millis(5000) {
             self.last_refresh_task_map = Instant::now();
             return &self.set_task_map(pid).task_map;
@@ -54,7 +54,7 @@ impl TidUtils {
         &self.set_task_map(pid).task_map
     }
 
-    pub fn get_tid_list(&mut self, pid: &pid_t) -> &Vec<pid_t> {
+    pub fn get_tid_list(&mut self, pid: pid_t) -> &Vec<pid_t> {
         if self.last_refresh_tid_list.elapsed() > Duration::from_millis(5000) {
             self.last_refresh_tid_list = Instant::now();
             return &self.set_tid_list(pid).tid_list;
@@ -70,20 +70,8 @@ impl TidUtils {
         &self.set_tid_list(pid).tid_list
     }
 
-    fn read_task_dir(&self, pid: &pid_t) -> Result<Vec<pid_t>> {
-        let task_dir = format!("/proc/{pid}/task");
-        let tid_list = fs::read_dir(task_dir)?
-            .filter_map(|entry| {
-                entry
-                    .ok()
-                    .and_then(|e| e.file_name().to_string_lossy().parse::<pid_t>().ok())
-            })
-            .collect();
-        Ok(tid_list)
-    }
-
-    pub fn set_task_map(&mut self, pid: &pid_t) -> &TidInfo {
-        let tid_list = match self.read_task_dir(pid) {
+    pub fn set_task_map(&mut self, pid: pid_t) -> &TidInfo {
+        let tid_list = match read_task_dir(pid) {
             Ok(list) => list,
             Err(e) => {
                 info!("Failed to read task directory: {}", e);
@@ -92,7 +80,7 @@ impl TidUtils {
         };
 
         let mut task_map: HashMap<pid_t, String> = HashMap::new();
-        for tid in tid_list.iter() {
+        for tid in &tid_list {
             let comm_path = format!("/proc/{tid}/comm");
             let comm = match read_file(Path::new(&comm_path)) {
                 Ok(comm) => comm,
@@ -107,8 +95,8 @@ impl TidUtils {
         &self.tid_info
     }
 
-    pub fn set_tid_list(&mut self, pid: &pid_t) -> &TidInfo {
-        let tid_list = match self.read_task_dir(pid) {
+    pub fn set_tid_list(&mut self, pid: pid_t) -> &TidInfo {
+        let tid_list = match read_task_dir(pid) {
             Ok(list) => list,
             Err(e) => {
                 info!("Failed to read task directory: {}", e);
@@ -120,7 +108,19 @@ impl TidUtils {
     }
 }
 
-pub fn get_process_name(pid: &pid_t) -> Result<String> {
+fn read_task_dir(pid: pid_t) -> Result<Vec<pid_t>> {
+    let task_dir = format!("/proc/{pid}/task");
+    let tid_list = fs::read_dir(task_dir)?
+        .filter_map(|entry| {
+            entry
+                .ok()
+                .and_then(|e| e.file_name().to_string_lossy().parse::<pid_t>().ok())
+        })
+        .collect();
+    Ok(tid_list)
+}
+
+pub fn get_process_name(pid: pid_t) -> Result<String> {
     let cmdline = Path::new("/proc").join(pid.to_string()).join("cmdline");
     let cmdline = fs::read_to_string(cmdline)?;
     let cmdline = cmdline.split(':').next().unwrap_or_default();

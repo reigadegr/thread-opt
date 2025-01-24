@@ -14,16 +14,16 @@ const NORMAL_PACKAGE: [&str; 8] = [
 
 const PUBG_PACKAGE: [&str; 2] = ["com.tencent.tmgp.pubgmhd", "com.netease.yyslscn"];
 
-type ConfigTuple<'a> = (&'a [&'a str], fn(&pid_t, &str));
+type ConfigTuple<'a> = (&'a [&'a str], fn(pid_t, &str));
 pub static PACKAGE_CONFIGS: LazyLock<[ConfigTuple; 2]> = LazyLock::new(|| {
     [
         (
             &NORMAL_PACKAGE[..],
-            policy_normal::start_task as fn(&pid_t, &str),
+            policy_normal::start_task as fn(pid_t, &str),
         ),
         (
             &PUBG_PACKAGE[..],
-            policy_pubg::start_task as fn(&pid_t, &str),
+            policy_pubg::start_task as fn(pid_t, &str),
         ),
     ]
 });

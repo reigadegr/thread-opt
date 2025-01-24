@@ -43,7 +43,7 @@ fn get_cmd_type(thread_name: &str) -> CmdType {
     CmdType::Middle
 }
 
-fn execute_task(cmd_type: CmdType, tid: &pid_t) {
+fn execute_task(cmd_type: &CmdType, tid: pid_t) {
     match cmd_type {
         CmdType::Top => bind_thread_to_cpu(get_top_group(), tid),
         CmdType::Middle => bind_thread_to_cpu(get_middle_group(), tid),
@@ -51,7 +51,7 @@ fn execute_task(cmd_type: CmdType, tid: &pid_t) {
     }
 }
 
-pub fn start_task(tid: &pid_t, thread_name: &str) {
+pub fn start_task(tid: pid_t, thread_name: &str) {
     let thread_type = get_cmd_type(thread_name);
-    execute_task(thread_type, tid);
+    execute_task(&thread_type, tid);
 }

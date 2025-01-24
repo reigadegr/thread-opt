@@ -15,7 +15,7 @@ pub fn analysis_cgroup_new() -> Result<()> {
     let entries = fs::read_dir(cgroup).context("Failed to read directory")?;
     for entry in entries {
         let entry =
-            entry.with_context(|| format!("Failed to read entry in directory: {}", cgroup))?;
+            entry.with_context(|| format!("Failed to read entry in directory: {cgroup}"))?;
         let path = entry.path();
         if !path.is_dir() {
             continue;
@@ -24,7 +24,7 @@ pub fn analysis_cgroup_new() -> Result<()> {
 
         for file in core_dir {
             let file =
-                file.with_context(|| format!("Failed to read entry in directory: {}", cgroup))?;
+                file.with_context(|| format!("Failed to read entry in directory: {cgroup}"))?;
             let path = file.path();
 
             // 检查文件名是否包含 "related_cpus"
