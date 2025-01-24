@@ -4,38 +4,11 @@ use log::info;
 use once_cell::sync::OnceCell;
 use std::fs;
 
-static TOP_GROUP: OnceCell<Box<[u8]>> = OnceCell::new();
+pub static TOP_GROUP: OnceCell<Box<[u8]>> = OnceCell::new();
 
-static MIDDLE_GROUP: OnceCell<Box<[u8]>> = OnceCell::new();
+pub static MIDDLE_GROUP: OnceCell<Box<[u8]>> = OnceCell::new();
 
-static BACKEND_GROUP: OnceCell<Box<[u8]>> = OnceCell::new();
-
-pub fn get_top_group<'a>() -> &'a [u8] {
-    let rs = match TOP_GROUP.get() {
-        Some(rs) => rs,
-        None => return &[7],
-    };
-    let rs: &[u8] = Box::as_ref(rs);
-    rs
-}
-
-pub fn get_middle_group<'a>() -> &'a [u8] {
-    let rs = match MIDDLE_GROUP.get() {
-        Some(rs) => rs,
-        None => return &[4, 5, 6],
-    };
-    let rs: &[u8] = Box::as_ref(rs);
-    rs
-}
-
-pub fn get_background_group<'a>() -> &'a [u8] {
-    let rs = match BACKEND_GROUP.get() {
-        Some(rs) => rs,
-        None => return &[0, 1, 2, 3],
-    };
-    let rs: &[u8] = Box::as_ref(rs);
-    rs
-}
+pub static BACKEND_GROUP: OnceCell<Box<[u8]>> = OnceCell::new();
 
 pub fn analysis_cgroup_new() -> Result<()> {
     let cgroup = "/sys/devices/system/cpu/cpufreq";
@@ -88,27 +61,6 @@ pub fn analysis_cgroup_new() -> Result<()> {
     } else {
         // 否则，使用处理后的 all_core 初始化 MIDDLE_GROUP
         MIDDLE_GROUP.set(all_core.into_boxed_slice()).unwrap();
-    }
-
-    // 打印 TOP_GROUP 的值
-    if let Some(top_values) = TOP_GROUP.get() {
-        info!("TOP_GROUP: {:?}", top_values);
-    } else {
-        info!("TOP_GROUP is not initialized.");
-    }
-
-    // 打印 MIDDLE_GROUP 的值
-    if let Some(middle_values) = MIDDLE_GROUP.get() {
-        info!("MIDDLE_GROUP: {:?}", middle_values);
-    } else {
-        info!("MIDDLE_GROUP is not initialized.");
-    }
-
-    // 打印 BACKEND_GROUP 的值
-    if let Some(backend_values) = BACKEND_GROUP.get() {
-        info!("BACKEND_GROUP: {:?}", backend_values);
-    } else {
-        info!("BACKEND_GROUP is not initialized.");
     }
 
     Ok(())

@@ -4,7 +4,7 @@ use super::{
         get_top_tid::TopAppUtils,
     },
     affinity_policy::pkg_cfg::PACKAGE_CONFIGS,
-    affinity_utils::{analysis::get_background_group, bind_thread_to_cpu},
+    affinity_utils::{bind_thread_to_cpu, group_info::get_background_group},
 };
 use libc::pid_t;
 use log::info;

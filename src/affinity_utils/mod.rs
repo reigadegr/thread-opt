@@ -1,4 +1,5 @@
 pub mod analysis;
+pub mod group_info;
 use libc::{cpu_set_t, pid_t, sched_setaffinity, CPU_SET, CPU_ZERO};
 pub fn bind_thread_to_cpu(cpu_indices: &[u8], tid: &pid_t) {
     unsafe {
