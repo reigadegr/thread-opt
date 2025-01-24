@@ -4,11 +4,10 @@ use crate::{
 };
 use libc::pid_t;
 
-const TOP_THREADS: [&str; 1] = ["UnityMain"];
-const MIDDLE_THREADS: [&str; 1] = ["UnityGfxDeviceW"];
+const TOP_THREADS: [&str; 1] = ["GameThread"];
+const MIDDLE_THREADS: [&str; 1] = ["RHIThread"];
 const BACKEND_THREADS: [&str; 0] = [];
-const MIDDLE_REGEX_THREADS: [&str; 3] = ["Thread-", "Job.Worker", "RenderThread"];
-const TOP_REGEX_THREADS: [&str; 1] = ["BuildPa-ller"];
+const MIDDLE_REGEX_THREADS: [&str; 1] = ["RenderThread"];
 
 enum CmdType {
     Top,
@@ -35,12 +34,6 @@ fn get_cmd_type(thread_name: &str) -> CmdType {
             return CmdType::Middle;
         }
     }
-
-    for prev_name in TOP_REGEX_THREADS {
-        if thread_name.starts_with(prev_name) {
-            return CmdType::Top;
-        }
-    }
     CmdType::Middle
 }
 
@@ -48,14 +41,16 @@ fn execute_task(cmd_type: &CmdType, tid: pid_t, thread_name: &str) {
     let top_group = get_top_group();
     match cmd_type {
         CmdType::Top => {
-            if thread_name == "UnityMain" && top_group == [6, 7] {
+            if thread_name == "GameThread" && top_group == [6, 7] {
                 bind_thread_to_cpu(&[7], tid);
                 return;
             }
             bind_thread_to_cpu(get_top_group(), tid);
         }
         CmdType::Middle => {
-            if thread_name == "UnityGfxDeviceW" && top_group == [6, 7] {
+            if (thread_name == "RHIThread" || thread_name.starts_with("RenderThread"))
+                && top_group == [6, 7]
+            {
                 bind_thread_to_cpu(&[6], tid);
                 return;
             }
