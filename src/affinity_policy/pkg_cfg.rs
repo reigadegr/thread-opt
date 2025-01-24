@@ -1,4 +1,4 @@
-use super::{policy_normal, policy_pubg};
+use super::{policy_pubg, policy_unity};
 use libc::pid_t;
 use std::sync::LazyLock;
 const NORMAL_PACKAGE: [&str; 8] = [
@@ -19,7 +19,7 @@ pub static PACKAGE_CONFIGS: LazyLock<[ConfigTuple; 2]> = LazyLock::new(|| {
     [
         (
             &NORMAL_PACKAGE[..],
-            policy_normal::start_task as fn(pid_t, &str),
+            policy_unity::start_task as fn(pid_t, &str),
         ),
         (
             &PUBG_PACKAGE[..],
