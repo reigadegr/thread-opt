@@ -1,7 +1,7 @@
 use crate::fs_utils::node_reader::read_file;
 use anyhow::Result;
 use libc::pid_t;
-use log::info;
+// use log::info;
 use std::{
     collections::HashMap,
     fs,
@@ -70,39 +70,24 @@ impl TidUtils {
 
     pub fn set_task_map(&mut self, pid: &pid_t) -> &TidInfo {
         let task_dir = format!("/proc/{pid}/task");
-        let mut task_map = HashMap::new();
-
-        let dp = match fs::read_dir(&task_dir) {
-            Ok(dir) => dir,
+        let tid_list: Vec<_> = match fs::read_dir(task_dir) {
+            Ok(entries) => entries
+                .filter_map(|entry| {
+                    entry
+                        .ok()
+                        .and_then(|e| e.file_name().to_string_lossy().parse::<i32>().ok())
+                })
+                .collect(),
             Err(_) => return &self.tid_info,
         };
-
-        for entry in dp {
-            let file_name = match entry {
-                Ok(name) => name.file_name(),
-                Err(_) => return &self.tid_info,
-            };
-
-            let tid = match file_name.to_str() {
-                Some(tid) => tid,
-                None => continue,
-            };
-
-            if tid.starts_with('.') {
-                continue;
-            }
-
+        let mut task_map: HashMap<pid_t, String> = HashMap::new();
+        for tid in tid_list.iter() {
             let comm_path = format!("/proc/{tid}/comm");
             let comm = match read_file(Path::new(&comm_path)) {
                 Ok(comm) => comm,
                 Err(_) => return &self.tid_info,
             };
-
-            let tid = tid.parse::<pid_t>();
-            match tid {
-                Ok(tid) => task_map.insert(tid, comm),
-                Err(_) => continue,
-            };
+            task_map.insert(*tid, comm);
         }
         self.tid_info.task_map = task_map;
         &self.tid_info
@@ -110,7 +95,6 @@ impl TidUtils {
 
     pub fn set_tid_list(&mut self, pid: &pid_t) -> &TidInfo {
         let task_dir = format!("/proc/{pid}/task");
-
         let tid_list = match fs::read_dir(task_dir) {
             Ok(entries) => entries
                 .filter_map(|entry| {
