@@ -25,20 +25,22 @@ impl TidInfo {
 
 pub struct TidUtils {
     tid_info: TidInfo,
-    last_refresh: Instant,
+    last_refresh_task_map: Instant,
+    last_refresh_tid_list: Instant,
 }
 
 impl TidUtils {
     pub fn new() -> Self {
         Self {
             tid_info: TidInfo::new(),
-            last_refresh: Instant::now(),
+            last_refresh_task_map: Instant::now(),
+            last_refresh_tid_list: Instant::now(),
         }
     }
 
     pub fn get_task_map(&mut self, pid: &pid_t) -> &HashMap<pid_t, String> {
-        if self.last_refresh.elapsed() > Duration::from_millis(5000) {
-            self.last_refresh = Instant::now();
+        if self.last_refresh_task_map.elapsed() > Duration::from_millis(5000) {
+            self.last_refresh_task_map = Instant::now();
             return &self.set_task_map(pid).task_map;
         }
 
@@ -53,8 +55,8 @@ impl TidUtils {
     }
 
     pub fn get_tid_list(&mut self, pid: &pid_t) -> &Vec<pid_t> {
-        if self.last_refresh.elapsed() > Duration::from_millis(5000) {
-            self.last_refresh = Instant::now();
+        if self.last_refresh_tid_list.elapsed() > Duration::from_millis(5000) {
+            self.last_refresh_tid_list = Instant::now();
             return &self.set_tid_list(pid).tid_list;
         }
 
