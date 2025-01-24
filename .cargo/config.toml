@@ -1,6 +1,6 @@
 [target.aarch64-linux-android]
 linker = "clang"
-rustflags = ["-C", "link-arg=-fuse-ld=/data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/archlinux/usr/local/bin/mold"]
+rustflags = ["-C", "link-arg=/data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/archlinux/usr/local/bin/mold"]
 
 [source.crates-io]
 registry = "https://github.com/rust-lang/crates.io-index"
