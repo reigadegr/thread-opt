@@ -1,31 +1,16 @@
 use crate::affinity_utils::analysis::{BACKEND_GROUP, MIDDLE_GROUP, TOP_GROUP};
 use log::info;
 
-pub fn get_top_group<'a>() -> &'a [u8] {
-    let rs = match TOP_GROUP.get() {
-        Some(rs) => rs,
-        None => return &[7],
-    };
-    let rs: &[u8] = Box::as_ref(rs);
-    rs
+pub fn get_top_group() -> &'static [u8] {
+    TOP_GROUP.get().map_or(&[7], Box::as_ref)
 }
 
-pub fn get_middle_group<'a>() -> &'a [u8] {
-    let rs = match MIDDLE_GROUP.get() {
-        Some(rs) => rs,
-        None => return &[4, 5, 6],
-    };
-    let rs: &[u8] = Box::as_ref(rs);
-    rs
+pub fn get_middle_group() -> &'static [u8] {
+    MIDDLE_GROUP.get().map_or(&[4, 5, 6], Box::as_ref)
 }
 
-pub fn get_background_group<'a>() -> &'a [u8] {
-    let rs = match BACKEND_GROUP.get() {
-        Some(rs) => rs,
-        None => return &[0, 1, 2, 3],
-    };
-    let rs: &[u8] = Box::as_ref(rs);
-    rs
+pub fn get_background_group() -> &'static [u8] {
+    BACKEND_GROUP.get().map_or(&[0, 1, 2, 3], Box::as_ref)
 }
 
 pub fn print_group_core() {
