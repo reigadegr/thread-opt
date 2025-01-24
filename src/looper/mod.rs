@@ -4,7 +4,7 @@ use super::{
         get_top_tid::TopAppUtils,
     },
     affinity_policy::pkg_cfg::PACKAGE_CONFIGS,
-    affinity_utils::{bind_thread_to_cpu, group_info::get_background_group},
+    affinity_utils::{bind_tid_list_to_cgroup, group_info::get_background_group},
 };
 use libc::pid_t;
 use log::info;
@@ -37,9 +37,7 @@ impl Looper {
             if pid != &self.pid {
                 info!("退出游戏");
                 let tid_list = self.tid_utils.get_tid_list(&self.pid);
-                for tid in tid_list {
-                    bind_thread_to_cpu(get_background_group(), tid);
-                }
+                bind_tid_list_to_cgroup(get_background_group(), tid_list);
                 return;
             }
             let task_map = self.tid_utils.get_task_map(pid);
