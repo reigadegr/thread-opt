@@ -4,4 +4,4 @@
     cat $i
     echo "\n--------------\n"
     done
-} > target/t.txt
+} > target/thread_opt_all_code.txt

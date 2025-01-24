@@ -1,7 +1,7 @@
 use crate::fs_utils::node_reader::read_file;
 use anyhow::Result;
 use libc::pid_t;
-use log::error;
+use log::info;
 use std::{
     collections::HashMap,
     fs,
@@ -86,7 +86,7 @@ impl TidUtils {
         let tid_list = match self.read_task_dir(pid) {
             Ok(list) => list,
             Err(e) => {
-                error!("Failed to read task directory: {}", e);
+                info!("Failed to read task directory: {}", e);
                 return &self.tid_info;
             }
         };
@@ -97,7 +97,7 @@ impl TidUtils {
             let comm = match read_file(Path::new(&comm_path)) {
                 Ok(comm) => comm,
                 Err(e) => {
-                    error!("Failed to read comm file for tid {}: {}", tid, e);
+                    info!("Failed to read comm file for tid {}: {}", tid, e);
                     return &self.tid_info;
                 }
             };
@@ -111,7 +111,7 @@ impl TidUtils {
         let tid_list = match self.read_task_dir(pid) {
             Ok(list) => list,
             Err(e) => {
-                error!("Failed to read task directory: {}", e);
+                info!("Failed to read task directory: {}", e);
                 return &self.tid_info;
             }
         };
