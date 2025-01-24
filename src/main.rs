@@ -5,7 +5,6 @@ mod cgroup;
 mod fs_utils;
 mod looper;
 mod misc;
-// use crate::cgroup::group_info::print_group_core;use crate::cgroup::analysis::analysis_cgroup_new;
 use crate::cgroup::{analysis::analysis_cgroup_new, group_info::print_group_core};
 use looper::Looper;
 use misc::logger::init_misc;
