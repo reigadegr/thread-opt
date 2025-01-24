@@ -1,13 +1,14 @@
 use crate::fs_utils::node_reader::read_file;
 use anyhow::Result;
 use libc::pid_t;
-// use log::info;
+use log::error;
 use std::{
     collections::HashMap,
     fs,
     path::Path,
     time::{Duration, Instant},
 };
+
 #[derive(Default)]
 pub struct TidInfo {
     task_map_name: String,
@@ -41,14 +42,13 @@ impl TidUtils {
             return &self.set_task_map(pid).task_map;
         }
 
-        let name = match get_process_name(pid) {
-            Ok(name) => name,
-            Err(_) => return &self.set_task_map(pid).task_map,
-        };
-        if self.tid_info.task_map_name == name {
-            return &self.tid_info.task_map;
+        if let Ok(name) = get_process_name(pid) {
+            if self.tid_info.task_map_name == name {
+                return &self.tid_info.task_map;
+            }
+            self.tid_info.task_map_name = name;
         }
-        self.tid_info.task_map_name = name;
+
         &self.set_task_map(pid).task_map
     }
 
@@ -57,35 +57,47 @@ impl TidUtils {
             self.last_refresh = Instant::now();
             return &self.set_tid_list(pid).tid_list;
         }
-        let name = match get_process_name(pid) {
-            Ok(name) => name,
-            Err(_) => return &self.set_tid_list(pid).tid_list,
-        };
-        if self.tid_info.tid_list_name == name {
-            return &self.tid_info.tid_list;
+
+        if let Ok(name) = get_process_name(pid) {
+            if self.tid_info.tid_list_name == name {
+                return &self.tid_info.tid_list;
+            }
+            self.tid_info.tid_list_name = name;
         }
-        self.tid_info.tid_list_name = name;
+
         &self.set_tid_list(pid).tid_list
     }
 
-    pub fn set_task_map(&mut self, pid: &pid_t) -> &TidInfo {
+    fn read_task_dir(&self, pid: &pid_t) -> Result<Vec<pid_t>> {
         let task_dir = format!("/proc/{pid}/task");
-        let tid_list: Vec<_> = match fs::read_dir(task_dir) {
-            Ok(entries) => entries
-                .filter_map(|entry| {
-                    entry
-                        .ok()
-                        .and_then(|e| e.file_name().to_string_lossy().parse::<i32>().ok())
-                })
-                .collect(),
-            Err(_) => return &self.tid_info,
+        let tid_list = fs::read_dir(task_dir)?
+            .filter_map(|entry| {
+                entry
+                    .ok()
+                    .and_then(|e| e.file_name().to_string_lossy().parse::<pid_t>().ok())
+            })
+            .collect();
+        Ok(tid_list)
+    }
+
+    pub fn set_task_map(&mut self, pid: &pid_t) -> &TidInfo {
+        let tid_list = match self.read_task_dir(pid) {
+            Ok(list) => list,
+            Err(e) => {
+                error!("Failed to read task directory: {}", e);
+                return &self.tid_info;
+            }
         };
+
         let mut task_map: HashMap<pid_t, String> = HashMap::new();
         for tid in tid_list.iter() {
             let comm_path = format!("/proc/{tid}/comm");
             let comm = match read_file(Path::new(&comm_path)) {
                 Ok(comm) => comm,
-                Err(_) => return &self.tid_info,
+                Err(e) => {
+                    error!("Failed to read comm file for tid {}: {}", tid, e);
+                    return &self.tid_info;
+                }
             };
             task_map.insert(*tid, comm);
         }
@@ -94,16 +106,10 @@ impl TidUtils {
     }
 
     pub fn set_tid_list(&mut self, pid: &pid_t) -> &TidInfo {
-        let task_dir = format!("/proc/{pid}/task");
-        let tid_list = match fs::read_dir(task_dir) {
-            Ok(entries) => entries
-                .filter_map(|entry| {
-                    entry
-                        .ok()
-                        .and_then(|e| e.file_name().to_string_lossy().parse::<i32>().ok())
-                })
-                .collect(),
-            Err(_) => {
+        let tid_list = match self.read_task_dir(pid) {
+            Ok(list) => list,
+            Err(e) => {
+                error!("Failed to read task directory: {}", e);
                 return &self.tid_info;
             }
         };
