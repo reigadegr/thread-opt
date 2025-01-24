@@ -6,12 +6,10 @@ use libc::pid_t;
 const TOP_THREADS: [&str; 3] = ["GameThread", "RHIThread", "UnityMain"];
 const MIDDLE_THREADS: [&str; 1] = ["UnityGfxDeviceW"];
 const BACKEND_THREADS: [&str; 0] = [];
-const ALL_THREADS: [&str; 0] = [];
 const MIDDLE_REGEX_THREADS: [&str; 3] = ["Thread-", "Job.Worker", "RenderThread"];
 const TOP_REGEX_THREADS: [&str; 1] = ["BuildPa-ller"];
 
 enum CmdType {
-    All,
     Top,
     Middle,
     Background,
@@ -28,10 +26,6 @@ fn get_cmd_type(thread_name: &str) -> CmdType {
 
     if BACKEND_THREADS.contains(&thread_name) {
         return CmdType::Background;
-    }
-
-    if ALL_THREADS.contains(&thread_name) {
-        return CmdType::All;
     }
 
     // 使用 starts_with 方法匹配线程
@@ -54,7 +48,6 @@ fn execute_task(cmd_type: CmdType, tid: &pid_t) {
         CmdType::Top => bind_thread_to_cpu(get_top_group(), tid),
         CmdType::Middle => bind_thread_to_cpu(get_middle_group(), tid),
         CmdType::Background => bind_thread_to_cpu(get_background_group(), tid),
-        CmdType::All => bind_thread_to_cpu(&[0, 1, 2, 3, 4, 5, 6, 7], tid),
     }
 }
 
