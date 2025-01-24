@@ -1,16 +1,14 @@
-// use super::activity::get_tid_info::read_file;
 use anyhow::Context;
-use libc::pid_t;
+// use libc::pid_t;
 use log::info;
 use std::fs;
 pub mod dir_ctrl;
-use super::{
-    activity::get_tid_info::read_file,
-    fs_utils::dir_ctrl::{
-        create_parent_dir, create_sub_work_space, get_background_dir, get_middle_dir, get_top_dir,
-        middle_dir_ctrl,
-    },
+pub mod node_reader;
+use super::fs_utils::dir_ctrl::{
+    create_parent_dir, create_sub_work_space, get_background_dir, get_middle_dir, get_top_dir,
+    middle_dir_ctrl,
 };
+use crate::fs_utils::node_reader::read_file;
 pub mod node_writer;
 
 pub fn init_working_directory() -> anyhow::Result<()> {
@@ -31,8 +29,11 @@ pub fn analysis_cgroup() -> anyhow::Result<()> {
         let entry =
             entry.with_context(|| format!("Failed to read entry in directory: {}", cgroup))?;
         let path = entry.path();
-
+        if !path.is_dir() {
+            continue;
+        }
         let core_dir = fs::read_dir(path).context("Failed to read directory")?;
+
         for file in core_dir {
             let file =
                 file.with_context(|| format!("Failed to read entry in directory: {}", cgroup))?;
@@ -52,10 +53,10 @@ pub fn analysis_cgroup() -> anyhow::Result<()> {
                 // 解析文件内容，提取第一个和最后一个数字
                 let nums: Vec<&str> = content.split_whitespace().collect();
                 if let (Some(first), Some(last)) = (nums.first(), nums.last()) {
-                    let first_num = first.parse::<pid_t>().with_context(|| {
+                    let first_num = first.parse::<u8>().with_context(|| {
                         format!("Failed to parse first number in file: {}", path.display())
                     })?;
-                    let last_num = last.parse::<pid_t>().with_context(|| {
+                    let last_num = last.parse::<u8>().with_context(|| {
                         format!("Failed to parse last number in file: {}", path.display())
                     })?;
 

@@ -1,3 +1,4 @@
+use crate::fs_utils::node_reader::read_file;
 use anyhow::Result;
 use libc::pid_t;
 use std::{
@@ -136,11 +137,6 @@ impl TidUtils {
         self.tid_info.tid_list = tid_list;
         &self.tid_info
     }
-}
-
-pub fn read_file(file: &Path) -> Result<String> {
-    let s = fs::read_to_string(file)?;
-    Ok(s.trim().to_string())
 }
 
 pub fn get_process_name(pid: &pid_t) -> Result<String> {

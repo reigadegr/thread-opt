@@ -1,5 +1,6 @@
+pub mod analysis;
 use libc::{cpu_set_t, pid_t, sched_setaffinity, CPU_SET, CPU_ZERO};
-pub fn bind_thread_to_cpu(tid: &pid_t, cpu_indices: &[u8]) {
+pub fn bind_thread_to_cpu(cpu_indices: &[u8], tid: &pid_t) {
     unsafe {
         let mut cpu_set = std::mem::zeroed::<cpu_set_t>();
         CPU_ZERO(&mut cpu_set);

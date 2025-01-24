@@ -51,7 +51,7 @@ pub fn middle_dir_ctrl() -> Result<()> {
 }
 
 pub fn get_top_dir<'a>() -> Result<&'a String> {
-    TOP_DIR.get().ok_or(anyhow!("TOP_DIR not found"))
+    TOP_DIR.get().ok_or(anyhow!("MIDDLE_DIR not found"))
 }
 
 pub fn get_middle_dir<'a>() -> Result<&'a String> {

@@ -1,7 +1,9 @@
-use crate::fs_utils::{
-    dir_ctrl::{get_background_dir, get_middle_dir, get_top_dir, WORK_DIR},
-    node_writer::{write_node, write_node_origin},
-};
+use crate::fs_utils::{dir_ctrl::WORK_DIR, node_writer::write_node_origin};
+
+use crate::affinity_utils::analysis::get_background_group;
+use crate::affinity_utils::analysis::get_middle_group;
+use crate::affinity_utils::analysis::get_top_group;
+use crate::affinity_utils::bind_thread_to_cpu;
 use libc::pid_t;
 const TOP_THREADS: [&str; 3] = ["GameThread", "RHIThread", "UnityMain"];
 const MIDDLE_THREADS: [&str; 1] = ["UnityGfxDeviceW"];
@@ -51,9 +53,13 @@ fn get_cmd_type(thread_name: &str) -> CmdType {
 
 fn execute_task(cmd_type: CmdType, tid: &pid_t) {
     match cmd_type {
-        CmdType::Top => write_node(get_top_dir(), tid),
-        CmdType::Middle => write_node(get_middle_dir(), tid),
-        CmdType::Background => write_node(get_background_dir(), tid),
+        // CmdType::Top => write_node(get_top_dir(), tid),
+        // CmdType::Middle => write_node(get_middle_dir(), tid),
+        // CmdType::Background => write_node(get_background_dir(), tid),
+        // CmdType::All => write_node_origin(WORK_DIR, tid),
+        CmdType::Top => bind_thread_to_cpu(get_top_group(), tid),
+        CmdType::Middle => bind_thread_to_cpu(get_middle_group(), tid),
+        CmdType::Background => bind_thread_to_cpu(get_background_group(), tid),
         CmdType::All => write_node_origin(WORK_DIR, tid),
     }
 }
