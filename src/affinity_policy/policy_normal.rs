@@ -3,6 +3,7 @@ use crate::{
     cgroup::group_info::{get_background_group, get_middle_group, get_top_group},
 };
 use libc::pid_t;
+
 const TOP_THREADS: [&str; 3] = ["GameThread", "RHIThread", "UnityMain"];
 const MIDDLE_THREADS: [&str; 1] = ["UnityGfxDeviceW"];
 const BACKEND_THREADS: [&str; 0] = [];
@@ -43,15 +44,28 @@ fn get_cmd_type(thread_name: &str) -> CmdType {
     CmdType::Middle
 }
 
-fn execute_task(cmd_type: &CmdType, tid: pid_t) {
+fn execute_task(cmd_type: &CmdType, tid: pid_t, thread_name: &str) {
+    let top_group = get_top_group();
     match cmd_type {
-        CmdType::Top => bind_thread_to_cpu(get_top_group(), tid),
-        CmdType::Middle => bind_thread_to_cpu(get_middle_group(), tid),
+        CmdType::Top => {
+            if top_group == [6, 7] && thread_name == "UnityMain" {
+                bind_thread_to_cpu(&[7], tid);
+                return;
+            }
+            bind_thread_to_cpu(get_middle_group(), tid);
+        }
+        CmdType::Middle => {
+            if thread_name == "UnityGfxDeviceW" && top_group == [6, 7] {
+                bind_thread_to_cpu(&[6], tid);
+            } else {
+                bind_thread_to_cpu(get_middle_group(), tid);
+            }
+        }
         CmdType::Background => bind_thread_to_cpu(get_background_group(), tid),
     }
 }
 
 pub fn start_task(tid: pid_t, thread_name: &str) {
     let thread_type = get_cmd_type(thread_name);
-    execute_task(&thread_type, tid);
+    execute_task(&thread_type, tid, thread_name);
 }
