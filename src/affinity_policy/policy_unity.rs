@@ -52,7 +52,7 @@ fn execute_task(cmd_type: &CmdType, tid: pid_t, thread_name: &str) {
                 bind_thread_to_cpu(&[7], tid);
                 return;
             }
-            bind_thread_to_cpu(get_middle_group(), tid);
+            bind_thread_to_cpu(get_top_group(), tid);
         }
         CmdType::Middle => {
             if thread_name == "UnityGfxDeviceW" && top_group == [6, 7] {
