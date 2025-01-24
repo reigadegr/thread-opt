@@ -5,8 +5,8 @@ use super::{
     },
     affinity_policy::pkg_cfg::PACKAGE_CONFIGS,
     affinity_utils::bind_tid_list_to_cgroup,
+    cgroup::group_info::get_background_group,
 };
-use crate::cgroup::group_info::get_background_group;
 use libc::pid_t;
 use log::info;
 use std::time::Duration;
