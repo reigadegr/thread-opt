@@ -20,7 +20,8 @@ impl ActivityInfo {
             .filter(|l| l.contains(": fg"))
             .filter_map(|l| l.split_whitespace().nth(4))
             .filter_map(|l| l.split('/').next())
-            .collect::<String>();
+            .collect::<Vec<_>>()
+            .join("");
 
         let pid = dump.split(':').next().unwrap_or("0");
 
