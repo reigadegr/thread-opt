@@ -7,9 +7,10 @@ use super::{
     cgroup::group_info::get_background_group,
     policy::pkg_cfg::PACKAGE_CONFIGS,
 };
+use ahash::AHashMap;
 use libc::pid_t;
 use log::info;
-use std::{collections::HashMap, time::Duration};
+use std::time::Duration;
 
 pub struct Looper {
     pid: pid_t,
@@ -31,7 +32,7 @@ impl Looper {
     fn start_bind_common<F>(&mut self, start_task: F)
     where
         // 传入函数的签名
-        F: Fn(&HashMap<pid_t, String>),
+        F: Fn(&AHashMap<pid_t, String>),
     {
         loop {
             let pid = self.top_app_utils.get_pid();
@@ -49,7 +50,7 @@ impl Looper {
 
     fn handle_package_list<F>(&mut self, package_list: &[&str], start_task: F) -> bool
     where
-        F: Fn(&HashMap<pid_t, String>),
+        F: Fn(&AHashMap<pid_t, String>),
     {
         for &package in package_list {
             if package == self.global_package {

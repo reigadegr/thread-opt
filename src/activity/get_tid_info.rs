@@ -1,9 +1,9 @@
 use crate::fs_utils::node_reader::read_file;
+use ahash::AHashMap;
 use anyhow::Result;
 use libc::pid_t;
 use log::info;
 use std::{
-    collections::HashMap,
     fs,
     path::Path,
     time::{Duration, Instant},
@@ -13,7 +13,7 @@ use std::{
 pub struct TidInfo {
     task_map_name: String,
     tid_list_name: String,
-    task_map: HashMap<pid_t, String>,
+    task_map: AHashMap<pid_t, String>,
     tid_list: Vec<pid_t>,
 }
 
@@ -38,7 +38,7 @@ impl TidUtils {
         }
     }
 
-    pub fn get_task_map(&mut self, pid: pid_t) -> &HashMap<pid_t, String> {
+    pub fn get_task_map(&mut self, pid: pid_t) -> &AHashMap<pid_t, String> {
         if self.last_refresh_task_map.elapsed() > Duration::from_millis(5000) {
             self.last_refresh_task_map = Instant::now();
             return &self.set_task_map(pid).task_map;
@@ -79,7 +79,7 @@ impl TidUtils {
             }
         };
 
-        let mut task_map: HashMap<pid_t, String> = HashMap::new();
+        let mut task_map: AHashMap<pid_t, String> = AHashMap::new();
         for tid in &tid_list {
             let comm_path = format!("/proc/{tid}/comm");
             let comm = match read_file(Path::new(&comm_path)) {

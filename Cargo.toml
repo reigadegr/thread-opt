@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+ahash = "0.8.11"
 anyhow = "1.0.95"
 dumpsys-rs = { git = "https://github.com/reigadegr/dumpsys-rs" }
 flexi_logger = "0.29.8"
