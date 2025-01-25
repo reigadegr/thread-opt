@@ -3,7 +3,7 @@ use super::{
         get_tid_info::{get_process_name, TidUtils},
         get_top_tid::TopAppUtils,
     },
-    affinity_utils::bind_tid_list_to_cgroup,
+    utils::affinity_setter::bind_tid_list_to_cgroup,
     cgroup::group_info::get_background_group,
     policy::pkg_cfg::PACKAGE_CONFIGS,
 };

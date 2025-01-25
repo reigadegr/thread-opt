@@ -1,4 +1,4 @@
-use crate::fs_utils::node_reader::read_file;
+use crate::utils::node_reader::read_file;
 use anyhow::Result;
 use hashbrown::HashMap;
 use libc::pid_t;

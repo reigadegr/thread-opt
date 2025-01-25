@@ -1,12 +1,12 @@
 #![deny(clippy::pedantic)]
 #![warn(clippy::nursery)]
 mod activity;
-mod affinity_utils;
 mod cgroup;
-mod fs_utils;
 mod looper;
 mod misc;
 mod policy;
+mod utils;
+
 use crate::cgroup::{analysis::analysis_cgroup_new, group_info::print_group_core};
 use looper::Looper;
 use misc::logger::init_misc;

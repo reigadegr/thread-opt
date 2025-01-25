@@ -1,4 +1,4 @@
-use crate::fs_utils::node_reader::read_file;
+use crate::utils::node_reader::read_file;
 use anyhow::{anyhow, Context, Result};
 use log::info;
 use once_cell::sync::OnceCell;
