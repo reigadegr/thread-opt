@@ -37,7 +37,7 @@ impl Looper {
         loop {
             let pid = self.top_app_utils.get_pid();
             if pid != &self.pid {
-                info!("退出游戏");
+                info!("Exiting game");
                 let tid_list = self.tid_utils.get_tid_list(self.pid);
                 bind_tid_list_to_cgroup(get_background_group(), tid_list);
                 return;
@@ -54,7 +54,7 @@ impl Looper {
     {
         for &package in package_list {
             if package == self.global_package {
-                info!("监听到目标App: {}", self.global_package);
+                info!("Detected target App: {}", self.global_package);
                 self.pid = *self.top_app_utils.get_pid();
                 self.start_bind_common(start_task);
                 return true;
