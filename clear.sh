@@ -7,3 +7,6 @@ rm ./thread_opt
 uid=$(dumpsys package com.termux | grep appId | awk 'NR==1{print $1}' | cut -d '=' -f2)
 chown -R $uid:$uid  ./src
 chmod -R 0755 ./src
+for i in $(find ./src -name "*.rs"); do
+    dos2unix $i
+done
