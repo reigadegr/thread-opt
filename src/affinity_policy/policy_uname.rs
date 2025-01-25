@@ -16,30 +16,22 @@ enum CmdType {
     Only6,
 }
 
-fn get_cmd_type(thread_name: &str) -> CmdType {
+fn get_cmd_type(thread: &str) -> CmdType {
     // 使用 starts_with 方法匹配线程
-    for prev_name in TOP {
-        if thread_name.starts_with(prev_name) {
-            return CmdType::Top;
-        }
+    if TOP.iter().any(|&prefix| thread.starts_with(prefix)) {
+        return CmdType::Top;
     }
 
-    for prev_name in MIDDLE {
-        if thread_name.starts_with(prev_name) {
-            return CmdType::Middle;
-        }
+    if MIDDLE.iter().any(|&prefix| thread.starts_with(prefix)) {
+        return CmdType::Middle;
     }
 
-    for prev_name in BACKEND {
-        if thread_name.starts_with(prev_name) {
-            return CmdType::Background;
-        }
+    if BACKEND.iter().any(|&prefix| thread.starts_with(prefix)) {
+        return CmdType::Background;
     }
 
-    for prev_name in ONLY6 {
-        if thread_name.starts_with(prev_name) {
-            return CmdType::Only6;
-        }
+    if ONLY6.iter().any(|&prefix| thread.starts_with(prefix)) {
+        return CmdType::Only6;
     }
 
     CmdType::Middle
@@ -68,7 +60,7 @@ fn execute_task(cmd_type: &CmdType, tid: pid_t) {
     }
 }
 
-pub fn start_task(tid: pid_t, thread_name: &str) {
-    let thread_type = get_cmd_type(thread_name);
+pub fn start_task(tid: pid_t, thread: &str) {
+    let thread_type = get_cmd_type(thread);
     execute_task(&thread_type, tid);
 }
