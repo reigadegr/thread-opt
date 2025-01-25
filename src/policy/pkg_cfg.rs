@@ -1,6 +1,8 @@
-use super::{policy_mingchao, policy_unity, policy_unname};
+use super::policy_unname;
 use libc::pid_t;
 use std::sync::LazyLock;
+use crate::policy::name_match::{policy_mingchao, policy_unity};
+
 const UNITY: [&str; 7] = [
     "com.miHoYo.Yuanshen",
     "com.miHoYo.hkrpg",

@@ -1,4 +1,4 @@
-// src/affinity_policy/policy_common.rs
+// src/policy/policy_common.rs
 use crate::{
     affinity_utils::bind_thread_to_cpu,
     cgroup::group_info::{get_background_group, get_middle_group, get_top_group},

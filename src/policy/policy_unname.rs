@@ -1,4 +1,4 @@
-use super::policy_common::{execute_task, get_cmd_type};
+use crate::policy::name_match::policy_common::{execute_task, get_cmd_type};
 use libc::pid_t;
 
 const TOP: [&str; 1] = ["Thread-"];

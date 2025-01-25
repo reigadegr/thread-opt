@@ -1,7 +1,7 @@
 #![deny(clippy::pedantic)]
 #![warn(clippy::nursery)]
 mod activity;
-mod affinity_policy;
+mod policy;
 mod affinity_utils;
 mod cgroup;
 mod fs_utils;
