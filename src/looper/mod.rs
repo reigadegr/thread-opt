@@ -9,7 +9,7 @@ use super::{
 };
 use libc::pid_t;
 use log::info;
-use std::time::Duration;
+use std::{collections::HashMap, time::Duration};
 
 pub struct Looper {
     pid: pid_t,
@@ -31,7 +31,7 @@ impl Looper {
     fn start_bind_common<F>(&mut self, start_task: F)
     where
         // 传入函数的签名
-        F: Fn(pid_t, &str),
+        F: Fn(&HashMap<pid_t, String>),
     {
         loop {
             let pid = self.top_app_utils.get_pid();
@@ -42,16 +42,14 @@ impl Looper {
                 return;
             }
             let task_map = self.tid_utils.get_task_map(*pid);
-            for (tid, comm) in task_map {
-                start_task(*tid, comm);
-            }
+            start_task(task_map);
             std::thread::sleep(Duration::from_millis(2000));
         }
     }
 
     fn handle_package_list<F>(&mut self, package_list: &[&str], start_task: F) -> bool
     where
-        F: Fn(pid_t, &str),
+        F: Fn(&HashMap<pid_t, String>),
     {
         for &package in package_list {
             if package == self.global_package {
