@@ -9,6 +9,5 @@ const MIDDLE: [&str; 2] = ["RHIThread", "RenderThread"];
 const BACKEND: [&str; 0] = [];
 
 pub fn start_task(task_map: &HashMap<pid_t, String>) {
-    let policy = Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND);
-    policy.execute_policy(task_map);
+    Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND).execute_policy(task_map);
 }
