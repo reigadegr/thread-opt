@@ -5,10 +5,9 @@ use crate::{
 use libc::pid_t;
 
 const TOP: [&str; 1] = ["UnityMain"];
+const ONLY6: [&str; 1] = ["UnityGfxDeviceW"];
 const MIDDLE: [&str; 2] = ["Thread-", "Job.Worker"];
 const BACKEND: [&str; 0] = [];
-
-const ONLY6: [&str; 1] = ["UnityGfxDeviceW"];
 
 enum CmdType {
     Top,
@@ -47,9 +46,9 @@ fn get_cmd_type(thread_name: &str) -> CmdType {
 }
 
 fn execute_task(cmd_type: &CmdType, tid: pid_t) {
-    let top_group = get_top_group();
     match cmd_type {
         CmdType::Top => {
+            let top_group = get_top_group();
             if top_group == [6, 7] {
                 bind_thread_to_cpu(&[7], tid);
                 return;
@@ -57,6 +56,7 @@ fn execute_task(cmd_type: &CmdType, tid: pid_t) {
             bind_thread_to_cpu(get_top_group(), tid);
         }
         CmdType::Only6 => {
+            let top_group = get_top_group();
             if top_group == [6, 7] {
                 bind_thread_to_cpu(&[6], tid);
                 return;
