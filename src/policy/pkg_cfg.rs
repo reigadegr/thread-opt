@@ -1,8 +1,7 @@
 use super::policy_unname;
 use crate::policy::name_match::{policy_mingchao, policy_unity};
 use libc::pid_t;
-use std::collections::HashMap;
-use std::sync::LazyLock;
+use std::{collections::HashMap, sync::LazyLock};
 
 const UNITY: [&str; 7] = [
     "com.miHoYo.Yuanshen",
