@@ -1,10 +1,10 @@
-use crate::policy::name_match::policy_common::Policy;
+use crate::policy::name_match::common::Policy;
 use hashbrown::HashMap;
 use libc::pid_t;
 
 const TOP: [&str; 1] = ["Thread-"];
 const ONLY6: [&str; 0] = [];
-const ONLY7: [&str; 1] = [" "];
+const ONLY7: [&str; 0] = [];
 const MIDDLE: [&str; 2] = ["RHIThread", "RenderThread"];
 const BACKEND: [&str; 0] = [];
 

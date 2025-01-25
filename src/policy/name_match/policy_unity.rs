@@ -1,4 +1,4 @@
-use crate::policy::name_match::policy_common::Policy;
+use crate::policy::name_match::common::Policy;
 use hashbrown::HashMap;
 use libc::pid_t;
 
