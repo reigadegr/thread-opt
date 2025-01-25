@@ -4,47 +4,49 @@ use crate::{
 };
 use libc::pid_t;
 
-const TOP_THREADS: [&str; 1] = ["UnityMain"];
-const MIDDLE_THREADS: [&str; 1] = ["UnityGfxDeviceW"];
-const BACKEND_THREADS: [&str; 0] = [];
-const MIDDLE_REGEX_THREADS: [&str; 3] = ["Thread-", "Job.Worker", "RenderThread"];
-const TOP_REGEX_THREADS: [&str; 1] = ["BuildPa-ller"];
+const TOP: [&str; 1] = ["UnityMain"];
+const MIDDLE: [&str; 2] = ["Thread-", "Job.Worker"];
+const BACKEND: [&str; 0] = [];
+
+const ONLY6: [&str; 1] = ["UnityGfxDeviceW"];
 
 enum CmdType {
     Top,
     Middle,
     Background,
+    Only6,
 }
 
 fn get_cmd_type(thread_name: &str) -> CmdType {
-    if TOP_THREADS.contains(&thread_name) {
-        return CmdType::Top;
-    }
-
-    if MIDDLE_THREADS.contains(&thread_name) {
-        return CmdType::Middle;
-    }
-
-    if BACKEND_THREADS.contains(&thread_name) {
-        return CmdType::Background;
-    }
-
     // 使用 starts_with 方法匹配线程
-    for prev_name in MIDDLE_REGEX_THREADS {
+    for prev_name in TOP {
+        if thread_name.starts_with(prev_name) {
+            return CmdType::Top;
+        }
+    }
+
+    for prev_name in MIDDLE {
         if thread_name.starts_with(prev_name) {
             return CmdType::Middle;
         }
     }
 
-    for prev_name in TOP_REGEX_THREADS {
+    for prev_name in BACKEND {
         if thread_name.starts_with(prev_name) {
-            return CmdType::Top;
+            return CmdType::Background;
         }
     }
+
+    for prev_name in ONLY6 {
+        if thread_name.starts_with(prev_name) {
+            return CmdType::Only6;
+        }
+    }
+
     CmdType::Middle
 }
 
-fn execute_task(cmd_type: &CmdType, tid: pid_t, thread_name: &str) {
+fn execute_task(cmd_type: &CmdType, tid: pid_t) {
     let top_group = get_top_group();
     match cmd_type {
         CmdType::Top => {
@@ -54,18 +56,19 @@ fn execute_task(cmd_type: &CmdType, tid: pid_t, thread_name: &str) {
             }
             bind_thread_to_cpu(get_top_group(), tid);
         }
-        CmdType::Middle => {
-            if thread_name == "UnityGfxDeviceW" && top_group == [6, 7] {
+        CmdType::Only6 => {
+            if top_group == [6, 7] {
                 bind_thread_to_cpu(&[6], tid);
                 return;
             }
             bind_thread_to_cpu(get_middle_group(), tid);
         }
+        CmdType::Middle => bind_thread_to_cpu(get_middle_group(), tid),
         CmdType::Background => bind_thread_to_cpu(get_background_group(), tid),
     }
 }
 
 pub fn start_task(tid: pid_t, thread_name: &str) {
     let thread_type = get_cmd_type(thread_name);
-    execute_task(&thread_type, tid, thread_name);
+    execute_task(&thread_type, tid);
 }

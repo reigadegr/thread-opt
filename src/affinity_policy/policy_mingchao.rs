@@ -4,10 +4,10 @@ use crate::{
 };
 use libc::pid_t;
 
-const TOP_THREADS: [&str; 1] = ["GameThread"];
-const MIDDLE_THREADS: [&str; 1] = ["RHIThread"];
-const BACKEND_THREADS: [&str; 0] = [];
-const MIDDLE_REGEX_THREADS: [&str; 1] = ["RenderThread"];
+const TOP: [&str; 1] = ["GameThread"];
+const MIDDLE: [&str; 1] = ["RHIThread"];
+const BACKEND: [&str; 0] = [];
+const MIDDLE_REGEX: [&str; 1] = ["RenderThread"];
 
 enum CmdType {
     Top,
@@ -16,20 +16,20 @@ enum CmdType {
 }
 
 fn get_cmd_type(thread_name: &str) -> CmdType {
-    if TOP_THREADS.contains(&thread_name) {
+    if TOP.contains(&thread_name) {
         return CmdType::Top;
     }
 
-    if MIDDLE_THREADS.contains(&thread_name) {
+    if MIDDLE.contains(&thread_name) {
         return CmdType::Middle;
     }
 
-    if BACKEND_THREADS.contains(&thread_name) {
+    if BACKEND.contains(&thread_name) {
         return CmdType::Background;
     }
 
     // 使用 starts_with 方法匹配线程
-    for prev_name in MIDDLE_REGEX_THREADS {
+    for prev_name in MIDDLE_REGEX {
         if thread_name.starts_with(prev_name) {
             return CmdType::Middle;
         }
