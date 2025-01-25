@@ -48,7 +48,7 @@ fn execute_task(cmd_type: &CmdType, tid: pid_t, thread_name: &str) {
     let top_group = get_top_group();
     match cmd_type {
         CmdType::Top => {
-            if thread_name == "UnityMain" && top_group == [6, 7] {
+            if top_group == [6, 7] {
                 bind_thread_to_cpu(&[7], tid);
                 return;
             }

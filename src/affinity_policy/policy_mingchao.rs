@@ -37,20 +37,18 @@ fn get_cmd_type(thread_name: &str) -> CmdType {
     CmdType::Middle
 }
 
-fn execute_task(cmd_type: &CmdType, tid: pid_t, thread_name: &str) {
+fn execute_task(cmd_type: &CmdType, tid: pid_t) {
     let top_group = get_top_group();
     match cmd_type {
         CmdType::Top => {
-            if thread_name == "GameThread" && top_group == [6, 7] {
+            if top_group == [6, 7] {
                 bind_thread_to_cpu(&[7], tid);
                 return;
             }
             bind_thread_to_cpu(get_top_group(), tid);
         }
         CmdType::Middle => {
-            if (thread_name == "RHIThread" || thread_name.starts_with("RenderThread"))
-                && top_group == [6, 7]
-            {
+            if top_group == [6, 7] {
                 bind_thread_to_cpu(&[6], tid);
                 return;
             }
@@ -62,5 +60,5 @@ fn execute_task(cmd_type: &CmdType, tid: pid_t, thread_name: &str) {
 
 pub fn start_task(tid: pid_t, thread_name: &str) {
     let thread_type = get_cmd_type(thread_name);
-    execute_task(&thread_type, tid, thread_name);
+    execute_task(&thread_type, tid);
 }
