@@ -3,9 +3,9 @@ use super::{
         get_tid_info::{get_process_name, TidUtils},
         get_top_tid::TopAppUtils,
     },
-    utils::affinity_setter::bind_tid_list_to_cgroup,
     cgroup::group_info::get_background_group,
     policy::pkg_cfg::PACKAGE_CONFIGS,
+    utils::affinity_setter::bind_tid_list_to_cgroup,
 };
 use hashbrown::HashMap;
 use libc::pid_t;
