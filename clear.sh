@@ -1,6 +1,6 @@
 set -x
 rm $(find ./src -name "*.bak")
-rm ${0%/*}/*.bak ${0%/*}/.*.bak module/*.bak
+rm $(dirname "$0")/*.bak $(dirname "$0")/.*.bak module/*.bak
 
 rm $(find ./src -name "thread_opt")
 rm ./thread_opt
