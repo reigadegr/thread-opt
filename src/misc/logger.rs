@@ -1,6 +1,6 @@
 //From shadow3aaa fas-rs
 use anyhow::Result;
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, FixedOffset, Utc};
 use flexi_logger::{DeferredNow, LogSpecification, Logger, Record};
 use log::info;
 use std::io::{self, prelude::*};
@@ -51,13 +51,12 @@ const fn build_type() -> &'static str {
 fn utc_plus_8_time() -> String {
     let build_timestamp = env!("VERGEN_BUILD_TIMESTAMP");
     let utc_time: DateTime<Utc> = match build_timestamp.parse() {
-        Ok(time) => time,
+        Ok(utc_time) => utc_time,
         Err(_) => return build_timestamp.to_string(),
     };
-    let utc_plus_8_time = utc_time + Duration::hours(8);
-    let mut utc_plus_8_time = utc_plus_8_time.to_string();
-    if let Some(pos) = utc_plus_8_time.find("UTC") {
-        utc_plus_8_time.replace_range(pos..pos + 3, "UTC+8");
-    }
-    utc_plus_8_time
+    let Some(utc_plus_8) = FixedOffset::east_opt(8 * 3600) else {
+        return build_timestamp.to_string();
+    };
+    let utc_plus_8_time = utc_time.with_timezone(&utc_plus_8);
+    utc_plus_8_time.to_rfc3339()
 }
