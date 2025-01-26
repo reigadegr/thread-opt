@@ -3,13 +3,8 @@ use anyhow::Result;
 use chrono::{DateTime, Duration, Utc};
 use flexi_logger::{DeferredNow, LogSpecification, Logger, Record};
 use log::info;
-use std::{
-    fs,
-    io::{self, prelude::*},
-    process,
-};
-
-fn init_log() -> Result<()> {
+use std::io::{self, prelude::*};
+pub fn init_log() -> Result<()> {
     unsafe {
         std::env::set_var("RUST_LOG", "info");
     }
@@ -30,7 +25,7 @@ fn log_format(
     write!(write, "[{time}] {}: {}", record.level(), record.args())
 }
 
-fn log_metainfo() {
+pub fn log_metainfo() {
     info!(
         "thread-opt v{} {}, llvm-{}, rustc-{}, build by {} at {} on {},{},{}",
         env!("CARGO_PKG_VERSION"),
@@ -65,11 +60,4 @@ fn utc_plus_8_time() -> String {
         utc_plus_8_time.replace_range(pos..pos + 3, "UTC+8");
     }
     utc_plus_8_time
-}
-
-pub fn init_misc() {
-    let _ = init_log();
-    log_metainfo();
-    let self_pid = process::id();
-    let _ = fs::write("/dev/cpuset/background/tasks", self_pid.to_string());
 }
