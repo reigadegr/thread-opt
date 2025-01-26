@@ -6,7 +6,7 @@ use hashbrown::HashMap;
 use libc::pid_t;
 
 // 定义线程类型
-pub enum CmdType {
+enum CmdType {
     Top,
     Middle,
     Background,

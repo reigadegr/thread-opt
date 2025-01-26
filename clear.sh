@@ -10,5 +10,5 @@ for i in $(find ./src -name "*.rs"); do
 done
 
 uid=$(dumpsys package com.termux | grep appId | awk 'NR==1{print $1}' | cut -d '=' -f2)
-chown -R $uid:$uid  ./src
-chmod -R 0755 ./src
+chown -R $uid:$uid  ./src build.rs
+chmod -R 0755 ./src build.rs
