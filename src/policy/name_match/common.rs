@@ -7,7 +7,6 @@ use hashbrown::HashMap;
 use libc::pid_t;
 #[cfg(debug_assertions)]
 use log::debug;
-use std::sync::Arc;
 #[cfg(debug_assertions)]
 use std::time::Instant;
 
@@ -68,13 +67,13 @@ impl Policy {
     }
 
     // 执行策略
-    pub fn execute_policy(&self, task_map: &Arc<HashMap<pid_t, CompactString>>) {
+    pub fn execute_policy(&self, task_map: &HashMap<pid_t, CompactString>) {
         #[cfg(debug_assertions)]
         let start = Instant::now();
         smol::block_on(async {
             let mut handles = vec![];
-            // let task_map = task_map.lock().unwrap();
-            for (tid, comm) in task_map.iter() {
+
+            for (tid, comm) in task_map {
                 let cmd_type = self.get_cmd_type(comm);
                 let tid = *tid;
                 handles.push(smol::spawn(async move {
