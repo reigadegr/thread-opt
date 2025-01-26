@@ -2,6 +2,7 @@
 #![warn(clippy::nursery)]
 use anyhow::Result;
 use vergen::{BuildBuilder, CargoBuilder, Emitter, RustcBuilder, SysinfoBuilder};
+
 fn main() -> Result<()> {
     vergen()?;
     Ok(())

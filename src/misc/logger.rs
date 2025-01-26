@@ -1,5 +1,6 @@
 //From shadow3aaa fas-rs
 use anyhow::Result;
+use chrono::{DateTime, FixedOffset, Utc};
 use flexi_logger::{DeferredNow, LogSpecification, Logger, Record};
 use log::info;
 use std::{
@@ -37,7 +38,8 @@ fn log_metainfo() {
         env!("VERGEN_RUSTC_LLVM_VERSION"),
         env!("VERGEN_RUSTC_SEMVER"),
         env!("VERGEN_SYSINFO_USER"),
-        env!("VERGEN_BUILD_TIMESTAMP"),
+        utc_plus_8_time(),
+        // env!("VERGEN_BUILD_TIMESTAMP"),
         env!("VERGEN_SYSINFO_NAME"),
         env!("VERGEN_SYSINFO_OS_VERSION"),
         env!("VERGEN_RUSTC_HOST_TRIPLE")
@@ -50,6 +52,15 @@ const fn build_type() -> &'static str {
     } else {
         "release"
     }
+}
+
+fn utc_plus_8_time() -> String {
+    let build_timestamp = env!("VERGEN_BUILD_TIMESTAMP");
+    let utc_time: DateTime<Utc> = build_timestamp.parse().unwrap();
+    // 转换为 UTC+8
+    utc_time
+        .with_timezone(&FixedOffset::east_opt(8 * 3600).unwrap())
+        .to_string()
 }
 
 pub fn init_misc() {

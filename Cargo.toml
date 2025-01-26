@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.95"
+chrono = "0.4.39"
 dumpsys-rs = { git = "https://github.com/reigadegr/dumpsys-rs" }
 flexi_logger = "0.29.8"
 hashbrown = "0.15.2"
