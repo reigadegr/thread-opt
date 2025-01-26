@@ -15,9 +15,17 @@ const UNITY: [&str; 7] = [
     "com.papegames.infinitynikki",
 ];
 
-const UNNAME: [&str; 2] = ["com.tencent.tmgp.pubgmhd", "com.netease.yyslscn"];
+const UNNAME: [&str; 3] = [
+    "com.tencent.tmgp.pubgmhd",
+    "com.netease.yyslscn",
+    "com.miHoYo.hkrpg1",
+];
 
-const MINGCHAO: [&str; 1] = ["com.kurogame.mingchao"];
+const MINGCHAO: [&str; 3] = [
+    "com.kurogame.mingchao",
+    "com.kurogame.mingchao",
+    "com.kurogame.mingchao",
+];
 
 type ConfigTuple<'a> = (&'a [&'a str], fn(&HashMap<pid_t, CompactString>));
 pub static PACKAGE_CONFIGS: LazyLock<[ConfigTuple; 3]> = LazyLock::new(|| {

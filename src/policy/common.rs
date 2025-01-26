@@ -5,6 +5,10 @@ use crate::{
 use compact_str::CompactString;
 use hashbrown::HashMap;
 use libc::pid_t;
+#[cfg(debug_assertions)]
+use log::debug;
+#[cfg(debug_assertions)]
+use std::time::Instant;
 
 // 定义线程类型
 enum CmdType {
@@ -64,10 +68,18 @@ impl<'a> Policy<'a> {
 
     // 执行策略
     pub fn execute_policy(&self, task_map: &HashMap<pid_t, CompactString>) {
+        #[cfg(debug_assertions)]
+        let start = Instant::now();
         for (tid, comm) in task_map {
             let cmd_type = self.get_cmd_type(comm);
             execute_task(&cmd_type, *tid);
         }
+        #[cfg(debug_assertions)]
+        debug!(
+            "单线程:一轮绑定核心完成时间: {:?} 数组长度{}",
+            start.elapsed(),
+            task_map.len()
+        );
     }
 }
 

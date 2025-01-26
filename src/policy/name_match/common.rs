@@ -5,6 +5,11 @@ use crate::{
 use compact_str::CompactString;
 use hashbrown::HashMap;
 use libc::pid_t;
+#[cfg(debug_assertions)]
+use log::debug;
+use std::sync::Arc;
+#[cfg(debug_assertions)]
+use std::time::Instant;
 
 // 定义线程类型
 enum CmdType {
@@ -16,22 +21,22 @@ enum CmdType {
 }
 
 // 定义通用策略类
-pub struct Policy<'a> {
-    top: &'a [&'a str],
-    only6: &'a [&'a str],
-    only7: &'a [&'a str],
-    middle: &'a [&'a str],
-    backend: &'a [&'a str],
+pub struct Policy {
+    top: &'static [&'static str],
+    only6: &'static [&'static str],
+    only7: &'static [&'static str],
+    middle: &'static [&'static str],
+    backend: &'static [&'static str],
 }
 
-impl<'a> Policy<'a> {
+impl Policy {
     // 构造函数
     pub const fn new(
-        top: &'a [&'a str],
-        only6: &'a [&'a str],
-        only7: &'a [&'a str],
-        middle: &'a [&'a str],
-        backend: &'a [&'a str],
+        top: &'static [&'static str],
+        only6: &'static [&'static str],
+        only7: &'static [&'static str],
+        middle: &'static [&'static str],
+        backend: &'static [&'static str],
     ) -> Self {
         Self {
             top,
@@ -63,11 +68,30 @@ impl<'a> Policy<'a> {
     }
 
     // 执行策略
-    pub fn execute_policy(&self, task_map: &HashMap<pid_t, CompactString>) {
-        for (tid, comm) in task_map {
-            let cmd_type = self.get_cmd_type(comm);
-            execute_task(&cmd_type, *tid);
-        }
+    pub fn execute_policy(&self, task_map: &Arc<HashMap<pid_t, CompactString>>) {
+        #[cfg(debug_assertions)]
+        let start = Instant::now();
+        smol::block_on(async {
+            let mut handles = vec![];
+            // let task_map = task_map.lock().unwrap();
+            for (tid, comm) in task_map.iter() {
+                let cmd_type = self.get_cmd_type(comm);
+                let tid = *tid;
+                handles.push(smol::spawn(async move {
+                    execute_task(&cmd_type, tid);
+                }));
+            }
+
+            // for handle in handles {
+            // handle.await;
+            // }
+        });
+        #[cfg(debug_assertions)]
+        debug!(
+            "多线程:一轮绑定核心完成时间: {:?} 数组长度{}",
+            start.elapsed(),
+            task_map.len()
+        );
     }
 }
 
