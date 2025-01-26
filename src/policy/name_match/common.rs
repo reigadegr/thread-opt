@@ -2,6 +2,7 @@ use crate::{
     cgroup::group_info::{get_background_group, get_middle_group, get_top_group},
     utils::affinity_setter::bind_thread_to_cpu,
 };
+use compact_str::CompactString;
 use hashbrown::HashMap;
 use libc::pid_t;
 
@@ -62,7 +63,7 @@ impl<'a> Policy<'a> {
     }
 
     // 执行策略
-    pub fn execute_policy(&self, task_map: &HashMap<pid_t, String>) {
+    pub fn execute_policy(&self, task_map: &HashMap<pid_t, CompactString>) {
         for (tid, comm) in task_map {
             let cmd_type = self.get_cmd_type(comm);
             execute_task(&cmd_type, *tid);

@@ -7,6 +7,7 @@ use super::{
     policy::pkg_cfg::PACKAGE_CONFIGS,
     utils::affinity_setter::bind_tid_list_to_cgroup,
 };
+use compact_str::CompactString;
 use hashbrown::HashMap;
 use libc::pid_t;
 use log::info;
@@ -14,7 +15,7 @@ use std::time::Duration;
 
 pub struct Looper {
     pid: pid_t,
-    global_package: String,
+    global_package: CompactString,
     top_app_utils: TopAppUtils,
     tid_utils: TidUtils,
 }
@@ -23,7 +24,7 @@ impl Looper {
     pub fn new() -> Self {
         Self {
             pid: 0,
-            global_package: String::new(),
+            global_package: CompactString::new(""),
             top_app_utils: TopAppUtils::new(),
             tid_utils: TidUtils::new(),
         }
@@ -32,7 +33,7 @@ impl Looper {
     fn start_bind_common<F>(&mut self, start_task: F)
     where
         // 传入函数的签名
-        F: Fn(&HashMap<pid_t, String>),
+        F: Fn(&HashMap<pid_t, CompactString>),
     {
         loop {
             let pid = self.top_app_utils.get_pid();
@@ -50,7 +51,7 @@ impl Looper {
 
     fn handle_package_list<F>(&mut self, package_list: &[&str], start_task: F) -> bool
     where
-        F: Fn(&HashMap<pid_t, String>),
+        F: Fn(&HashMap<pid_t, CompactString>),
     {
         for &package in package_list {
             if package == self.global_package {
