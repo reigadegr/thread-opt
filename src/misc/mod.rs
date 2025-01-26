@@ -1,18 +1,14 @@
 pub mod logger;
-use crate::misc::logger::{init_log, log_metainfo};
-use crate::{cgroup::group_info::get_background_group, utils::affinity_setter::bind_thread_to_cpu};
-use libc::pid_t;
+use super::misc::logger::{init_log, log_metainfo};
 use std::process;
 
 pub fn init_misc() {
+    working_in_background();
     let _ = init_log();
     log_metainfo();
 }
 
-pub fn working_in_background() {
-    let self_pid: pid_t = match process::id().try_into() {
-        Ok(pid) => pid,
-        Err(_) => return,
-    };
-    bind_thread_to_cpu(get_background_group(), self_pid);
+fn working_in_background() {
+    let self_pid = process::id();
+    let _ = std::fs::write("/dev/cpuset/background/tasks", self_pid.to_string());
 }
