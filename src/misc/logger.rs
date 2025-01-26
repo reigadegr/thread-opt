@@ -55,11 +55,16 @@ const fn build_type() -> &'static str {
 
 fn utc_plus_8_time() -> String {
     let build_timestamp = env!("VERGEN_BUILD_TIMESTAMP");
-    let utc_time: DateTime<Utc> = build_timestamp
-        .parse()
-        .expect("Unable to parse build timestamp");
+    let utc_time: DateTime<Utc> = match build_timestamp.parse() {
+        Ok(time) => time,
+        Err(_) => return build_timestamp.to_string(),
+    };
     let utc_plus_8_time = utc_time + Duration::hours(8);
-    utc_plus_8_time.to_string()
+    let mut utc_plus_8_time = utc_plus_8_time.to_string();
+    if let Some(pos) = utc_plus_8_time.find("UTC") {
+        utc_plus_8_time.replace_range(pos..pos + 3, "UTC+8");
+    }
+    utc_plus_8_time
 }
 
 pub fn init_misc() {
