@@ -7,6 +7,7 @@ use hashbrown::HashMap;
 use libc::pid_t;
 #[cfg(debug_assertions)]
 use log::debug;
+use std::sync::atomic::{AtomicU32, Ordering};
 #[cfg(debug_assertions)]
 use std::time::Instant;
 
@@ -71,19 +72,22 @@ impl Policy {
         #[cfg(debug_assertions)]
         let start = Instant::now();
         smol::block_on(async {
-            let mut handles = vec![];
+            let total_tasks = task_map.len();
+            let mut task_count = 0;
 
             for (tid, comm) in task_map {
-                let cmd_type = self.get_cmd_type(comm);
                 let tid = *tid;
-                handles.push(smol::spawn(async move {
+                let cmd_type = self.get_cmd_type(comm);
+                let handle = smol::spawn(async move {
                     execute_task(&cmd_type, tid);
-                }));
+                });
+                task_count += 1;
+                if task_count == total_tasks {
+                    #[cfg(debug_assertions)]
+                    debug!("这是最后一个任务");
+                    handle.await;
+                }
             }
-
-            // for handle in handles {
-            // handle.await;
-            // }
         });
         #[cfg(debug_assertions)]
         debug!(

@@ -18,7 +18,7 @@ const UNITY: [&str; 7] = [
 const UNNAME: [&str; 3] = [
     "com.tencent.tmgp.pubgmhd",
     "com.netease.yyslscn",
-    "com.miHoYo.hkrpg1",
+    "com.miHoYo.hkrpsg",
 ];
 
 const MINGCHAO: [&str; 3] = [
