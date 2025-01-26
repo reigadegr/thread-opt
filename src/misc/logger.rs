@@ -5,14 +5,17 @@ use flexi_logger::{DeferredNow, LogSpecification, Logger, Record};
 use log::info;
 use std::io::{self, prelude::*};
 pub fn init_log() -> Result<()> {
-    unsafe {
-        std::env::set_var("RUST_LOG", "info");
-    }
-    let logger_spec = LogSpecification::info();
+    let logger_spec = if cfg!(debug_assertions) {
+        LogSpecification::debug()
+    } else {
+        LogSpecification::info()
+    };
+
     Logger::with(logger_spec)
         .log_to_stdout()
         .format(log_format)
         .start()?;
+
     Ok(())
 }
 
@@ -42,9 +45,9 @@ pub fn log_metainfo() {
 
 const fn build_type() -> &'static str {
     if cfg!(debug_assertions) {
-        "debug"
+        "Debug build"
     } else {
-        "release"
+        "Release build"
     }
 }
 

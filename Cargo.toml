@@ -22,7 +22,6 @@ vergen = { version = "9.0.4", features = ["build", "cargo", "rustc", "si"] }
 overflow-checks = false
 strip = true
 debug = 0
-debug-assertions = false
 incremental = false
 
 [profile.release]
