@@ -122,7 +122,7 @@ def task(args):
     else:
         cargo.arg("build --target aarch64-linux-android")
         if nightly:
-            # cargo.arg("-Z build-std")
+            cargo.arg("-Z build-std")
             cargo.arg("-Z trim-paths")
 
     if release:
