@@ -1,7 +1,7 @@
 # thread_opt
-设置线程绑核，rust实现。为affinity_rs重构版。通过在/dev/cpuset下创建目录，设置策略后写入tid到tasks实现自定义的线程放置
+设置线程绑核，rust实现。为affinity_rs重构版(affinity_rs写得太烂不好意思开源)。本模块通过sched_setaffinity函数进行系统调用，以自定义线程亲和性
 ### 编译
-#### 基础环境配置
+#### 基础环境配置(任意完整的Linux环境即可，使用Termux的Arch Linux proot做示范)
 - 下载容器
 ```shell
 pkg install proot -y; pkg install proot-distro -y; proot-distro add archlinux
@@ -23,17 +23,16 @@ yes | pacman -Sy
 ```shell
 yes | pacman -S llvm clang python glibc make cmake
 ```
-安装glibc是防止以下问题:
-```txt
-= note: cc: /usr/lib/libc.so.6: version `GLIBC_2.36' not found (required by cc)
-      cc: /usr/lib/libc.so.6: version `GLIBC_2.38' not found (required by cc)
-```
 
 - 安装rust
 > 默认为nightly，default
+
 ```shell
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain nightly --profile default -y
+```
+> 此时需重启终端，来设置环境变量。其他方法也可以
 
+```shell
 rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android
 
 rustup component add rust-src
@@ -42,8 +41,7 @@ cargo install cargo-ndk
 ```
 
 - 下载android NDK
-- aarch64架构:
-
+- aarch64架构:(termux环境请使用此ndk)
   https://github.com/Lzhiyong/termux-ndk/releases
 
 - x86_64架构：
