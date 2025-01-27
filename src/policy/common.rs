@@ -75,11 +75,15 @@ impl<'a> Policy<'a> {
             execute_task(&cmd_type, *tid);
         }
         #[cfg(debug_assertions)]
-        debug!(
-            "单线程:一轮绑定核心完成时间: {:?} 数组长度{}",
-            start.elapsed(),
-            task_map.len()
-        );
+        {
+            let end = start.elapsed();
+
+            debug!(
+                "单线程:一轮绑定核心完成时间: {:?} 数组长度{}",
+                end,
+                task_map.len()
+            );
+        }
     }
 }
 
