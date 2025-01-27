@@ -30,17 +30,8 @@ const MINGCHAO: [&str; 3] = [
 type ConfigTuple<'a> = (&'a [&'a str], fn(&HashMap<pid_t, CompactString>));
 pub static PACKAGE_CONFIGS: LazyLock<[ConfigTuple; 3]> = LazyLock::new(|| {
     [
-        (
-            &UNITY[..],
-            policy_unity::start_task as fn(&HashMap<pid_t, CompactString>),
-        ),
-        (
-            &UNNAME[..],
-            policy_unname::start_task as fn(&HashMap<pid_t, CompactString>),
-        ),
-        (
-            &MINGCHAO[..],
-            policy_mingchao::start_task as fn(&HashMap<pid_t, CompactString>),
-        ),
+        (&UNITY[..], policy_unity::start_task),
+        (&UNNAME[..], policy_unname::start_task),
+        (&MINGCHAO[..], policy_mingchao::start_task),
     ]
 });
