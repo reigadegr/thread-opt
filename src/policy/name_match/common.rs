@@ -20,22 +20,22 @@ enum CmdType {
 }
 
 // 定义通用策略类
-pub struct Policy {
-    top: &'static [&'static str],
-    only6: &'static [&'static str],
-    only7: &'static [&'static str],
-    middle: &'static [&'static str],
-    backend: &'static [&'static str],
+pub struct Policy<'a> {
+    top: &'a [&'a str],
+    only6: &'a [&'a str],
+    only7: &'a [&'a str],
+    middle: &'a [&'a str],
+    backend: &'a [&'a str],
 }
 
-impl Policy {
+impl<'a> Policy<'a> {
     // 构造函数
     pub const fn new(
-        top: &'static [&'static str],
-        only6: &'static [&'static str],
-        only7: &'static [&'static str],
-        middle: &'static [&'static str],
-        backend: &'static [&'static str],
+        top: &'a [&'a str],
+        only6: &'a [&'a str],
+        only7: &'a [&'a str],
+        middle: &'a [&'a str],
+        backend: &'a [&'a str],
     ) -> Self {
         Self {
             top,
