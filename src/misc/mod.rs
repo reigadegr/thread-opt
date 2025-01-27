@@ -9,7 +9,7 @@ pub fn init_misc() {
     if rs.is_err() {
         info!("Cannot rename the main thread name.");
     }
-    init_log();
+    let _ = init_log();
     log_metainfo();
 }
 

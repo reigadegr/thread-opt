@@ -2,20 +2,21 @@
 use anyhow::Result;
 use chrono::{DateTime, FixedOffset, Utc};
 use flexi_logger::{DeferredNow, LogSpecification, Logger, Record};
-// use log::info;
+use log::info;
 use std::io::{self, prelude::*};
-use tracing::info;
-use tracing_subscriber::fmt;
-use tracing_subscriber::EnvFilter;
-
-pub fn init_log() {
-    let env_filter = if cfg!(debug_assertions) {
-        EnvFilter::new("debug")
+pub fn init_log() -> Result<()> {
+    let logger_spec = if cfg!(debug_assertions) {
+        LogSpecification::debug()
     } else {
-        EnvFilter::new("info")
+        LogSpecification::info()
     };
 
-    tracing_subscriber::fmt().with_env_filter(env_filter).init();
+    Logger::with(logger_spec)
+        .log_to_stdout()
+        .format(log_format)
+        .start()?;
+
+    Ok(())
 }
 
 fn log_format(
