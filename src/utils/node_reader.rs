@@ -1,6 +1,7 @@
 use anyhow::Result;
+use compact_str::CompactString;
 use std::{fs, path::Path};
-pub fn read_file(file: &Path) -> Result<String> {
+pub fn read_file(file: &Path) -> Result<CompactString> {
     let s = fs::read_to_string(file)?;
-    Ok(s.trim().to_string())
+    Ok(CompactString::new(s.trim()))
 }

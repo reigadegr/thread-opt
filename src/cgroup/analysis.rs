@@ -1,5 +1,6 @@
 use crate::utils::node_reader::read_file;
 use anyhow::{anyhow, Context, Result};
+use compact_str::CompactString;
 use log::info;
 use once_cell::sync::OnceCell;
 use std::fs;
@@ -33,7 +34,7 @@ pub fn analysis_cgroup_new() -> Result<()> {
                 .and_then(|f| f.to_str())
                 .is_some_and(|f| f.contains("related_cpus"))
             {
-                let content = read_file(&path).unwrap_or_else(|_| "0".to_string());
+                let content = read_file(&path).unwrap_or_else(|_| CompactString::new("0"));
 
                 // 解析文件内容
                 let nums: Vec<&str> = content.split_whitespace().collect();

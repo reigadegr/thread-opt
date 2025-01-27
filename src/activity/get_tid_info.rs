@@ -90,7 +90,7 @@ impl TidUtils {
                     return &self.tid_info;
                 }
             };
-            task_map.insert(*tid, CompactString::new(comm));
+            task_map.insert(*tid, comm);
         }
         self.tid_info.task_map = task_map;
         &self.tid_info
