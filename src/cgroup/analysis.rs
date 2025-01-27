@@ -1,5 +1,5 @@
 use crate::utils::node_reader::read_file;
-use anyhow::{anyhow, Context, Result};
+use anyhow::{anyhow, Result};
 use compact_str::CompactString;
 use log::info;
 use once_cell::sync::OnceCell;
@@ -13,19 +13,17 @@ pub static BACKEND_GROUP: OnceCell<Box<[u8]>> = OnceCell::new();
 
 pub fn analysis_cgroup_new() -> Result<()> {
     let cgroup = "/sys/devices/system/cpu/cpufreq";
-    let entries = fs::read_dir(cgroup).context("Failed to read directory")?;
+    let entries = fs::read_dir(cgroup)?;
     for entry in entries {
-        let entry =
-            entry.with_context(|| format!("Failed to read entry in directory: {cgroup}"))?;
+        let entry = entry?;
         let path = entry.path();
         if !path.is_dir() {
             continue;
         }
-        let core_dir = fs::read_dir(path).context("Failed to read directory")?;
+        let core_dir = fs::read_dir(path)?;
 
         for file in core_dir {
-            let file =
-                file.with_context(|| format!("Failed to read entry in directory: {cgroup}"))?;
+            let file = file?;
             let path = file.path();
 
             // 检查文件名是否包含 "related_cpus"
