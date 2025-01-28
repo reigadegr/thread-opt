@@ -27,11 +27,15 @@ const MINGCHAO: [&str; 3] = [
     "com.kurogame.mingchao",
 ];
 
-type ConfigTuple<'a> = (&'a [&'a str], fn(&HashMap<pid_t, CompactString>));
+pub struct StartArgs<'a> {
+    pub task_map: &'a HashMap<pid_t, CompactString>,
+}
+type ConfigTuple<'a> = (&'a [&'a str], fn(&StartArgs));
+
 pub static PACKAGE_CONFIGS: LazyLock<[ConfigTuple; 3]> = LazyLock::new(|| {
     [
-        (&UNITY[..], policy_unity::start_task),
         (&UNNAME[..], policy_unname::start_task),
+        (&UNITY[..], policy_unity::start_task),
         (&MINGCHAO[..], policy_mingchao::start_task),
     ]
 });

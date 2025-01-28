@@ -1,4 +1,5 @@
 use crate::policy::name_match::common::Policy;
+use crate::policy::pkg_cfg::StartArgs;
 use compact_str::CompactString;
 use hashbrown::HashMap;
 use libc::pid_t;
@@ -9,11 +10,6 @@ const ONLY7: [&str; 1] = ["UnityMain"];
 const MIDDLE: [&str; 2] = ["Thread-", "Job.Worker"];
 const BACKEND: [&str; 0] = [];
 
-// pub fn start_task(task_map: &HashMap<pid_t, CompactString>) {
-// Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND).execute_policy(&task_map);
-// }
-
-pub fn start_task(task_map: &HashMap<pid_t, CompactString>) {
-    // let task_map = Arc::new(task_map);
-    Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND).execute_policy(task_map);
+pub fn start_task(args: &StartArgs) {
+    Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND).execute_policy(args.task_map);
 }
