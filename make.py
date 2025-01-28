@@ -7,12 +7,12 @@ import maketools.update as update
 help_text = """\
 ./make.py:
     build:
-        build and package thread_opt module
+        build and package thread-opt module
         sugg: try ./make.sh build --help to get details
     format:
-        format codes of thread_opt
+        format codes of thread-opt
     fix:
-        fix codes of thread_opt
+        fix codes of thread-opt
     update:
         recursive update all depended crates
     help:

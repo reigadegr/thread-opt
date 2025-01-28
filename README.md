@@ -1,4 +1,4 @@
-# thread_opt
+# thread-opt
 设置线程绑核，rust实现。为affinity_rs重构版(affinity_rs写得太烂不好意思开源)。本模块通过sched_setaffinity函数进行系统调用，以自定义线程亲和性
 ### 编译
 #### 基础环境配置(任意完整的Linux环境即可，使用Termux的Arch Linux proot做示范)

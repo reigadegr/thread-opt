@@ -10,6 +10,6 @@ wait_until_login() {
 }
 
 wait_until_login
-killall -15 thread_opt; rm $LOG
-chmod +x ${0%/*}/thread_opt
-RUST_BACKTRACE=1 nohup $MODDIR/thread_opt >$LOG 2>&1 &
+killall -15 thread-opt; rm $LOG
+chmod +x ${0%/*}/thread-opt
+RUST_BACKTRACE=1 nohup $MODDIR/thread-opt >$LOG 2>&1 &

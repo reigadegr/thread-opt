@@ -147,15 +147,15 @@ def task(args):
         bin = bin.joinpath("release")
     else:
         bin = bin.joinpath("debug")
-    bin = bin.joinpath("thread_opt")
+    bin = bin.joinpath("thread-opt")
 
-    bin_module = temp_dir.joinpath("thread_opt")
+    bin_module = temp_dir.joinpath("thread-opt")
     shutil.copy2(bin, bin_module)
     tools.strip(bin_module)
 
     build_time = datetime.now().strftime("%Y-%m-%d-%Hh%Mm%Ss")
     build_type = "release" if release else "debug"
-    output = Path("output") / f"thread_opt_{build_type}_{build_time}"
+    output = Path("output") / f"thread-opt_{build_type}_{build_time}"
 
     with zipfile.ZipFile(
         f"{output}.zip", "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
@@ -165,4 +165,4 @@ def task(args):
                 filepath = os.path.join(root, file)
                 arcname = os.path.relpath(filepath, temp_dir)
                 zipf.write(filepath, arcname)
-    print("thread_opt build successfully: {}.zip".format(output))
+    print("thread-opt build successfully: {}.zip".format(output))

@@ -53,10 +53,10 @@ jobs:
       - name: Prepare artifacts
         run: |
           mkdir -p output/artifact/release
-          unzip "output/thread_opt_release_*.zip" -d output/artifact/release
+          unzip "output/thread-opt_release_*.zip" -d output/artifact/release
       - name: Upload release version
         uses: actions/upload-artifact@v4
         with:
-          name: thread_opt(release)
+          name: thread-opt(release)
           compression-level: 9
           path: output/artifact/release

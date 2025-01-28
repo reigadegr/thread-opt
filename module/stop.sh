@@ -1,1 +1,1 @@
-killall -15 thread_opt
+killall -15 thread-opt

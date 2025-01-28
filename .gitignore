@@ -1,10 +1,11 @@
 /target
 /output
+**/__pycache__
 **/*.bak
-**/thread_opt
+**/thread-opt
 **/*.pyc
 Cargo.lock
 *.zip
 src/*.sh
-*.txt
+**/*.txt
 .idea
