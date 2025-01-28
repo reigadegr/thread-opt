@@ -12,18 +12,18 @@ use std::{
 };
 
 use anyhow::Result;
-use libc::{sysconf, _SC_CLK_TCK};
+use libc::{pid_t, sysconf, _SC_CLK_TCK};
 
 #[derive(Debug, Clone, Copy)]
 struct UsageTracker {
-    pid: i32,
-    tid: i32,
+    pid: pid_t,
+    tid: pid_t,
     last_cputime: u64,
     read_timer: Instant,
 }
 
 impl UsageTracker {
-    fn new(pid: i32, tid: i32) -> Result<Self> {
+    fn new(pid: pid_t, tid: pid_t) -> Result<Self> {
         Ok(Self {
             pid,
             tid,
@@ -46,7 +46,7 @@ impl UsageTracker {
 #[derive(Debug)]
 pub struct ProcessMonitor {
     stop: Arc<AtomicBool>,
-    sender: SyncSender<Option<i32>>,
+    sender: SyncSender<Option<pid_t>>,
     util_max: Receiver<f64>,
 }
 
@@ -74,7 +74,7 @@ impl ProcessMonitor {
         }
     }
 
-    pub fn set_pid(&self, pid: Option<i32>) {
+    pub fn set_pid(&self, pid: Option<pid_t>) {
         self.sender.send(pid).unwrap();
     }
 
@@ -95,7 +95,7 @@ impl Drop for ProcessMonitor {
 
 fn monitor_thread(
     stop: &Arc<AtomicBool>,
-    receiver: &Receiver<Option<i32>>,
+    receiver: &Receiver<Option<pid_t>>,
     util_max: &Sender<f64>,
 ) {
     let mut current_pid = None;
@@ -111,7 +111,7 @@ fn monitor_thread(
         }
 
         if let Some(pid) = current_pid {
-            if last_full_update.elapsed() >= Duration::from_secs(1) {
+            if last_full_update.elapsed() >= Duration::from_millis(1000) {
                 if let Ok(threads) = get_thread_ids(pid) {
                     all_trackers = threads
                         .iter()
@@ -160,18 +160,18 @@ fn monitor_thread(
     }
 }
 
-fn get_thread_ids(pid: i32) -> Result<Vec<i32>> {
+fn get_thread_ids(pid: pid_t) -> Result<Vec<pid_t>> {
     let proc_path = format!("/proc/{pid}/task");
     Ok(fs::read_dir(proc_path)?
         .filter_map(|entry| {
             entry
                 .ok()
-                .and_then(|e| e.file_name().to_string_lossy().parse::<i32>().ok())
+                .and_then(|e| e.file_name().to_string_lossy().parse::<pid_t>().ok())
         })
         .collect())
 }
 
-fn get_thread_cpu_time(pid: i32, tid: i32) -> Result<u64> {
+fn get_thread_cpu_time(pid: pid_t, tid: pid_t) -> Result<u64> {
     let stat_path = format!("/proc/{pid}/task/{tid}/stat");
     let stat_content = fs::read_to_string(stat_path)?;
     let parts: Vec<&str> = stat_content.split_whitespace().collect();

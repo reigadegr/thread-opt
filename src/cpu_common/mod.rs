@@ -1,6 +1,6 @@
 mod process_monitor;
+use libc::pid_t;
 use process_monitor::ProcessMonitor;
-
 #[derive(Debug)]
 pub struct Controller {
     process_monitor: ProcessMonitor,
@@ -15,7 +15,7 @@ impl Controller {
         }
     }
 
-    pub fn init_game(&mut self, pid: i32) {
+    pub fn init_game(&mut self, pid: pid_t) {
         self.process_monitor.set_pid(Some(pid));
         self.util_max = None;
     }
