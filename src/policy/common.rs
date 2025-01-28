@@ -69,7 +69,7 @@ impl<'a> Policy<'a> {
     // 执行策略
     pub fn execute_policy(&self, task_map: &HashMap<pid_t, CompactString>) {
         #[cfg(debug_assertions)]
-        let start = Instant::now();
+        let start = std::time::Instant::now();
         for (tid, comm) in task_map {
             let cmd_type = self.get_cmd_type(comm);
             execute_task(&cmd_type, *tid);

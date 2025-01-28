@@ -1,6 +1,7 @@
 mod process_monitor;
 use libc::pid_t;
 use process_monitor::ProcessMonitor;
+
 #[derive(Debug)]
 pub struct Controller {
     process_monitor: ProcessMonitor,

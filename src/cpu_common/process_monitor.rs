@@ -12,6 +12,7 @@ use std::{
 };
 
 use anyhow::Result;
+use compact_str::CompactString;
 use libc::{pid_t, sysconf, _SC_CLK_TCK};
 
 #[derive(Debug, Clone, Copy)]
@@ -112,38 +113,40 @@ fn monitor_thread(
 
         if let Some(pid) = current_pid {
             if last_full_update.elapsed() >= Duration::from_millis(1000) {
-                if let Ok(threads) = get_thread_ids(pid) {
-                    all_trackers = threads
-                        .iter()
-                        .copied()
-                        .filter_map(|tid| {
-                            Some((
-                                tid,
-                                match all_trackers.entry(tid) {
-                                    Entry::Occupied(o) => o.remove(),
-                                    Entry::Vacant(_) => UsageTracker::new(pid, tid).ok()?,
-                                },
-                            ))
-                        })
-                        .collect();
-                    let mut top_threads: Vec<_> = all_trackers
-                        .iter()
-                        .filter_map(|(tid, tracker)| {
-                            Some((*tid, tracker.clone().try_calculate().ok()?))
-                        })
-                        .collect();
-                    top_threads
-                        .sort_by(|(_, a), (_, b)| b.partial_cmp(a).unwrap_or(cmp::Ordering::Equal));
-                    top_threads.truncate(5);
-                    top_trackers = top_threads
-                        .into_iter()
-                        .filter_map(|(tid, _)| match top_trackers.entry(tid) {
-                            Entry::Occupied(o) => Some((tid, o.remove())),
-                            Entry::Vacant(_) => Some((tid, UsageTracker::new(pid, tid).ok()?)),
-                        })
-                        .collect();
-                    last_full_update = Instant::now();
-                }
+                let Ok(threads) = get_thread_ids(pid) else {
+                    thread::sleep(Duration::from_millis(300));
+                    continue;
+                };
+                all_trackers = threads
+                    .iter()
+                    .copied()
+                    .filter_map(|tid| {
+                        Some((
+                            tid,
+                            match all_trackers.entry(tid) {
+                                Entry::Occupied(o) => o.remove(),
+                                Entry::Vacant(_) => UsageTracker::new(pid, tid).ok()?,
+                            },
+                        ))
+                    })
+                    .collect();
+                let mut top_threads: Vec<_> = all_trackers
+                    .iter()
+                    .filter_map(|(tid, tracker)| {
+                        Some((*tid, tracker.clone().try_calculate().ok()?))
+                    })
+                    .collect();
+                top_threads
+                    .sort_by(|(_, a), (_, b)| b.partial_cmp(a).unwrap_or(cmp::Ordering::Equal));
+                top_threads.truncate(5);
+                top_trackers = top_threads
+                    .into_iter()
+                    .filter_map(|(tid, _)| match top_trackers.entry(tid) {
+                        Entry::Occupied(o) => Some((tid, o.remove())),
+                        Entry::Vacant(_) => Some((tid, UsageTracker::new(pid, tid).ok()?)),
+                    })
+                    .collect();
+                last_full_update = Instant::now();
             }
 
             let mut max_usage: f64 = 0.0;
@@ -170,6 +173,19 @@ fn get_thread_ids(pid: pid_t) -> Result<Vec<pid_t>> {
         })
         .collect())
 }
+
+// fn get_thread_tids(task_map: &HashMap<pid_t, CompactString>, prefix: &str) -> Vec<pid_t> {
+// task_map
+// .iter()
+// .filter_map(|(&tid, name)| {
+// if name.starts_with(prefix) {
+// Some(tid)
+// } else {
+// None
+// }
+// })
+// .collect()
+// }
 
 fn get_thread_cpu_time(pid: pid_t, tid: pid_t) -> Result<u64> {
     let stat_path = format!("/proc/{pid}/task/{tid}/stat");

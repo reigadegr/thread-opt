@@ -29,6 +29,7 @@ const MINGCHAO: [&str; 3] = [
 
 pub struct StartArgs<'a> {
     pub task_map: &'a HashMap<pid_t, CompactString>,
+    pub pid: pid_t,
 }
 type ConfigTuple<'a> = (&'a [&'a str], fn(&StartArgs));
 

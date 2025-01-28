@@ -45,7 +45,10 @@ impl Looper {
                 return;
             }
             let task_map = self.tid_utils.get_task_map(*pid);
-            start_task(&StartArgs { task_map });
+            start_task(&StartArgs {
+                task_map,
+                pid: *pid,
+            });
             std::thread::sleep(Duration::from_millis(2000));
         }
     }
