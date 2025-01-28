@@ -20,6 +20,7 @@ pub fn analysis_cgroup_new() -> Result<()> {
         if !path.is_dir() {
             continue;
         }
+
         let core_dir = fs::read_dir(path)?;
 
         for file in core_dir {

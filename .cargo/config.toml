@@ -6,7 +6,7 @@ rustflags = ["-C", "link-arg=/data/data/com.termux/files/usr/var/lib/proot-distr
 registry = "https://github.com/rust-lang/crates.io-index"
 
 # 替换成你偏好的镜像源
-replace-with = 'tuna'
+# replace-with = 'tuna'
 
 # 清华大学
 [source.tuna]
