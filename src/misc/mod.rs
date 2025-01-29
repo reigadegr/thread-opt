@@ -1,7 +1,7 @@
 pub mod logger;
-use super::misc::logger::{init_log, log_metainfo};
 use anyhow::Result;
 use log::info;
+use logger::{init_log, log_metainfo};
 
 pub fn init_misc() {
     working_in_background();

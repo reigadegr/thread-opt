@@ -23,5 +23,5 @@ fn main() {
     init_misc();
     let _ = analysis_cgroup_new();
     print_group_core();
-    Scheduler::new().enter_loop();
+    Scheduler::new().start_run();
 }
