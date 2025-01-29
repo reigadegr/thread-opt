@@ -11,17 +11,17 @@
 mod activity;
 mod cgroup;
 mod cpu_common;
-mod looper;
 mod misc;
 mod policy;
+mod scheduler;
 mod utils;
 use cgroup::{analysis::analysis_cgroup_new, group_info::print_group_core};
-use looper::Looper;
 use misc::init_misc;
+use scheduler::Scheduler;
 
 fn main() {
     init_misc();
     let _ = analysis_cgroup_new();
     print_group_core();
-    Looper::new().enter_loop();
+    Scheduler::new().enter_loop();
 }

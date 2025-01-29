@@ -14,14 +14,14 @@ use libc::pid_t;
 use log::info;
 use std::time::Duration;
 
-pub struct Looper {
+pub struct Scheduler {
     pid: pid_t,
     global_package: CompactString,
     top_app_utils: TopAppUtils,
     tid_utils: TidUtils,
 }
 
-impl Looper {
+impl Scheduler {
     pub fn new() -> Self {
         Self {
             pid: 0,
