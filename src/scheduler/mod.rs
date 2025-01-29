@@ -1,5 +1,4 @@
 pub mod looper;
-use anyhow::Result;
 use looper::Looper;
 
 pub struct Scheduler {

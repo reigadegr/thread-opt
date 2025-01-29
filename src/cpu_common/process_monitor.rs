@@ -12,7 +12,6 @@ use std::{
 };
 
 use anyhow::Result;
-use compact_str::CompactString;
 use libc::{pid_t, sysconf, _SC_CLK_TCK};
 
 #[derive(Debug, Clone, Copy)]
