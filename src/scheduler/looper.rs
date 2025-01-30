@@ -53,7 +53,6 @@ impl Looper {
             let task_map = self.tid_utils.get_task_map(*pid);
             start_task(&mut StartArgs {
                 task_map,
-                pid: *pid,
                 controller: &mut self.controller,
             });
             std::thread::sleep(Duration::from_millis(2000));

@@ -31,7 +31,6 @@ const MINGCHAO: [&str; 3] = [
 // #[derive(Clone)]
 pub struct StartArgs<'a> {
     pub task_map: &'a HashMap<pid_t, CompactString>,
-    pub pid: pid_t,
     pub controller: &'a mut Controller,
 }
 type ConfigTuple<'a> = (&'a [&'a str], fn(&mut StartArgs));
