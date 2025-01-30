@@ -87,11 +87,11 @@ impl ProcessMonitor {
     }
 }
 
-impl Drop for ProcessMonitor {
-    fn drop(&mut self) {
-        self.stop();
-    }
-}
+// impl Drop for ProcessMonitor {
+// fn drop(&mut self) {
+// self.stop();
+// }
+// }
 
 fn monitor_thread(
     stop: &Arc<AtomicBool>,
