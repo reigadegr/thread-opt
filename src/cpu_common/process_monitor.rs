@@ -98,7 +98,7 @@ impl Drop for ProcessMonitor {
 fn monitor_thread(
     stop: &Arc<AtomicBool>,
     receiver: &Receiver<Option<pid_t>>,
-    max_usage_tid: &Sender<(pid_t, pid_t)>, // 修改为发送元组
+    max_usage_tid: &Sender<(pid_t, pid_t)>,
 ) {
     let mut current_pid = None;
     let mut last_full_update = Instant::now();
