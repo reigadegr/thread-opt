@@ -10,11 +10,10 @@ const ONLY7: [&str; 0] = [];
 const MIDDLE: [&str; 2] = ["RHIThread", "RenderThread"];
 const BACKEND: [&str; 0] = [];
 
-pub fn start_task(args: &StartArgs) {
+pub fn start_task(args: &mut StartArgs) {
     #[cfg(debug_assertions)]
     let start = std::time::Instant::now();
 
-    Controller::new();
     Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND).execute_policy(args.task_map);
     #[cfg(debug_assertions)]
     {

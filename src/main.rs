@@ -16,6 +16,7 @@ mod policy;
 mod scheduler;
 mod utils;
 use cgroup::{analysis::analysis_cgroup_new, group_info::print_group_core};
+use cpu_common::Controller;
 use misc::init_misc;
 use scheduler::Scheduler;
 
@@ -23,5 +24,5 @@ fn main() {
     init_misc();
     let _ = analysis_cgroup_new();
     print_group_core();
-    Scheduler::new().start_run();
+    Scheduler::new(Controller::new()).start_run();
 }

@@ -1,5 +1,5 @@
 # thread-opt
-设置线程绑核，rust实现。为affinity_rs重构版(affinity_rs写得太烂不好意思开源)。本模块通过sched_setaffinity函数进行系统调用，以自定义线程亲和性
+设置线程绑核，rust实现。为affinity_rs重构版(affinity_rs写得太烂不好意思开源)。本模块通过sched_setaffinity函数自定义线程亲和性
 ### 编译
 #### 基础环境配置(任意完整的Linux环境即可，使用Termux的Arch Linux proot做示范)
 - 下载容器
@@ -62,11 +62,9 @@ export ANDROID_NDK_ROOT=$ANDROID_NDK_HOME
 
 ### 致谢
 - [fas-rs] https://github.com/shadow3aaa/fas-rs
-```txt
-采用了: 
-1，读取包名，缓存逻辑
-2，面向对象的设计范式
-3，其开发的dumpsys-rs库
-4，fas-rs的Python构建系统
-5，Rust的GitHub action workflow
-```
+
+> 采用了其大量方案
+
+### 说明
+本项目采用GPL v3协议，如果使用了本项目相关内容请您开源。
+欢迎积极对本项目发起issue，pull request。

@@ -1,5 +1,6 @@
 use super::policy_unname;
 use crate::policy::name_match::{policy_mingchao, policy_unity};
+use crate::Controller;
 use compact_str::CompactString;
 use hashbrown::HashMap;
 use libc::pid_t;
@@ -18,7 +19,7 @@ const UNITY: [&str; 7] = [
 const UNNAME: [&str; 3] = [
     "com.tencent.tmgp.pubgmhd",
     "com.netease.yyslscn",
-    "com.miHoYo.hkrpsg",
+    "com.netease.yyslscn",
 ];
 
 const MINGCHAO: [&str; 3] = [
@@ -27,11 +28,13 @@ const MINGCHAO: [&str; 3] = [
     "com.kurogame.mingchao",
 ];
 
+// #[derive(Clone)]
 pub struct StartArgs<'a> {
     pub task_map: &'a HashMap<pid_t, CompactString>,
     pub pid: pid_t,
+    pub controller: &'a mut Controller,
 }
-type ConfigTuple<'a> = (&'a [&'a str], fn(&StartArgs));
+type ConfigTuple<'a> = (&'a [&'a str], fn(&mut StartArgs));
 
 pub static PACKAGE_CONFIGS: LazyLock<[ConfigTuple; 3]> = LazyLock::new(|| {
     [

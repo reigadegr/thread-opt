@@ -14,7 +14,7 @@ use std::{
 use anyhow::Result;
 use libc::{pid_t, sysconf, _SC_CLK_TCK};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 struct UsageTracker {
     pid: pid_t,
     tid: pid_t,
@@ -111,7 +111,7 @@ fn monitor_thread(
         }
 
         if let Some(pid) = current_pid {
-            if last_full_update.elapsed() >= Duration::from_millis(1000) {
+            if last_full_update.elapsed() > Duration::from_millis(1000) {
                 let Ok(threads) = get_thread_ids(pid) else {
                     thread::sleep(Duration::from_millis(300));
                     continue;
