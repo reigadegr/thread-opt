@@ -49,14 +49,14 @@ impl UsageTracker {
 pub struct ProcessMonitor {
     stop: Arc<AtomicBool>,
     sender: SyncSender<Option<pid_t>>,
-    util_max: Receiver<pid_t>,
+    max_usage_tid: Receiver<pid_t>,
 }
 
 impl ProcessMonitor {
     pub fn new() -> Self {
         let (sender, receiver) = mpsc::sync_channel(0);
         let stop = Arc::new(AtomicBool::new(false));
-        let (util_max_sender, util_max) = mpsc::channel();
+        let (max_usage_tid_sender, max_usage_tid) = mpsc::channel();
 
         {
             let stop = stop.clone();
@@ -64,7 +64,7 @@ impl ProcessMonitor {
             thread::Builder::new()
                 .name("ProcessMonitor".to_string())
                 .spawn(move || {
-                    monitor_thread(&stop, &receiver, &util_max_sender);
+                    monitor_thread(&stop, &receiver, &max_usage_tid_sender);
                 })
                 .unwrap();
         }
@@ -72,7 +72,7 @@ impl ProcessMonitor {
         Self {
             stop,
             sender,
-            util_max,
+            max_usage_tid,
         }
     }
 
@@ -84,8 +84,8 @@ impl ProcessMonitor {
         self.stop.store(true, Ordering::Release);
     }
 
-    pub fn update_util_max(&self) -> Option<pid_t> {
-        self.util_max.try_iter().last()
+    pub fn update_max_usage_tid(&self) -> Option<pid_t> {
+        self.max_usage_tid.try_iter().last()
     }
 }
 
@@ -98,7 +98,7 @@ impl Drop for ProcessMonitor {
 fn monitor_thread(
     stop: &Arc<AtomicBool>,
     receiver: &Receiver<Option<pid_t>>,
-    util_max: &Sender<pid_t>,
+    max_usage_tid: &Sender<pid_t>,
 ) {
     let mut current_pid = None;
     let mut last_full_update = Instant::now();
@@ -164,8 +164,8 @@ fn monitor_thread(
             }
 
             if let Some(tid) = max_tid {
-                // 发送元组 (负载值, tid)
-                util_max.send(tid).unwrap();
+                // 发送元组 (tid)
+                max_usage_tid.send(tid).unwrap();
             }
         }
 

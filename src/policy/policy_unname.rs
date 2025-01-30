@@ -14,7 +14,7 @@ pub fn start_task(args: &mut StartArgs) {
     let start = std::time::Instant::now();
     #[cfg(debug_assertions)]
     {
-        args.controller.update_util_max();
+        args.controller.update_max_usage_tid();
         if let Some(tid) = args.controller.max_tid() {
             debug!("Max load thread: {tid}");
         }
