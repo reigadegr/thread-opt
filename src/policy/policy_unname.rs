@@ -15,8 +15,12 @@ pub fn start_task(args: &mut StartArgs) {
     #[cfg(debug_assertions)]
     {
         args.controller.update_max_usage_tid();
-        if let Some(tid) = args.controller.max_tid() {
+        if let Some(tid) = args.controller.first_max_tid() {
             debug!("Max load thread: {tid}");
+        }
+        
+        if let Some(tid) = args.controller.second_max_tid() {
+            debug!("Second load thread: {tid}");
         }
     }
 

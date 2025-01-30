@@ -38,7 +38,7 @@ impl Controller {
     }
 
     // 新增获取tid的方法
-    pub const fn max_tid(&self) -> Option<pid_t> {
+    pub const fn first_max_tid(&self) -> Option<pid_t> {
         self.max_tid
     }
 

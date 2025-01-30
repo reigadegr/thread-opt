@@ -160,14 +160,7 @@ fn monitor_thread(
                 .collect();
             top_two.sort_by(|(_, a), (_, b)| b.partial_cmp(a).unwrap_or(cmp::Ordering::Equal));
             top_two.truncate(2);
-
-            if top_two.len() >= 2 {
-                // 发送前两个线程的tid
-                max_usage_tid.send((top_two[0].0, top_two[1].0)).unwrap();
-            } else if top_two.len() == 1 {
-                // 如果只有一个线程，发送第一个线程的tid和None
-                max_usage_tid.send((top_two[0].0, 0)).unwrap();
-            }
+            max_usage_tid.send((top_two[0].0, top_two[1].0)).unwrap();
         }
 
         thread::sleep(Duration::from_millis(1000));
