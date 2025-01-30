@@ -1,4 +1,3 @@
-use crate::cpu_common::Controller;
 use crate::policy::common::Policy;
 use crate::policy::pkg_cfg::StartArgs;
 #[cfg(debug_assertions)]

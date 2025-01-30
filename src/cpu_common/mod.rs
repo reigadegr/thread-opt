@@ -27,7 +27,7 @@ impl Controller {
     }
 
     pub fn update_util_max(&mut self) {
-        if let Some((util, tid)) = self.process_monitor.update_util_max() {
+        if let Some(tid) = self.process_monitor.update_util_max() {
             self.max_tid = Some(tid);
         }
     }
