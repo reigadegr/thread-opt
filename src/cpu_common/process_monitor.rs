@@ -1,6 +1,10 @@
+use anyhow::Result;
+use hashbrown::{hash_map::Entry, HashMap};
+use libc::{pid_t, sysconf, _SC_CLK_TCK};
+#[cfg(debug_assertions)]
+use log::debug;
 use std::{
     cmp,
-    collections::{hash_map::Entry, HashMap},
     fs,
     sync::{
         atomic::{AtomicBool, Ordering},
@@ -10,11 +14,6 @@ use std::{
     thread,
     time::{Duration, Instant},
 };
-
-use anyhow::Result;
-use libc::{pid_t, sysconf, _SC_CLK_TCK};
-#[cfg(debug_assertions)]
-use log::debug;
 
 #[derive(Debug, Clone)]
 struct UsageTracker {
