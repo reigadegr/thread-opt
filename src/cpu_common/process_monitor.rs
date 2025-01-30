@@ -13,6 +13,8 @@ use std::{
 
 use anyhow::Result;
 use libc::{pid_t, sysconf, _SC_CLK_TCK};
+#[cfg(debug_assertions)]
+use log::debug;
 
 #[derive(Debug, Clone)]
 struct UsageTracker {
@@ -47,7 +49,7 @@ impl UsageTracker {
 pub struct ProcessMonitor {
     stop: Arc<AtomicBool>,
     sender: SyncSender<Option<pid_t>>,
-    util_max: Receiver<f64>,
+    util_max: Receiver<(f64, pid_t)>,
 }
 
 impl ProcessMonitor {
@@ -82,7 +84,7 @@ impl ProcessMonitor {
         self.stop.store(true, Ordering::Release);
     }
 
-    pub fn update_util_max(&self) -> Option<f64> {
+    pub fn update_util_max(&self) -> Option<(f64, pid_t)> {
         self.util_max.try_iter().last()
     }
 }
@@ -96,7 +98,7 @@ impl ProcessMonitor {
 fn monitor_thread(
     stop: &Arc<AtomicBool>,
     receiver: &Receiver<Option<pid_t>>,
-    util_max: &Sender<f64>,
+    util_max: &Sender<(f64, pid_t)>,
 ) {
     let mut current_pid = None;
     let mut last_full_update = Instant::now();
@@ -111,9 +113,11 @@ fn monitor_thread(
         }
 
         if let Some(pid) = current_pid {
-            if last_full_update.elapsed() > Duration::from_millis(1000) {
+            if last_full_update.elapsed() > Duration::from_millis(2500) {
+                #[cfg(debug_assertions)]
+                debug!("开始计算喵");
                 let Ok(threads) = get_thread_ids(pid) else {
-                    thread::sleep(Duration::from_millis(300));
+                    thread::sleep(Duration::from_millis(1000));
                     continue;
                 };
                 all_trackers = threads
@@ -148,17 +152,24 @@ fn monitor_thread(
                 last_full_update = Instant::now();
             }
 
-            let mut max_usage: f64 = 0.0;
-            for tracker in top_trackers.values_mut() {
+            let mut max_usage = 0.0;
+            let mut max_tid = None;
+            for (tid, tracker) in &mut top_trackers {
                 if let Ok(usage) = tracker.try_calculate() {
-                    max_usage = max_usage.max(usage);
+                    if usage > max_usage {
+                        max_usage = usage;
+                        max_tid = Some(*tid);
+                    }
                 }
             }
 
-            util_max.send(max_usage).unwrap();
+            if let Some(tid) = max_tid {
+                // 发送元组 (负载值, tid)
+                util_max.send((max_usage, tid)).unwrap();
+            }
         }
 
-        thread::sleep(Duration::from_millis(300));
+        thread::sleep(Duration::from_millis(1000));
     }
 }
 

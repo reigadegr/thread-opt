@@ -13,6 +13,13 @@ const BACKEND: [&str; 0] = [];
 pub fn start_task(args: &mut StartArgs) {
     #[cfg(debug_assertions)]
     let start = std::time::Instant::now();
+    #[cfg(debug_assertions)]
+    {
+        args.controller.update_util_max();
+        if let Some(tid) = args.controller.max_tid() {
+            debug!("Max load thread: {tid}");
+        }
+    }
 
     Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND).execute_policy(args.task_map);
     #[cfg(debug_assertions)]

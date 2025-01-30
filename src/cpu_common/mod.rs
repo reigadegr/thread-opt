@@ -6,6 +6,7 @@ use process_monitor::ProcessMonitor;
 pub struct Controller {
     process_monitor: ProcessMonitor,
     util_max: Option<f64>,
+    max_tid: Option<pid_t>, // 新增字段存储tid
 }
 
 impl Controller {
@@ -13,6 +14,7 @@ impl Controller {
         Self {
             process_monitor: ProcessMonitor::new(),
             util_max: None,
+            max_tid: None,
         }
     }
 
@@ -26,10 +28,16 @@ impl Controller {
         self.util_max = None;
     }
 
-    fn update_util_max(&mut self) {
-        if let Some(util_max) = self.process_monitor.update_util_max() {
-            self.util_max = Some(util_max);
+    pub fn update_util_max(&mut self) {
+        if let Some((util, tid)) = self.process_monitor.update_util_max() {
+            self.util_max = Some(util);
+            self.max_tid = Some(tid);
         }
+    }
+
+    // 新增获取tid的方法
+    pub const fn max_tid(&self) -> Option<pid_t> {
+        self.max_tid
     }
 
     pub fn util_max(&self) -> f64 {
