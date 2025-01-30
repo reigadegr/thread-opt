@@ -49,7 +49,7 @@ impl UsageTracker {
 pub struct ProcessMonitor {
     stop: Arc<AtomicBool>,
     sender: SyncSender<Option<pid_t>>,
-    max_usage_tid: Receiver<pid_t>,
+    max_usage_tid: Receiver<(pid_t, pid_t)>, // 修改为接收元组
 }
 
 impl ProcessMonitor {
@@ -84,7 +84,7 @@ impl ProcessMonitor {
         self.stop.store(true, Ordering::Release);
     }
 
-    pub fn update_max_usage_tid(&self) -> Option<pid_t> {
+    pub fn update_max_usage_tid(&self) -> Option<(pid_t, pid_t)> {
         self.max_usage_tid.try_iter().last()
     }
 }
@@ -98,7 +98,7 @@ impl Drop for ProcessMonitor {
 fn monitor_thread(
     stop: &Arc<AtomicBool>,
     receiver: &Receiver<Option<pid_t>>,
-    max_usage_tid: &Sender<pid_t>,
+    max_usage_tid: &Sender<(pid_t, pid_t)>, // 修改为发送元组
 ) {
     let mut current_pid = None;
     let mut last_full_update = Instant::now();
@@ -152,20 +152,21 @@ fn monitor_thread(
                 last_full_update = Instant::now();
             }
 
-            let mut max_usage = 0.0;
-            let mut max_tid = None;
-            for (tid, tracker) in &mut top_trackers {
-                if let Ok(usage) = tracker.try_calculate() {
-                    if usage > max_usage {
-                        max_usage = usage;
-                        max_tid = Some(*tid);
-                    }
-                }
-            }
+            let mut top_two: Vec<(pid_t, f64)> = top_trackers
+                .iter_mut()
+                .filter_map(|(tid, tracker)| {
+                    tracker.try_calculate().ok().map(|usage| (*tid, usage))
+                })
+                .collect();
+            top_two.sort_by(|(_, a), (_, b)| b.partial_cmp(a).unwrap_or(cmp::Ordering::Equal));
+            top_two.truncate(2);
 
-            if let Some(tid) = max_tid {
-                // 发送元组 (tid)
-                max_usage_tid.send(tid).unwrap();
+            if top_two.len() >= 2 {
+                // 发送前两个线程的tid
+                max_usage_tid.send((top_two[0].0, top_two[1].0)).unwrap();
+            } else if top_two.len() == 1 {
+                // 如果只有一个线程，发送第一个线程的tid和None
+                max_usage_tid.send((top_two[0].0, 0)).unwrap();
             }
         }
 
@@ -184,6 +185,15 @@ fn get_thread_ids(pid: pid_t) -> Result<Vec<pid_t>> {
         .collect())
 }
 
+fn get_thread_cpu_time(pid: pid_t, tid: pid_t) -> Result<u64> {
+    let stat_path = format!("/proc/{pid}/task/{tid}/stat");
+    let stat_content = fs::read_to_string(stat_path)?;
+    let parts: Vec<&str> = stat_content.split_whitespace().collect();
+    let utime = parts[13].parse::<u64>().unwrap_or(0);
+    let stime = parts[14].parse::<u64>().unwrap_or(0);
+    Ok(utime + stime)
+}
+
 // fn get_thread_tids(task_map: &HashMap<pid_t, CompactString>, prefix: &str) -> Vec<pid_t> {
 // task_map
 // .iter()
@@ -196,12 +206,3 @@ fn get_thread_ids(pid: pid_t) -> Result<Vec<pid_t>> {
 // })
 // .collect()
 // }
-
-fn get_thread_cpu_time(pid: pid_t, tid: pid_t) -> Result<u64> {
-    let stat_path = format!("/proc/{pid}/task/{tid}/stat");
-    let stat_content = fs::read_to_string(stat_path)?;
-    let parts: Vec<&str> = stat_content.split_whitespace().collect();
-    let utime = parts[13].parse::<u64>().unwrap_or(0);
-    let stime = parts[14].parse::<u64>().unwrap_or(0);
-    Ok(utime + stime)
-}
