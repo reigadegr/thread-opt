@@ -12,19 +12,18 @@ const BACKEND: [&str; 0] = [];
 pub fn start_task(args: &mut StartArgs) {
     #[cfg(debug_assertions)]
     let start = std::time::Instant::now();
-    #[cfg(debug_assertions)]
-    {
-        args.controller.update_max_usage_tid();
-        if let Some(tid) = args.controller.first_max_tid() {
-            debug!("Max load thread: {tid}");
-        }
-        
-        if let Some(tid) = args.controller.second_max_tid() {
-            debug!("Second load thread: {tid}");
-        }
-    }
 
-    Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND).execute_policy(args.task_map);
+    args.controller.update_max_usage_tid();
+    let Some(tid1) = args.controller.first_max_tid() else {
+        return;
+    };
+
+    let Some(tid2) = args.controller.second_max_tid() else {
+        return;
+    };
+    Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND).execute_policy(args.task_map, tid1, tid2);
+
+    // Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND).execute_policy(args.task_map, tid1, tid2);
     #[cfg(debug_assertions)]
     {
         let end = start.elapsed();

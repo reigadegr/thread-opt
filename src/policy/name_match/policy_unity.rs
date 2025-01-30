@@ -1,5 +1,6 @@
 use crate::policy::name_match::common::Policy;
 use crate::policy::pkg_cfg::StartArgs;
+#[cfg(debug_assertions)]
 use log::debug;
 
 const TOP: [&str; 0] = [];
