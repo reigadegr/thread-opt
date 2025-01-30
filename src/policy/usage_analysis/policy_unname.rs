@@ -1,5 +1,5 @@
-use crate::policy::common::Policy;
 use crate::policy::pkg_cfg::StartArgs;
+use crate::policy::usage_analysis::common::Policy;
 #[cfg(debug_assertions)]
 use log::debug;
 
@@ -23,7 +23,6 @@ pub fn start_task(args: &mut StartArgs) {
     };
     Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND).execute_policy(args.task_map, tid1, tid2);
 
-    // Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND).execute_policy(args.task_map, tid1, tid2);
     #[cfg(debug_assertions)]
     {
         let end = start.elapsed();
