@@ -75,12 +75,13 @@ impl<'a> Policy<'a> {
         let start = std::time::Instant::now();
         execute_task(&CmdType::Only7, first);
         execute_task(&CmdType::Only6, second);
-        for (tid, comm) in task_map {
-            if *tid == first || *tid == second {
-                continue;
-            }
+        
+        for (&tid, comm) in task_map
+            .iter()
+            .filter(|(&tid, _)| tid != first && tid != second)
+        {
             let cmd_type = self.get_cmd_type(comm);
-            execute_task(&cmd_type, *tid);
+            execute_task(&cmd_type, tid);
         }
 
         #[cfg(debug_assertions)]
