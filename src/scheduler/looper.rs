@@ -53,8 +53,6 @@ impl Looper {
             pid: &mut self.pid,
         });
         self.game_exit();
-        std::thread::sleep(Duration::from_millis(2000));
-        // }
     }
 
     fn handle_package_list<F>(&mut self, package_list: &[&str], start_task: F) -> bool
