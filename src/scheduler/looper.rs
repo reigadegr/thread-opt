@@ -32,14 +32,14 @@ impl Looper {
             controller,
         }
     }
-    
+
     fn game_exit(&mut self) {
         info!("Exiting game");
         let tid_list = self.tid_utils.get_tid_list(self.pid);
         bind_tid_list_to_cgroup(get_background_group(), tid_list);
         self.controller.init_default();
     }
-    
+
     fn start_bind_common<F>(&mut self, start_task: F)
     where
         // 传入函数的签名

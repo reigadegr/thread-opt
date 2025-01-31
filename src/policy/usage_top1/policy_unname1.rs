@@ -4,9 +4,9 @@ use crate::policy::pkg_cfg::StartArgs;
 use log::debug;
 
 const TOP: [&str; 1] = ["Thread-"];
-const ONLY6: [&str; 0] = [];
+const ONLY6: [&str; 2] = ["RHIThread", "RenderThread"];
 const ONLY7: [&str; 0] = [];
-const MIDDLE: [&str; 2] = ["RHIThread", "RenderThread"];
+const MIDDLE: [&str; 0] = [];
 const BACKEND: [&str; 0] = [];
 
 pub fn start_task(args: &mut StartArgs) {
@@ -18,10 +18,7 @@ pub fn start_task(args: &mut StartArgs) {
         return;
     };
 
-    let Some(tid2) = args.controller.second_max_tid() else {
-        return;
-    };
-    Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND).execute_policy(args.task_map, tid1, tid2);
+    Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND).execute_policy(args.task_map, tid1);
 
     #[cfg(debug_assertions)]
     {
