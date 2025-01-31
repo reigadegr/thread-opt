@@ -1,5 +1,5 @@
 use crate::{
-    cgroup::group_info::{get_middle_group, get_top_group},
+    cgroup::group_info::{get_background_group, get_middle_group, get_top_group},
     utils::affinity_setter::{bind_thread_to_cpu, bind_tid_list_to_cgroup},
 };
 use compact_str::CompactString;
@@ -26,7 +26,16 @@ pub fn execute_policy(task_map: &HashMap<pid_t, CompactString>, first: pid_t, se
         .filter(|&&tid| tid != first && tid != second)
         .copied()
         .collect();
-    bind_tid_list_to_cgroup(get_middle_group(), &filtered_keys);
+
+    let background_group = get_background_group();
+    let middle_group = get_middle_group();
+
+    if background_group == middle_group {
+        bind_tid_list_to_cgroup(get_middle_group(), &filtered_keys);
+    } else {
+        let new_array = [background_group, middle_group].concat();
+        bind_tid_list_to_cgroup(&new_array, &filtered_keys);
+    }
     // for (&tid, comm) in task_map
     // .iter()
     // .filter(|(&tid, _)| tid != first && tid != second)
