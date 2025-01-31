@@ -4,11 +4,11 @@ use crate::{
         get_top_tid::TopAppUtils,
     },
     cgroup::group_info::get_background_group,
+    cpu_common::Controller,
     policy::pkg_cfg::{StartArgs, PACKAGE_CONFIGS},
     utils::affinity_setter::bind_tid_list_to_cgroup,
 };
 
-use crate::cpu_common::Controller;
 use compact_str::CompactString;
 use libc::pid_t;
 use log::info;
@@ -32,7 +32,14 @@ impl Looper {
             controller,
         }
     }
-
+    
+    fn game_exit(&mut self) {
+        info!("Exiting game");
+        let tid_list = self.tid_utils.get_tid_list(self.pid);
+        bind_tid_list_to_cgroup(get_background_group(), tid_list);
+        self.controller.init_default();
+    }
+    
     fn start_bind_common<F>(&mut self, start_task: F)
     where
         // 传入函数的签名
@@ -42,10 +49,7 @@ impl Looper {
         loop {
             let pid = self.top_app_utils.get_pid();
             if pid != &self.pid {
-                info!("Exiting game");
-                let tid_list = self.tid_utils.get_tid_list(self.pid);
-                bind_tid_list_to_cgroup(get_background_group(), tid_list);
-                self.controller.init_default();
+                self.game_exit();
                 return;
             }
             let task_map = self.tid_utils.get_task_map(*pid);
