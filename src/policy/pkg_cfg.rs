@@ -1,7 +1,9 @@
 use super::{
     name_match::{policy_ue, policy_unity},
-    usage_analysis::policy_unname,
+    usage_top1::policy_unname1,
+    usage_top2::policy_unname2,
 };
+
 use crate::Controller;
 use compact_str::CompactString;
 use hashbrown::HashMap;
@@ -17,8 +19,14 @@ const UNITY: [&str; 6] = [
     "com.tencent.tmgp.speedmobile",
 ];
 
-const UNNAME: [&str; 3] = [
+const UNNAME1: [&str; 3] = [
     "com.tencent.tmgp.pubgmhd",
+    "com.tencent.tmgp.pubgmhd",
+    "com.tencent.tmgp.pubgmhd",
+];
+
+const UNNAME2: [&str; 3] = [
+    "com.netease.yyslscn",
     "com.netease.yyslscn",
     "com.netease.yyslscn",
 ];
@@ -35,9 +43,10 @@ pub struct StartArgs<'a> {
 }
 type ConfigTuple<'a> = (&'a [&'a str], fn(&mut StartArgs));
 
-pub static PACKAGE_CONFIGS: LazyLock<[ConfigTuple; 3]> = LazyLock::new(|| {
+pub static PACKAGE_CONFIGS: LazyLock<[ConfigTuple; 4]> = LazyLock::new(|| {
     [
-        (&UNNAME[..], policy_unname::start_task),
+        (&UNNAME1[..], policy_unname1::start_task),
+        (&UNNAME2[..], policy_unname2::start_task),
         (&UNITY[..], policy_unity::start_task),
         (&MINGCHAO[..], policy_ue::start_task),
     ]

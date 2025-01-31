@@ -65,22 +65,14 @@ impl<'a> Policy<'a> {
     }
 
     // 执行策略
-    pub fn execute_policy(
-        &self,
-        task_map: &HashMap<pid_t, CompactString>,
-        first: pid_t,
-        second: pid_t,
-    ) {
+    pub fn execute_policy(&self, task_map: &HashMap<pid_t, CompactString>, first: pid_t) {
         #[cfg(debug_assertions)]
         let start = std::time::Instant::now();
         execute_task(&CmdType::Only7, first);
-        execute_task(&CmdType::Only6, second);
-        for (tid, comm) in task_map {
-            if *tid == first || *tid == second {
-                continue;
-            }
+
+        for (&tid, comm) in task_map.iter().filter(|(&tid, _)| tid != first) {
             let cmd_type = self.get_cmd_type(comm);
-            execute_task(&cmd_type, *tid);
+            execute_task(&cmd_type, tid);
         }
 
         #[cfg(debug_assertions)]
