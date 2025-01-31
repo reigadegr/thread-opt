@@ -75,7 +75,7 @@ impl<'a> Policy<'a> {
         let start = std::time::Instant::now();
         execute_task(&CmdType::Only7, first);
         execute_task(&CmdType::Only6, second);
-        
+
         for (&tid, comm) in task_map
             .iter()
             .filter(|(&tid, _)| tid != first && tid != second)
