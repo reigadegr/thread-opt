@@ -45,20 +45,16 @@ impl Looper {
         // 传入函数的签名
         F: Fn(&mut StartArgs),
     {
-        self.controller.init_game(self.pid);
-        loop {
-            let pid = self.top_app_utils.get_pid();
-            if pid != &self.pid {
-                self.game_exit();
-                return;
-            }
-            let task_map = self.tid_utils.get_task_map(*pid);
-            start_task(&mut StartArgs {
-                task_map,
-                controller: &mut self.controller,
-            });
-            std::thread::sleep(Duration::from_millis(2000));
-        }
+        // let task_map = self.tid_utils.get_task_map(self.pid);
+        start_task(&mut StartArgs {
+            controller: &mut self.controller,
+            top_app_utils: &mut self.top_app_utils,
+            tid_utils: &mut self.tid_utils,
+            pid: &mut self.pid,
+        });
+        self.game_exit();
+        std::thread::sleep(Duration::from_millis(2000));
+        // }
     }
 
     fn handle_package_list<F>(&mut self, package_list: &[&str], start_task: F) -> bool
@@ -68,7 +64,6 @@ impl Looper {
         for &package in package_list {
             if package == self.global_package {
                 info!("Detected target App: {}", self.global_package);
-                self.pid = *self.top_app_utils.get_pid();
                 self.start_bind_common(start_task);
                 return true;
             }
