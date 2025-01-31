@@ -11,8 +11,6 @@ use crate::{
 use crate::cpu_common::Controller;
 use compact_str::CompactString;
 use libc::pid_t;
-// #[cfg(debug_assertions)]
-// use log::debug;
 use log::info;
 use std::time::Duration;
 
@@ -79,8 +77,6 @@ impl Looper {
             {
                 let pid = self.top_app_utils.get_pid();
                 if self.pid == *pid {
-                    // #[cfg(debug_assertions)]
-                    // debug!("直接返回");
                     std::thread::sleep(Duration::from_millis(1000));
                     continue 'outer;
                 }

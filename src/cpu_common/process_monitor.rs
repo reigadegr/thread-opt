@@ -4,8 +4,7 @@ use libc::{pid_t, sysconf, _SC_CLK_TCK};
 #[cfg(debug_assertions)]
 use log::debug;
 use std::{
-    cmp,
-    fs,
+    cmp, fs,
     sync::{
         atomic::{AtomicBool, Ordering},
         mpsc::{self, Receiver, Sender, SyncSender},
@@ -19,7 +18,7 @@ use std::{
 struct UsageTracker {
     pid: pid_t,
     tid: pid_t,
-    last_cputime: u64,
+    last_cputime: u32,
     read_timer: Instant,
 }
 
@@ -33,14 +32,14 @@ impl UsageTracker {
         })
     }
 
-    fn try_calculate(&mut self) -> Result<f64> {
+    fn try_calculate(&mut self) -> Result<f32> {
         let tick_per_sec = unsafe { sysconf(_SC_CLK_TCK) };
         let new_cputime = get_thread_cpu_time(self.pid, self.tid)?;
-        let elapsed_ticks = self.read_timer.elapsed().as_secs_f64() * tick_per_sec as f64;
+        let elapsed_ticks = self.read_timer.elapsed().as_secs_f32() * tick_per_sec as f32;
         self.read_timer = Instant::now();
         let cputime_slice = new_cputime - self.last_cputime;
         self.last_cputime = new_cputime;
-        Ok(cputime_slice as f64 / elapsed_ticks)
+        Ok(cputime_slice as f32 / elapsed_ticks)
     }
 }
 
@@ -48,7 +47,7 @@ impl UsageTracker {
 pub struct ProcessMonitor {
     stop: Arc<AtomicBool>,
     sender: SyncSender<Option<pid_t>>,
-    max_usage_tid: Receiver<(pid_t, pid_t)>, // 修改为接收元组
+    max_usage_tid: Receiver<(pid_t, pid_t)>,
 }
 
 impl ProcessMonitor {
@@ -112,11 +111,11 @@ fn monitor_thread(
         }
 
         if let Some(pid) = current_pid {
-            if last_full_update.elapsed() > Duration::from_millis(2500) {
+            if last_full_update.elapsed() > Duration::from_millis(1000) {
                 #[cfg(debug_assertions)]
                 debug!("开始计算喵");
                 let Ok(threads) = get_thread_ids(pid) else {
-                    thread::sleep(Duration::from_millis(1000));
+                    thread::sleep(Duration::from_millis(300));
                     continue;
                 };
                 all_trackers = threads
@@ -143,15 +142,18 @@ fn monitor_thread(
                 top_threads.truncate(5);
                 top_trackers = top_threads
                     .into_iter()
-                    .filter_map(|(tid, _)| match top_trackers.entry(tid) {
-                        Entry::Occupied(o) => Some((tid, o.remove())),
-                        Entry::Vacant(_) => Some((tid, UsageTracker::new(pid, tid).ok()?)),
+                    .map(|(tid, _)| {
+                        let tracker = all_trackers.get(&tid).cloned().unwrap_or_else(|| {
+                            UsageTracker::new(pid, tid).expect("Failed to create UsageTracker")
+                        });
+                        (tid, tracker)
                     })
                     .collect();
+
                 last_full_update = Instant::now();
             }
 
-            let mut top_two: Vec<(pid_t, f64)> = top_trackers
+            let mut top_two: Vec<(pid_t, f32)> = top_trackers
                 .iter_mut()
                 .filter_map(|(tid, tracker)| {
                     tracker.try_calculate().ok().map(|usage| (*tid, usage))
@@ -159,10 +161,11 @@ fn monitor_thread(
                 .collect();
             top_two.sort_by(|(_, a), (_, b)| b.partial_cmp(a).unwrap_or(cmp::Ordering::Equal));
             top_two.truncate(2);
-            max_usage_tid.send((top_two[0].0, top_two[1].0)).unwrap();
+            if top_two.len() > 1 {
+                max_usage_tid.send((top_two[0].0, top_two[1].0)).unwrap();
+            }
         }
-
-        thread::sleep(Duration::from_millis(1000));
+        thread::sleep(Duration::from_millis(300));
     }
 }
 
@@ -177,12 +180,12 @@ fn get_thread_ids(pid: pid_t) -> Result<Vec<pid_t>> {
         .collect())
 }
 
-fn get_thread_cpu_time(pid: pid_t, tid: pid_t) -> Result<u64> {
+fn get_thread_cpu_time(pid: pid_t, tid: pid_t) -> Result<u32> {
     let stat_path = format!("/proc/{pid}/task/{tid}/stat");
     let stat_content = fs::read_to_string(stat_path)?;
     let parts: Vec<&str> = stat_content.split_whitespace().collect();
-    let utime = parts[13].parse::<u64>().unwrap_or(0);
-    let stime = parts[14].parse::<u64>().unwrap_or(0);
+    let utime = parts[13].parse::<u32>().unwrap_or(0);
+    let stime = parts[14].parse::<u32>().unwrap_or(0);
     Ok(utime + stime)
 }
 

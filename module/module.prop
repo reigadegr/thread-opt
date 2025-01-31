@@ -1,6 +1,6 @@
 id=thread_opt
 name=thread-opt
-version=v0.1.6
-versionCode=6
+version=v1.0.0
+versionCode=10
 author=Nigger
 description=Hard Affinity policy for games thread.
