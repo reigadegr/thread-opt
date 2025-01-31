@@ -5,11 +5,7 @@ use libc::{pid_t, sysconf, _SC_CLK_TCK};
 use log::debug;
 use std::{
     cmp, fs,
-    sync::{
-        atomic::{AtomicBool, Ordering},
-        mpsc::{self, Receiver, Sender, SyncSender},
-        Arc,
-    },
+    sync::mpsc::{self, Receiver, Sender, SyncSender},
     thread,
     time::{Duration, Instant},
 };
@@ -45,7 +41,6 @@ impl UsageTracker {
 
 #[derive(Debug)]
 pub struct ProcessMonitor {
-    stop: Arc<AtomicBool>,
     sender: SyncSender<Option<pid_t>>,
     max_usage_tid: Receiver<(pid_t, pid_t)>,
 }
@@ -53,22 +48,18 @@ pub struct ProcessMonitor {
 impl ProcessMonitor {
     pub fn new() -> Self {
         let (sender, receiver) = mpsc::sync_channel(0);
-        let stop = Arc::new(AtomicBool::new(false));
         let (max_usage_tid_sender, max_usage_tid) = mpsc::channel();
 
         {
-            let stop = stop.clone();
-
             thread::Builder::new()
                 .name("ProcessMonitor".to_string())
                 .spawn(move || {
-                    monitor_thread(&stop, &receiver, &max_usage_tid_sender);
+                    monitor_thread(&receiver, &max_usage_tid_sender);
                 })
                 .unwrap();
         }
 
         Self {
-            stop,
             sender,
             max_usage_tid,
         }
@@ -78,32 +69,18 @@ impl ProcessMonitor {
         self.sender.send(pid).unwrap();
     }
 
-    fn stop(&self) {
-        self.stop.store(true, Ordering::Release);
-    }
-
     pub fn update_max_usage_tid(&self) -> Option<(pid_t, pid_t)> {
         self.max_usage_tid.try_iter().last()
     }
 }
 
-impl Drop for ProcessMonitor {
-    fn drop(&mut self) {
-        self.stop();
-    }
-}
-
-fn monitor_thread(
-    stop: &Arc<AtomicBool>,
-    receiver: &Receiver<Option<pid_t>>,
-    max_usage_tid: &Sender<(pid_t, pid_t)>,
-) {
+fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pid_t, pid_t)>) {
     let mut current_pid = None;
     let mut last_full_update = Instant::now();
     let mut all_trackers = HashMap::new();
     let mut top_trackers = HashMap::new();
 
-    while !stop.load(Ordering::Acquire) {
+    loop {
         if let Ok(pid) = receiver.try_recv() {
             current_pid = pid;
             all_trackers.clear();

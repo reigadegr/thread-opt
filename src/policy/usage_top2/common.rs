@@ -36,13 +36,6 @@ pub fn execute_policy(task_map: &HashMap<pid_t, CompactString>, first: pid_t, se
         let new_array = [background_group, middle_group].concat();
         bind_tid_list_to_cgroup(&new_array, &filtered_keys);
     }
-    // for (&tid, comm) in task_map
-    // .iter()
-    // .filter(|(&tid, _)| tid != first && tid != second)
-    // {
-    // let cmd_type = self.get_cmd_type(comm);
-    // execute_task(&cmd_type, tid);
-    // }
 
     #[cfg(debug_assertions)]
     {
