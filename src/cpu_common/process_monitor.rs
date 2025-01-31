@@ -166,6 +166,13 @@ fn get_thread_cpu_time(pid: pid_t, tid: pid_t) -> Result<u32> {
     Ok(utime + stime)
 }
 
+// #[cfg(debug_assertions)]
+// {
+// let thread_tids = get_thread_tids(task_map, "Thread-");
+// debug!("Thread- TIDs: {thread_tids:?}");
+// }
+
+// #[cfg(debug_assertions)]
 // fn get_thread_tids(task_map: &HashMap<pid_t, CompactString>, prefix: &str) -> Vec<pid_t> {
 // task_map
 // .iter()

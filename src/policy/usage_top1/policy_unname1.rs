@@ -31,23 +31,3 @@ pub fn start_task(args: &mut StartArgs) {
         );
     }
 }
-
-// #[cfg(debug_assertions)]
-// {
-// let thread_tids = get_thread_tids(task_map, "Thread-");
-// debug!("Thread- TIDs: {thread_tids:?}");
-// }
-
-// #[cfg(debug_assertions)]
-// fn get_thread_tids(task_map: &HashMap<pid_t, CompactString>, prefix: &str) -> Vec<pid_t> {
-// task_map
-// .iter()
-// .filter_map(|(&tid, name)| {
-// if name.starts_with(prefix) {
-// Some(tid)
-// } else {
-// None
-// }
-// })
-// .collect()
-// }
