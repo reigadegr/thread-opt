@@ -4,11 +4,11 @@ use log::info;
 use std::time::{Duration, Instant};
 
 #[derive(Default)]
-pub struct ActivityInfo {
+pub struct TopPidInfo {
     pid: pid_t,
 }
 
-impl ActivityInfo {
+impl TopPidInfo {
     pub fn new(dump: &str) -> Self {
         if !dump.contains(" TOP") {
             return Self::default();
@@ -33,7 +33,7 @@ impl ActivityInfo {
 
 pub struct TopAppUtils {
     dumper: Dumpsys,
-    activity_info: ActivityInfo,
+    activity_info: TopPidInfo,
     last_refresh: Instant,
 }
 
@@ -47,7 +47,7 @@ impl TopAppUtils {
         };
         Self {
             dumper,
-            activity_info: ActivityInfo::default(),
+            activity_info: TopPidInfo::default(),
             last_refresh: Instant::now(),
         }
     }
@@ -56,7 +56,7 @@ impl TopAppUtils {
         &self.set_top_app_pid_name().pid
     }
 
-    pub fn set_top_app_pid_name(&mut self) -> &ActivityInfo {
+    pub fn set_top_app_pid_name(&mut self) -> &TopPidInfo {
         if self.last_refresh.elapsed() < Duration::from_millis(1000) {
             return &self.activity_info;
         }
@@ -70,7 +70,7 @@ impl TopAppUtils {
                 }
             }
         };
-        self.activity_info = ActivityInfo::new(&dump);
+        self.activity_info = TopPidInfo::new(&dump);
         self.last_refresh = Instant::now();
         &self.activity_info
     }

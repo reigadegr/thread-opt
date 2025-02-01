@@ -1,5 +1,5 @@
 pub mod looper;
-use crate::Controller;
+use crate::{activity::ActivityUtils, cpu_common::Controller};
 use looper::Looper;
 
 pub struct Scheduler {
@@ -8,9 +8,11 @@ pub struct Scheduler {
 
 impl Scheduler {
     #[must_use]
-    pub fn new(controller: Controller) -> Self {
+    pub fn new() -> Self {
+        let activity_utils = ActivityUtils::new();
+        let controller = Controller::new();
         Self {
-            looper: Looper::new(controller),
+            looper: Looper::new(activity_utils, controller),
         }
     }
 

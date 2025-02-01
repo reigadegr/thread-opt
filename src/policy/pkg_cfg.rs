@@ -3,10 +3,7 @@ use super::{
     usage_top1::policy_unname1,
     usage_top2::policy_unname2,
 };
-use crate::{
-    activity::{get_tid_info::TidUtils, get_top_tid::TopAppUtils},
-    Controller,
-};
+use crate::{activity::ActivityUtils, cpu_common::Controller};
 use libc::pid_t;
 use std::sync::LazyLock;
 
@@ -40,8 +37,7 @@ const MINGCHAO: [&str; 3] = [
 pub struct StartArgs<'a> {
     // pub task_map: &'a HashMap<pid_t, CompactString>,
     pub controller: &'a mut Controller,
-    pub top_app_utils: &'a mut TopAppUtils,
-    pub tid_utils: &'a mut TidUtils,
+    pub activity_utils: &'a mut ActivityUtils,
     pub pid: &'a mut pid_t,
 }
 type ConfigTuple<'a> = (&'a [&'a str], fn(&mut StartArgs));

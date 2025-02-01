@@ -1,7 +1,8 @@
 # thread-opt
-设置线程绑核，rust实现。为affinity_rs重构版(affinity_rs写得太烂不好意思开源)。本模块通过sched_setaffinity函数自定义线程亲和性
-### 编译
-#### 基础环境配置(任意完整的Linux环境即可，使用Termux的Arch Linux proot做示范)
+通过硬亲和的方式把线程绑定到指定的CPU核心，以优化游戏效果。通过libc库的sched_setaffinity函数实现
+
+### 编译方法
+#### 环境搭建(任意完整的Linux环境即可，使用Termux的Arch Linux proot做示范)
 - 下载容器
 ```shell
 pkg install proot -y; pkg install proot-distro -y; proot-distro add archlinux
@@ -67,4 +68,5 @@ export ANDROID_NDK_ROOT=$ANDROID_NDK_HOME
 
 ### 说明
 本项目采用GPL v3协议，如果使用了本项目相关内容请您开源。
-欢迎积极对本项目发起issue，pull request。
+如果能帮到你，还请为本项目添加Start。
+如果需要对游戏适配，欢迎提issue，并附上包名和Scene线程负载统计图。

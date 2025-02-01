@@ -12,13 +12,13 @@ const BACKEND: [&str; 0] = [];
 
 pub fn start_task(args: &mut StartArgs) {
     loop {
-        let pid = args.top_app_utils.get_pid();
+        let pid = args.activity_utils.top_app_utils.get_pid();
         if pid != args.pid {
             return;
         }
         #[cfg(debug_assertions)]
         let start = std::time::Instant::now();
-        let task_map = args.tid_utils.get_task_map(*pid);
+        let task_map = args.activity_utils.tid_utils.get_task_map(*pid);
         Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND).execute_policy(task_map);
         #[cfg(debug_assertions)]
         {

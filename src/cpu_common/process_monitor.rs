@@ -1,12 +1,11 @@
 use anyhow::Result;
+use flume::{Receiver, Sender};
 use hashbrown::{hash_map::Entry, HashMap};
 use libc::{pid_t, sysconf, _SC_CLK_TCK};
 #[cfg(debug_assertions)]
 use log::debug;
 use std::{
-    cmp, fs,
-    sync::mpsc::{self, Receiver, Sender, SyncSender},
-    thread,
+    cmp, fs, thread,
     time::{Duration, Instant},
 };
 
@@ -41,14 +40,14 @@ impl UsageTracker {
 
 #[derive(Debug)]
 pub struct ProcessMonitor {
-    sender: SyncSender<Option<pid_t>>,
+    sender: Sender<Option<pid_t>>,
     max_usage_tid: Receiver<(pid_t, pid_t)>,
 }
 
 impl ProcessMonitor {
     pub fn new() -> Self {
-        let (sender, receiver) = mpsc::sync_channel(0);
-        let (max_usage_tid_sender, max_usage_tid) = mpsc::channel();
+        let (sender, receiver) = flume::bounded(0);
+        let (max_usage_tid_sender, max_usage_tid) = flume::unbounded();
 
         {
             thread::Builder::new()
