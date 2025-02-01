@@ -9,6 +9,7 @@ chrono = "0.4.39"
 compact_str = "0.8.1"
 dumpsys-rs = { git = "https://github.com/reigadegr/dumpsys-rs" }
 flexi_logger = "0.29.8"
+flume = "0.11.1"
 hashbrown = "0.15.2"
 libc = "0.2.169"
 log = "0.4.25"
