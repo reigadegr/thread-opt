@@ -14,16 +14,20 @@ use libc::pid_t;
 use log::info;
 use std::time::Duration;
 
-pub struct Looper {
+pub struct Looper<'a> {
     pid: pid_t,
     global_package: CompactString,
-    top_app_utils: TopAppUtils,
+    top_app_utils: &'a mut TopAppUtils, // 使用引用类型
     tid_utils: TidUtils,
     controller: Controller,
 }
 
-impl Looper {
-    pub fn new(top_app_utils: TopAppUtils, tid_utils: TidUtils, controller: Controller) -> Self {
+impl<'a> Looper<'a> {
+    pub fn new(
+        top_app_utils: &'a mut TopAppUtils,
+        tid_utils: TidUtils,
+        controller: Controller,
+    ) -> Self {
         Self {
             pid: 0,
             global_package: CompactString::new(""),
@@ -48,7 +52,7 @@ impl Looper {
         // let task_map = self.tid_utils.get_task_map(self.pid);
         start_task(&mut StartArgs {
             controller: &mut self.controller,
-            top_app_utils: &mut self.top_app_utils,
+            top_app_utils: self.top_app_utils,
             tid_utils: &mut self.tid_utils,
             pid: &mut self.pid,
         });
