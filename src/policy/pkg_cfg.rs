@@ -4,10 +4,7 @@ use super::{
     usage_top2::policy_unname2,
 };
 use crate::activity::ActivityUtils;
-use crate::{
-    activity::{get_tid_info::TidUtils, get_top_tid::TopAppUtils},
-    cpu_common::Controller,
-};
+use crate::cpu_common::Controller;
 use libc::pid_t;
 use std::sync::LazyLock;
 

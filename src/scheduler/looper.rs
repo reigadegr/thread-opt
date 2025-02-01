@@ -1,9 +1,6 @@
 use crate::activity::ActivityUtils;
 use crate::{
-    activity::{
-        get_tid_info::{get_process_name, TidUtils},
-        get_top_tid::TopAppUtils,
-    },
+    activity::get_tid_info::get_process_name,
     cgroup::group_info::get_background_group,
     cpu_common::Controller,
     policy::pkg_cfg::{StartArgs, PACKAGE_CONFIGS},
