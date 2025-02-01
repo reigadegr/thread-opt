@@ -3,8 +3,7 @@ use super::{
     usage_top1::policy_unname1,
     usage_top2::policy_unname2,
 };
-use crate::activity::ActivityUtils;
-use crate::cpu_common::Controller;
+use crate::{activity::ActivityUtils, cpu_common::Controller};
 use libc::pid_t;
 use std::sync::LazyLock;
 

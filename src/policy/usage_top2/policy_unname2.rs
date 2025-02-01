@@ -17,10 +17,12 @@ pub fn start_task(args: &mut StartArgs) {
 
         args.controller.update_max_usage_tid();
         let Some(tid1) = args.controller.first_max_tid() else {
+            std::thread::sleep(Duration::from_millis(1000));
             continue;
         };
 
         let Some(tid2) = args.controller.second_max_tid() else {
+            std::thread::sleep(Duration::from_millis(1000));
             continue;
         };
         let task_map = args.activity_utils.tid_utils.get_task_map(*pid);

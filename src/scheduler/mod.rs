@@ -1,6 +1,5 @@
 pub mod looper;
-use crate::activity::ActivityUtils;
-use crate::cpu_common::Controller;
+use crate::{activity::ActivityUtils, cpu_common::Controller};
 use looper::Looper;
 
 pub struct Scheduler {

@@ -23,6 +23,7 @@ pub fn start_task(args: &mut StartArgs) {
 
         args.controller.update_max_usage_tid();
         let Some(tid1) = args.controller.first_max_tid() else {
+            std::thread::sleep(Duration::from_millis(1000));
             continue;
         };
 
