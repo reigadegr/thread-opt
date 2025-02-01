@@ -5,13 +5,14 @@ use crate::{
 };
 use looper::Looper;
 
-pub struct Scheduler<'a> {
-    looper: Looper<'a>,
+pub struct Scheduler {
+    looper: Looper,
 }
 
-impl<'a> Scheduler<'a> {
+impl Scheduler {
     #[must_use]
-    pub fn new(top_app_utils: &'a mut TopAppUtils) -> Self {
+    pub fn new() -> Self {
+        let top_app_utils = TopAppUtils::new();
         let tid_utils = TidUtils::new();
         let controller = Controller::new();
         Self {
