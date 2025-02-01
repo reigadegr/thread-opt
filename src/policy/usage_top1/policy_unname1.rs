@@ -13,7 +13,7 @@ const BACKEND: [&str; 0] = [];
 pub fn start_task(args: &mut StartArgs) {
     args.controller.init_game(*args.pid);
     loop {
-        let pid = args.top_app_utils.get_pid();
+        let pid = args.activity_utils.top_app_utils.get_pid();
         if pid != args.pid {
             args.controller.init_default();
             return;
@@ -26,7 +26,7 @@ pub fn start_task(args: &mut StartArgs) {
             continue;
         };
 
-        let task_map = args.tid_utils.get_task_map(*pid);
+        let task_map = args.activity_utils.tid_utils.get_task_map(*pid);
         Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND).execute_policy(task_map, tid1);
 
         #[cfg(debug_assertions)]

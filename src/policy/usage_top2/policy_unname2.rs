@@ -7,7 +7,7 @@ use std::time::Duration;
 pub fn start_task(args: &mut StartArgs) {
     args.controller.init_game(*args.pid);
     loop {
-        let pid = args.top_app_utils.get_pid();
+        let pid = args.activity_utils.top_app_utils.get_pid();
         if pid != args.pid {
             args.controller.init_default();
             return;
@@ -23,7 +23,7 @@ pub fn start_task(args: &mut StartArgs) {
         let Some(tid2) = args.controller.second_max_tid() else {
             continue;
         };
-        let task_map = args.tid_utils.get_task_map(*pid);
+        let task_map = args.activity_utils.tid_utils.get_task_map(*pid);
         execute_policy(task_map, tid1, tid2);
 
         #[cfg(debug_assertions)]

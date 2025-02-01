@@ -1,3 +1,4 @@
+use crate::activity::ActivityUtils;
 use crate::{
     activity::{
         get_tid_info::{get_process_name, TidUtils},
@@ -8,7 +9,6 @@ use crate::{
     policy::pkg_cfg::{StartArgs, PACKAGE_CONFIGS},
     utils::affinity_setter::bind_tid_list_to_cgroup,
 };
-
 use compact_str::CompactString;
 use libc::pid_t;
 use log::info;
@@ -17,25 +17,23 @@ use std::time::Duration;
 pub struct Looper {
     pid: pid_t,
     global_package: CompactString,
-    top_app_utils: TopAppUtils,
-    tid_utils: TidUtils,
+    activity_utils: ActivityUtils,
     controller: Controller,
 }
 
 impl Looper {
-    pub fn new(top_app_utils: TopAppUtils, tid_utils: TidUtils, controller: Controller) -> Self {
+    pub fn new(activity_utils: ActivityUtils, controller: Controller) -> Self {
         Self {
             pid: 0,
             global_package: CompactString::new(""),
-            top_app_utils,
-            tid_utils,
+            activity_utils,
             controller,
         }
     }
 
     fn game_exit(&mut self) {
         info!("Exiting game");
-        let tid_list = self.tid_utils.get_tid_list(self.pid);
+        let tid_list = self.activity_utils.tid_utils.get_tid_list(self.pid);
         bind_tid_list_to_cgroup(get_background_group(), tid_list);
         self.controller.init_default();
     }
@@ -45,11 +43,10 @@ impl Looper {
         // 传入函数的签名
         F: Fn(&mut StartArgs),
     {
-        // let task_map = self.tid_utils.get_task_map(self.pid);
+        // let task_map = self.activity_utils.tid_utils.get_task_map(self.pid);
         start_task(&mut StartArgs {
             controller: &mut self.controller,
-            top_app_utils: &mut self.top_app_utils,
-            tid_utils: &mut self.tid_utils,
+            activity_utils: &mut self.activity_utils,
             pid: &mut self.pid,
         });
         self.game_exit();
@@ -72,7 +69,7 @@ impl Looper {
     pub fn enter_loop(&mut self) {
         'outer: loop {
             {
-                let pid = self.top_app_utils.get_pid();
+                let pid = self.activity_utils.top_app_utils.get_pid();
                 if self.pid == *pid {
                     std::thread::sleep(Duration::from_millis(1000));
                     continue 'outer;

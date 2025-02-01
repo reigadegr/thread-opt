@@ -1,4 +1,5 @@
 pub mod looper;
+use crate::activity::ActivityUtils;
 use crate::{
     activity::{get_tid_info::TidUtils, get_top_tid::TopAppUtils},
     cpu_common::Controller,
@@ -12,11 +13,10 @@ pub struct Scheduler {
 impl Scheduler {
     #[must_use]
     pub fn new() -> Self {
-        let top_app_utils = TopAppUtils::new();
-        let tid_utils = TidUtils::new();
+        let activity_utils = ActivityUtils::new();
         let controller = Controller::new();
         Self {
-            looper: Looper::new(top_app_utils, tid_utils, controller),
+            looper: Looper::new(activity_utils, controller),
         }
     }
 
