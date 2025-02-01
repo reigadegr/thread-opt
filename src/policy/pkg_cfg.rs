@@ -5,7 +5,7 @@ use super::{
 };
 use crate::{
     activity::{get_tid_info::TidUtils, get_top_tid::TopAppUtils},
-    Controller,
+    cpu_common::Controller,
 };
 use libc::pid_t;
 use std::sync::LazyLock;

@@ -23,12 +23,12 @@ pub struct Looper {
 }
 
 impl Looper {
-    pub fn new(controller: Controller) -> Self {
+    pub fn new(top_app_utils: TopAppUtils, tid_utils: TidUtils, controller: Controller) -> Self {
         Self {
             pid: 0,
             global_package: CompactString::new(""),
-            top_app_utils: TopAppUtils::new(),
-            tid_utils: TidUtils::new(),
+            top_app_utils,
+            tid_utils,
             controller,
         }
     }
