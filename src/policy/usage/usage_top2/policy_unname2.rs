@@ -1,10 +1,9 @@
 use super::common::execute_policy;
 use crate::policy::pkg_cfg::StartArgs;
+use crate::policy::usage::{get_thread_tids, UNNAME_TIDS};
 #[cfg(debug_assertions)]
 use log::debug;
 use std::time::Duration;
-use crate::policy::usage::{get_thread_tids, UNNAME_TIDS};
-
 
 pub fn start_task(args: &mut StartArgs) {
     args.controller.init_game(*args.pid);

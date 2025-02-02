@@ -11,4 +11,4 @@ done
 
 uid=$(dumpsys package com.termux | grep appId | awk 'NR==1{print $1}' | cut -d '=' -f2)
 chown -R $uid:$uid  ./src build.rs
-chmod -R 0755 ./src build.rs
+chmod -R 0644 ./src build.rs

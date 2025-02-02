@@ -1,9 +1,9 @@
 use compact_str::CompactString;
 use flume::{bounded, Receiver, Sender};
 use hashbrown::HashMap;
-use once_cell::sync::Lazy;
 use libc::pid_t;
 use log::debug;
+use once_cell::sync::Lazy;
 
 pub mod usage_top1;
 pub mod usage_top2;

@@ -1,9 +1,9 @@
 use super::common::Policy;
 use crate::policy::pkg_cfg::StartArgs;
+use crate::policy::usage::{get_thread_tids, UNNAME_TIDS};
 #[cfg(debug_assertions)]
 use log::debug;
 use std::time::Duration;
-use crate::policy::usage::{get_thread_tids, UNNAME_TIDS};
 
 const TOP: [&str; 0] = [];
 const ONLY6: [&str; 2] = ["RHIThread", "RenderThread"];
