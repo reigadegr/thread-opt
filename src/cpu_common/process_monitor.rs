@@ -92,8 +92,13 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
                 #[cfg(debug_assertions)]
                 {
                     debug!("开始计算负载喵，开始接收数据");
-                    let data1 = rx.recv().unwrap();
-                    debug!("这是收到的未命名的tids:{data1:?}");
+                    if let Ok(data1) = rx.try_recv() {
+                        debug!("这是收到的未命名的tids:{data1:?}");
+                    } else {
+                        debug!("通道为空，休眠后跳过当前循环");
+                        thread::sleep(Duration::from_millis(1000));
+                        continue;
+                    }
                 }
 
                 let Ok(threads) = get_thread_ids(pid) else {

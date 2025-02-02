@@ -35,9 +35,9 @@ pub fn start_task(args: &mut StartArgs) {
         #[cfg(debug_assertions)]
         {
             let unname_tids = get_thread_tids(task_map, "Thread-");
-            debug!("发送开始");
+            debug!("发送即将开始");
             tx.send(unname_tids).unwrap();
-            debug!("发送完毕");
+            debug!("发送已经完毕");
         }
 
         args.controller.update_max_usage_tid();
