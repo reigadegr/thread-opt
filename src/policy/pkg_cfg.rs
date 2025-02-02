@@ -1,7 +1,9 @@
 use super::name_match::{policy_ue, policy_unity};
-use crate::policy::usage::usage_top1::policy_usage1;
-use crate::policy::usage::usage_top2::policy_usage2;
-use crate::{activity::ActivityUtils, cpu_common::Controller};
+use crate::{
+    activity::ActivityUtils,
+    cpu_common::Controller,
+    policy::usage::{usage_top1::policy_usage1, usage_top2::policy_usage2},
+};
 use libc::pid_t;
 use once_cell::sync::Lazy;
 

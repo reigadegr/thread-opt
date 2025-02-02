@@ -1,6 +1,8 @@
 use super::common::Policy;
-use crate::policy::pkg_cfg::StartArgs;
-use crate::policy::usage::{get_thread_tids, UNNAME_TIDS};
+use crate::policy::{
+    pkg_cfg::StartArgs,
+    usage::{get_thread_tids, UNNAME_TIDS},
+};
 #[cfg(debug_assertions)]
 use log::debug;
 use std::time::Duration;
