@@ -19,8 +19,7 @@ pub fn start_task(args: &mut StartArgs) {
     args.controller.init_game(*args.pid);
     // 获取全局通道的发送端
     let tx = &UNNAME_TIDS.0;
-    // 获取全局通道的接收端
-    // let rx = &UNNAME_TIDS.1;
+
     loop {
         let pid = args.activity_utils.top_app_utils.get_pid();
         if pid != args.pid {

@@ -88,17 +88,14 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
         }
 
         if let Some(pid) = current_pid {
-            if last_full_update.elapsed() > Duration::from_millis(1000) {
-                let Ok(threads) = get_thread_ids(rx) else {
+            if last_full_update.elapsed() > Duration::from_millis(2500) {
+                let Ok(threads) = get_target_tids(rx) else {
                     #[cfg(debug_assertions)]
                     debug!("错误获取，休眠300ms后跳过");
-                    thread::sleep(Duration::from_millis(300));
+                    thread::sleep(Duration::from_millis(1000));
                     continue;
                 };
-                #[cfg(debug_assertions)]
-                {
-                    debug!("成功获取");
-                }
+
                 all_trackers = threads
                     .iter()
                     .copied()
@@ -146,31 +143,25 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
                 max_usage_tid.send((top_two[0].0, top_two[1].0)).unwrap();
             }
         }
-        thread::sleep(Duration::from_millis(300));
+        thread::sleep(Duration::from_millis(1000));
     }
 }
 
-fn get_thread_ids(rx: &Receiver<Vec<i32>>) -> Result<Vec<pid_t>> {
+fn get_target_tids(rx: &Receiver<Vec<i32>>) -> Result<Vec<pid_t>> {
     #[cfg(debug_assertions)]
     debug!("开始计算负载喵，开始接收数据");
-    if let Ok(data1) = rx.try_recv() {
-        #[cfg(debug_assertions)]
-        debug!("这是收到的未命名的tids:{data1:?}");
-        Ok(data1)
-    } else {
-        #[cfg(debug_assertions)]
-        debug!("通道为空，休眠后跳过当前循环");
-        Err(anyhow!("Cannot get tids."))
-    }
-
-    // let proc_path = format!("/proc/{pid}/task");
-    // Ok(fs::read_dir(proc_path)?
-    // .filter_map(|entry| {
-    // entry
-    // .ok()
-    // .and_then(|e| e.file_name().to_string_lossy().parse::<pid_t>().ok())
-    // })
-    // .collect())
+    rx.try_recv().map_or_else(
+        |_| {
+            #[cfg(debug_assertions)]
+            debug!("通道为空，返回一个错误");
+            Err(anyhow!("Cannot get tids."))
+        },
+        |tids| {
+            #[cfg(debug_assertions)]
+            debug!("成功获取，这是收到的未命名的tids:{tids:?}");
+            Ok(tids)
+        },
+    )
 }
 
 fn get_thread_cpu_time(pid: pid_t, tid: pid_t) -> Result<u32> {
