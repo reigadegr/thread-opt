@@ -1,3 +1,4 @@
+use crate::policy::usage_top2::policy_unname2::UNNAME_TIDS;
 use anyhow::Result;
 use flume::{Receiver, Sender};
 use hashbrown::{hash_map::Entry, HashMap};
@@ -78,7 +79,7 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
     let mut last_full_update = Instant::now();
     let mut all_trackers = HashMap::new();
     let mut top_trackers = HashMap::new();
-
+    let rx = &UNNAME_TIDS.1;
     loop {
         if let Ok(pid) = receiver.try_recv() {
             current_pid = pid;
@@ -89,11 +90,20 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
         if let Some(pid) = current_pid {
             if last_full_update.elapsed() > Duration::from_millis(1000) {
                 #[cfg(debug_assertions)]
-                debug!("开始计算喵");
+                {
+                    debug!("开始计算负载喵，开始接收数据");
+                    let data1 = rx.recv().unwrap();
+                    debug!("这是收到的未命名的tids:{data1:?}");
+                }
+
                 let Ok(threads) = get_thread_ids(pid) else {
                     thread::sleep(Duration::from_millis(300));
                     continue;
                 };
+                #[cfg(debug_assertions)]
+                {
+                    debug!("成功获取");
+                }
                 all_trackers = threads
                     .iter()
                     .copied()
@@ -164,23 +174,3 @@ fn get_thread_cpu_time(pid: pid_t, tid: pid_t) -> Result<u32> {
     let stime = parts[14].parse::<u32>().unwrap_or(0);
     Ok(utime + stime)
 }
-
-// #[cfg(debug_assertions)]
-// {
-// let thread_tids = get_thread_tids(task_map, "Thread-");
-// debug!("Thread- TIDs: {thread_tids:?}");
-// }
-
-// #[cfg(debug_assertions)]
-// fn get_thread_tids(task_map: &HashMap<pid_t, CompactString>, prefix: &str) -> Vec<pid_t> {
-// task_map
-// .iter()
-// .filter_map(|(&tid, name)| {
-// if name.starts_with(prefix) {
-// Some(tid)
-// } else {
-// None
-// }
-// })
-// .collect()
-// }

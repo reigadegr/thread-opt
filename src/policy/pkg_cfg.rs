@@ -5,7 +5,7 @@ use super::{
 };
 use crate::{activity::ActivityUtils, cpu_common::Controller};
 use libc::pid_t;
-use std::sync::LazyLock;
+use once_cell::sync::Lazy;
 
 const UNITY: [&str; 6] = [
     "com.miHoYo.Yuanshen",
@@ -42,7 +42,7 @@ pub struct StartArgs<'a> {
 }
 type ConfigTuple<'a> = (&'a [&'a str], fn(&mut StartArgs));
 
-pub static PACKAGE_CONFIGS: LazyLock<[ConfigTuple; 4]> = LazyLock::new(|| {
+pub static PACKAGE_CONFIGS: Lazy<[ConfigTuple; 4]> = Lazy::new(|| {
     [
         (&UNNAME1[..], policy_unname1::start_task),
         (&UNNAME2[..], policy_unname2::start_task),
