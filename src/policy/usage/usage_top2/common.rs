@@ -31,7 +31,7 @@ pub fn execute_policy(task_map: &HashMap<pid_t, CompactString>, first: pid_t, se
     let middle_group = get_middle_group();
 
     if background_group == middle_group {
-        bind_tid_list_to_cgroup(get_middle_group(), &filtered_keys);
+        bind_tid_list_to_cgroup(middle_group, &filtered_keys);
     } else {
         let new_array = [background_group, middle_group].concat();
         bind_tid_list_to_cgroup(&new_array, &filtered_keys);
