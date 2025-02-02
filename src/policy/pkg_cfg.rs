@@ -1,6 +1,6 @@
 use super::name_match::{policy_ue, policy_unity};
-use crate::policy::usage::usage_top1::policy_unname1;
-use crate::policy::usage::usage_top2::policy_unname2;
+use crate::policy::usage::usage_top1::policy_usage1;
+use crate::policy::usage::usage_top2::policy_usage2;
 use crate::{activity::ActivityUtils, cpu_common::Controller};
 use libc::pid_t;
 use once_cell::sync::Lazy;
@@ -42,8 +42,8 @@ type ConfigTuple<'a> = (&'a [&'a str], fn(&mut StartArgs));
 
 pub static PACKAGE_CONFIGS: Lazy<[ConfigTuple; 4]> = Lazy::new(|| {
     [
-        (&UNNAME1[..], policy_unname1::start_task),
-        (&UNNAME2[..], policy_unname2::start_task),
+        (&UNNAME1[..], policy_usage1::start_task),
+        (&UNNAME2[..], policy_usage2::start_task),
         (&UNITY[..], policy_unity::start_task),
         (&UE[..], policy_ue::start_task),
     ]
