@@ -1,19 +1,10 @@
 use super::common::execute_policy;
 use crate::policy::pkg_cfg::StartArgs;
-use compact_str::CompactString;
-use flume::{bounded, Receiver, Sender};
-use hashbrown::HashMap;
-use libc::pid_t;
 #[cfg(debug_assertions)]
 use log::debug;
-use once_cell::sync::Lazy;
 use std::time::Duration;
+use crate::policy::usage::{get_thread_tids, UNNAME_TIDS};
 
-// 定义别名
-type ChannelType = (Sender<Vec<pid_t>>, Receiver<Vec<pid_t>>);
-
-// // 使用别名定义全局变量
-pub static UNNAME_TIDS: Lazy<ChannelType> = Lazy::new(|| bounded(0));
 
 pub fn start_task(args: &mut StartArgs) {
     args.controller.init_game(*args.pid);
@@ -59,19 +50,4 @@ pub fn start_task(args: &mut StartArgs) {
         execute_policy(task_map, tid1, tid2);
         std::thread::sleep(Duration::from_millis(2000));
     }
-}
-
-fn get_thread_tids(task_map: &HashMap<pid_t, CompactString>, prefix: &str) -> Vec<pid_t> {
-    #[cfg(debug_assertions)]
-    debug!("原始的task_map:{task_map:?}");
-    task_map
-        .iter()
-        .filter_map(|(&tid, name)| {
-            if name.starts_with(prefix) {
-                Some(tid)
-            } else {
-                None
-            }
-        })
-        .collect()
 }

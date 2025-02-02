@@ -1,11 +1,9 @@
-use super::{
-    name_match::{policy_ue, policy_unity},
-    usage_top1::policy_unname1,
-    usage_top2::policy_unname2,
-};
+use super::name_match::{policy_ue, policy_unity};
 use crate::{activity::ActivityUtils, cpu_common::Controller};
 use libc::pid_t;
 use once_cell::sync::Lazy;
+use crate::policy::usage::usage_top1::policy_unname1;
+use crate::policy::usage::usage_top2::policy_unname2;
 
 const UNITY: [&str; 6] = [
     "com.miHoYo.Yuanshen",
