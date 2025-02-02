@@ -29,21 +29,18 @@ pub fn start_task(args: &mut StartArgs) {
         args.controller.update_max_usage_tid();
         let Some(tid1) = args.controller.first_max_tid() else {
             #[cfg(debug_assertions)]
-
             debug!("获取不到first max tid，直接循环");
-
             std::thread::sleep(Duration::from_millis(500));
             continue;
         };
 
         let Some(tid2) = args.controller.second_max_tid() else {
             #[cfg(debug_assertions)]
-
             debug!("获取不到second max tid，直接循环");
-
             std::thread::sleep(Duration::from_millis(500));
             continue;
         };
+
         #[cfg(debug_assertions)]
         debug!("负载第一高:{tid1}\n第二高:{tid2}");
         execute_policy(task_map, tid1, tid2);

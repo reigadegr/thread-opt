@@ -18,14 +18,10 @@ pub static UNNAME_TIDS: Lazy<ChannelType> = Lazy::new(|| bounded(0));
 fn get_thread_tids(task_map: &HashMap<pid_t, CompactString>, prefix: &str) -> Vec<pid_t> {
     #[cfg(debug_assertions)]
     debug!("原始的task_map:{task_map:?}");
+
     task_map
         .iter()
-        .filter_map(|(&tid, name)| {
-            if name.starts_with(prefix) {
-                Some(tid)
-            } else {
-                None
-            }
-        })
+        .filter(|(_, name)| name.starts_with(prefix))
+        .map(|(&tid, _)| tid)
         .collect()
 }
