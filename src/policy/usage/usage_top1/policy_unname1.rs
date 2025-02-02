@@ -38,7 +38,6 @@ pub fn start_task(args: &mut StartArgs) {
             continue;
         };
 
-        let task_map = args.activity_utils.tid_utils.get_task_map(*pid);
         Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND).execute_policy(task_map, tid1);
 
         std::thread::sleep(Duration::from_millis(2000));
