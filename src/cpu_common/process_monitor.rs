@@ -88,11 +88,11 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
         }
 
         if let Some(pid) = current_pid {
-            if last_full_update.elapsed() > Duration::from_millis(2000) {
+            if last_full_update.elapsed() > Duration::from_millis(1600) {
                 let Ok(threads) = get_target_tids(rx) else {
                     #[cfg(debug_assertions)]
                     debug!("错误获取，休眠后跳过");
-                    thread::sleep(Duration::from_millis(300));
+                    thread::sleep(Duration::from_millis(400));
                     continue;
                 };
 
@@ -143,7 +143,7 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
                 max_usage_tid.send((top_two[0].0, top_two[1].0)).unwrap();
             }
         }
-        thread::sleep(Duration::from_millis(650));
+        thread::sleep(Duration::from_millis(521));
     }
 }
 
