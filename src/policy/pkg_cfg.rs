@@ -17,7 +17,7 @@ const UNITY: [&str; 6] = [
 ];
 
 const UNNAME1: [&str; 3] = [
-    "com.tencent.tmgp.pubgmhd",
+    "com.tencent.lzhx",
     "com.tencent.tmgp.pubgmhd",
     "com.tencent.tmgp.pubgmhd",
 ];
