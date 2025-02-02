@@ -30,14 +30,14 @@ pub fn start_task(args: &mut StartArgs) {
         let Some(tid1) = args.controller.first_max_tid() else {
             #[cfg(debug_assertions)]
             debug!("获取不到first max tid，直接循环");
-            std::thread::sleep(Duration::from_millis(500));
+            std::thread::sleep(Duration::from_millis(100));
             continue;
         };
 
         let Some(tid2) = args.controller.second_max_tid() else {
             #[cfg(debug_assertions)]
             debug!("获取不到second max tid，直接循环");
-            std::thread::sleep(Duration::from_millis(500));
+            std::thread::sleep(Duration::from_millis(100));
             continue;
         };
 
