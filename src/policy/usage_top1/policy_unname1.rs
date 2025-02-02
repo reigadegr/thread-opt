@@ -4,7 +4,7 @@ use crate::policy::pkg_cfg::StartArgs;
 use log::debug;
 use std::time::Duration;
 
-const TOP: [&str; 1] = ["Thread-"];
+const TOP: [&str; 0] = [];
 const ONLY6: [&str; 2] = ["RHIThread", "RenderThread"];
 const ONLY7: [&str; 0] = [];
 const MIDDLE: [&str; 0] = [];

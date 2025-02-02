@@ -1,12 +1,13 @@
 pub mod logger;
 use anyhow::Result;
+use likely_stable::unlikely;
 use log::info;
 use logger::{init_log, log_metainfo};
 
 pub fn init_misc() {
     working_in_background();
     let rs = set_main_thread_name("affinity_opt");
-    if rs.is_err() {
+    if unlikely(rs.is_err()) {
         info!("Cannot rename the main thread name.");
     }
     let _ = init_log();
@@ -19,7 +20,11 @@ fn working_in_background() {
 }
 
 fn set_main_thread_name(name: &str) -> Result<()> {
-    let truncated_name = if name.len() > 15 { &name[..15] } else { name };
+    let truncated_name = if unlikely(name.len() > 15) {
+        &name[..15]
+    } else {
+        name
+    };
 
     let thread_name = std::ffi::CString::new(truncated_name)?;
     unsafe {

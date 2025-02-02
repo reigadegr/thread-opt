@@ -28,7 +28,7 @@ const UNNAME2: [&str; 3] = [
     "com.netease.yyslscn",
 ];
 
-const MINGCHAO: [&str; 3] = [
+const UE: [&str; 3] = [
     "com.kurogame.mingchao",
     "com.papegames.infinitynikki",
     "com.kurogame.mingchao",
@@ -47,6 +47,6 @@ pub static PACKAGE_CONFIGS: LazyLock<[ConfigTuple; 4]> = LazyLock::new(|| {
         (&UNNAME1[..], policy_unname1::start_task),
         (&UNNAME2[..], policy_unname2::start_task),
         (&UNITY[..], policy_unity::start_task),
-        (&MINGCHAO[..], policy_ue::start_task),
+        (&UE[..], policy_ue::start_task),
     ]
 });
