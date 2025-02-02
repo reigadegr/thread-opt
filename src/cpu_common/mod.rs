@@ -14,7 +14,7 @@ impl Controller {
         Self {
             process_monitor: ProcessMonitor::new(),
             max_tid: None,
-            second_max_tid: None, // 初始化second_max_tid
+            second_max_tid: None,
         }
     }
 

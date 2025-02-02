@@ -1,11 +1,9 @@
-use super::{
-    name_match::{policy_ue, policy_unity},
-    usage_top1::policy_unname1,
-    usage_top2::policy_unname2,
-};
+use super::name_match::{policy_ue, policy_unity};
+use crate::policy::usage::usage_top1::policy_unname1;
+use crate::policy::usage::usage_top2::policy_unname2;
 use crate::{activity::ActivityUtils, cpu_common::Controller};
 use libc::pid_t;
-use std::sync::LazyLock;
+use once_cell::sync::Lazy;
 
 const UNITY: [&str; 6] = [
     "com.miHoYo.Yuanshen",
@@ -28,7 +26,7 @@ const UNNAME2: [&str; 3] = [
     "com.netease.yyslscn",
 ];
 
-const MINGCHAO: [&str; 3] = [
+const UE: [&str; 3] = [
     "com.kurogame.mingchao",
     "com.papegames.infinitynikki",
     "com.kurogame.mingchao",
@@ -42,11 +40,11 @@ pub struct StartArgs<'a> {
 }
 type ConfigTuple<'a> = (&'a [&'a str], fn(&mut StartArgs));
 
-pub static PACKAGE_CONFIGS: LazyLock<[ConfigTuple; 4]> = LazyLock::new(|| {
+pub static PACKAGE_CONFIGS: Lazy<[ConfigTuple; 4]> = Lazy::new(|| {
     [
         (&UNNAME1[..], policy_unname1::start_task),
         (&UNNAME2[..], policy_unname2::start_task),
         (&UNITY[..], policy_unity::start_task),
-        (&MINGCHAO[..], policy_ue::start_task),
+        (&UE[..], policy_ue::start_task),
     ]
 });

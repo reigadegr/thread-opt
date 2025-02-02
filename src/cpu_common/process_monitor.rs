@@ -1,4 +1,5 @@
-use anyhow::Result;
+use crate::policy::usage::UNNAME_TIDS;
+use anyhow::{anyhow, Result};
 use flume::{Receiver, Sender};
 use hashbrown::{hash_map::Entry, HashMap};
 use libc::{pid_t, sysconf, _SC_CLK_TCK};
@@ -78,7 +79,7 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
     let mut last_full_update = Instant::now();
     let mut all_trackers = HashMap::new();
     let mut top_trackers = HashMap::new();
-
+    let rx = &UNNAME_TIDS.1;
     loop {
         if let Ok(pid) = receiver.try_recv() {
             current_pid = pid;
@@ -87,13 +88,14 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
         }
 
         if let Some(pid) = current_pid {
-            if last_full_update.elapsed() > Duration::from_millis(1000) {
-                #[cfg(debug_assertions)]
-                debug!("开始计算喵");
-                let Ok(threads) = get_thread_ids(pid) else {
-                    thread::sleep(Duration::from_millis(300));
+            if last_full_update.elapsed() > Duration::from_millis(1500) {
+                let Ok(threads) = get_target_tids(rx) else {
+                    #[cfg(debug_assertions)]
+                    debug!("错误获取，休眠后跳过");
+                    thread::sleep(Duration::from_millis(900));
                     continue;
                 };
+
                 all_trackers = threads
                     .iter()
                     .copied()
@@ -141,19 +143,25 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
                 max_usage_tid.send((top_two[0].0, top_two[1].0)).unwrap();
             }
         }
-        thread::sleep(Duration::from_millis(300));
+        thread::sleep(Duration::from_millis(900));
     }
 }
 
-fn get_thread_ids(pid: pid_t) -> Result<Vec<pid_t>> {
-    let proc_path = format!("/proc/{pid}/task");
-    Ok(fs::read_dir(proc_path)?
-        .filter_map(|entry| {
-            entry
-                .ok()
-                .and_then(|e| e.file_name().to_string_lossy().parse::<pid_t>().ok())
-        })
-        .collect())
+fn get_target_tids(rx: &Receiver<Vec<i32>>) -> Result<Vec<pid_t>> {
+    #[cfg(debug_assertions)]
+    debug!("开始计算负载喵，开始接收数据");
+    rx.try_recv().map_or_else(
+        |_| {
+            #[cfg(debug_assertions)]
+            debug!("通道为空，返回一个错误");
+            Err(anyhow!("Cannot get tids."))
+        },
+        |tids| {
+            #[cfg(debug_assertions)]
+            debug!("成功获取，这是收到的未命名的tids:{tids:?}");
+            Ok(tids)
+        },
+    )
 }
 
 fn get_thread_cpu_time(pid: pid_t, tid: pid_t) -> Result<u32> {
@@ -164,23 +172,3 @@ fn get_thread_cpu_time(pid: pid_t, tid: pid_t) -> Result<u32> {
     let stime = parts[14].parse::<u32>().unwrap_or(0);
     Ok(utime + stime)
 }
-
-// #[cfg(debug_assertions)]
-// {
-// let thread_tids = get_thread_tids(task_map, "Thread-");
-// debug!("Thread- TIDs: {thread_tids:?}");
-// }
-
-// #[cfg(debug_assertions)]
-// fn get_thread_tids(task_map: &HashMap<pid_t, CompactString>, prefix: &str) -> Vec<pid_t> {
-// task_map
-// .iter()
-// .filter_map(|(&tid, name)| {
-// if name.starts_with(prefix) {
-// Some(tid)
-// } else {
-// None
-// }
-// })
-// .collect()
-// }
