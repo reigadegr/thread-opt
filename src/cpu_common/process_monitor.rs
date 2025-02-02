@@ -1,5 +1,5 @@
 use crate::policy::usage_top2::policy_unname2::UNNAME_TIDS;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use flume::{Receiver, Sender};
 use hashbrown::{hash_map::Entry, HashMap};
 use libc::{pid_t, sysconf, _SC_CLK_TCK};
@@ -89,19 +89,9 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
 
         if let Some(pid) = current_pid {
             if last_full_update.elapsed() > Duration::from_millis(1000) {
-                #[cfg(debug_assertions)]
-                {
-                    debug!("开始计算负载喵，开始接收数据");
-                    if let Ok(data1) = rx.try_recv() {
-                        debug!("这是收到的未命名的tids:{data1:?}");
-                    } else {
-                        debug!("通道为空，休眠后跳过当前循环");
-                        thread::sleep(Duration::from_millis(1000));
-                        continue;
-                    }
-                }
-
-                let Ok(threads) = get_thread_ids(pid) else {
+                let Ok(threads) = get_thread_ids(rx) else {
+                    #[cfg(debug_assertions)]
+                    debug!("错误获取，休眠300ms后跳过");
                     thread::sleep(Duration::from_millis(300));
                     continue;
                 };
@@ -160,15 +150,27 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
     }
 }
 
-fn get_thread_ids(pid: pid_t) -> Result<Vec<pid_t>> {
-    let proc_path = format!("/proc/{pid}/task");
-    Ok(fs::read_dir(proc_path)?
-        .filter_map(|entry| {
-            entry
-                .ok()
-                .and_then(|e| e.file_name().to_string_lossy().parse::<pid_t>().ok())
-        })
-        .collect())
+fn get_thread_ids(rx: &Receiver<Vec<i32>>) -> Result<Vec<pid_t>> {
+    #[cfg(debug_assertions)]
+    debug!("开始计算负载喵，开始接收数据");
+    if let Ok(data1) = rx.try_recv() {
+        #[cfg(debug_assertions)]
+        debug!("这是收到的未命名的tids:{data1:?}");
+        Ok(data1)
+    } else {
+        #[cfg(debug_assertions)]
+        debug!("通道为空，休眠后跳过当前循环");
+        Err(anyhow!("Cannot get tids."))
+    }
+
+    // let proc_path = format!("/proc/{pid}/task");
+    // Ok(fs::read_dir(proc_path)?
+    // .filter_map(|entry| {
+    // entry
+    // .ok()
+    // .and_then(|e| e.file_name().to_string_lossy().parse::<pid_t>().ok())
+    // })
+    // .collect())
 }
 
 fn get_thread_cpu_time(pid: pid_t, tid: pid_t) -> Result<u32> {
