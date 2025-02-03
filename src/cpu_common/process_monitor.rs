@@ -1,7 +1,7 @@
 use crate::policy::usage::UNNAME_TIDS;
 use anyhow::{anyhow, Result};
 use flume::{Receiver, Sender};
-use hashbrown::{hash_map::Entry, HashMap, HashSet};
+use hashbrown::{hash_map::Entry, HashMap};
 use libc::{pid_t, sysconf, _SC_CLK_TCK};
 #[cfg(debug_assertions)]
 use log::debug;
@@ -147,7 +147,7 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
     }
 }
 
-fn get_target_tids(rx: &Receiver<HashSet<pid_t>>) -> Result<HashSet<pid_t>> {
+fn get_target_tids(rx: &Receiver<Vec<pid_t>>) -> Result<Vec<pid_t>> {
     #[cfg(debug_assertions)]
     debug!("开始计算负载喵，开始接收数据");
     rx.try_recv().map_or_else(
