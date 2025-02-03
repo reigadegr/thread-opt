@@ -7,7 +7,7 @@ pub fn read_file(file: &Path) -> Result<CompactString> {
 }
 
 pub fn read_to_byte(file: &Path) -> Result<Box<[u8]>> {
-    let mut s: Vec<u8> = std::fs::read(file)?;
-    s.pop();
+    let s: Vec<u8> = std::fs::read(file)?;
+    // s.pop();
     Ok(s.into_boxed_slice())
 }
