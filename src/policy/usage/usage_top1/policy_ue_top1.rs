@@ -7,16 +7,16 @@ use crate::policy::{
 use log::debug;
 use std::time::Duration;
 
-const TOP: [&str; 0] = [];
-const ONLY6: [&str; 2] = ["RHIThread", "RenderThread"];
-const ONLY7: [&str; 0] = [];
-const MIDDLE: [&str; 0] = [];
-const BACKEND: [&str; 0] = [];
+const TOP: [&[u8]; 0] = [];
+const ONLY6: [&[u8]; 2] = [b"RHIThread", b"RenderThread"];
+const ONLY7: [&[u8]; 0] = [];
+const MIDDLE: [&[u8]; 0] = [];
+const BACKEND: [&[u8]; 0] = [];
 
 pub fn start_task(args: &mut StartArgs) {
-    args.controller.init_game(*args.pid);
     // 获取全局通道的发送端
     let tx = &UNNAME_TIDS.0;
+    args.controller.init_game(*args.pid);
 
     loop {
         let pid = args.activity_utils.top_app_utils.get_pid();
@@ -27,13 +27,13 @@ pub fn start_task(args: &mut StartArgs) {
 
         let task_map = args.activity_utils.tid_utils.get_task_map(*pid);
 
-        let unname_tids = get_thread_tids(task_map, "Thread-");
+        let unname_tids = get_thread_tids(task_map, b"Thread-");
         #[cfg(debug_assertions)]
         debug!("发送即将开始");
         tx.send(unname_tids).unwrap();
         #[cfg(debug_assertions)]
         debug!("发送已经完毕");
-
+        std::thread::sleep(Duration::from_millis(100));
         args.controller.update_max_usage_tid();
         let Some(tid1) = args.controller.first_max_tid() else {
             std::thread::sleep(Duration::from_millis(100));
@@ -42,6 +42,6 @@ pub fn start_task(args: &mut StartArgs) {
 
         Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND).execute_policy(task_map, tid1);
 
-        std::thread::sleep(Duration::from_millis(2000));
+        std::thread::sleep(Duration::from_millis(1900));
     }
 }

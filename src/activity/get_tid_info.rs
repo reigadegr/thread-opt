@@ -1,4 +1,4 @@
-use crate::utils::node_reader::read_file;
+use crate::utils::node_reader::read_to_byte;
 use anyhow::Result;
 use compact_str::CompactString;
 use hashbrown::HashMap;
@@ -14,7 +14,7 @@ use std::{
 pub struct TidInfo {
     task_map_name: CompactString,
     tid_list_name: CompactString,
-    task_map: HashMap<pid_t, CompactString>,
+    task_map: HashMap<pid_t, Box<[u8]>>,
     tid_list: Vec<pid_t>,
 }
 
@@ -39,7 +39,7 @@ impl TidUtils {
         }
     }
 
-    pub fn get_task_map(&mut self, pid: pid_t) -> &HashMap<pid_t, CompactString> {
+    pub fn get_task_map(&mut self, pid: pid_t) -> &HashMap<pid_t, Box<[u8]>> {
         if self.last_refresh_task_map.elapsed() > Duration::from_millis(5000) {
             self.last_refresh_task_map = Instant::now();
             return &self.set_task_map(pid).task_map;
@@ -80,10 +80,10 @@ impl TidUtils {
             }
         };
 
-        let mut task_map: HashMap<pid_t, CompactString> = HashMap::new();
+        let mut task_map: HashMap<pid_t, Box<[u8]>> = HashMap::new();
         for tid in &tid_list {
             let comm_path = format!("/proc/{tid}/comm");
-            let comm = match read_file(Path::new(&comm_path)) {
+            let comm = match read_to_byte(Path::new(&comm_path)) {
                 Ok(comm) => comm,
                 Err(e) => {
                     info!("Failed to read comm file for tid {}: {}", tid, e);

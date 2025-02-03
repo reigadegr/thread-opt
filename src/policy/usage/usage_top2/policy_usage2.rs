@@ -8,9 +8,9 @@ use log::debug;
 use std::time::Duration;
 
 pub fn start_task(args: &mut StartArgs) {
-    args.controller.init_game(*args.pid);
     // 获取全局通道的发送端
     let tx = &UNNAME_TIDS.0;
+    args.controller.init_game(*args.pid);
 
     loop {
         let pid = args.activity_utils.top_app_utils.get_pid();
@@ -21,13 +21,13 @@ pub fn start_task(args: &mut StartArgs) {
 
         let task_map = args.activity_utils.tid_utils.get_task_map(*pid);
 
-        let unname_tids = get_thread_tids(task_map, "Thread-");
+        let unname_tids = get_thread_tids(task_map, b"Thread-");
         #[cfg(debug_assertions)]
         debug!("发送即将开始");
         tx.send(unname_tids).unwrap();
         #[cfg(debug_assertions)]
-        debug!("发送已经完毕");
-
+        debug!("发送已经完毕，喵等待一段时间计算");
+        std::thread::sleep(Duration::from_millis(100));
         args.controller.update_max_usage_tid();
         let Some(tid1) = args.controller.first_max_tid() else {
             #[cfg(debug_assertions)]
@@ -46,6 +46,6 @@ pub fn start_task(args: &mut StartArgs) {
         #[cfg(debug_assertions)]
         debug!("负载第一高:{tid1}\n第二高:{tid2}");
         execute_policy(task_map, tid1, tid2);
-        std::thread::sleep(Duration::from_millis(2000));
+        std::thread::sleep(Duration::from_millis(1900));
     }
 }

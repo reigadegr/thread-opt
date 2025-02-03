@@ -2,13 +2,10 @@ use crate::{
     cgroup::group_info::{get_background_group, get_middle_group, get_top_group},
     utils::affinity_setter::bind_thread_to_cpu,
 };
-use compact_str::CompactString;
 use hashbrown::HashMap;
 use libc::pid_t;
 #[cfg(debug_assertions)]
 use log::debug;
-#[cfg(debug_assertions)]
-use std::time::Instant;
 
 // 定义线程类型
 enum CmdType {
@@ -21,21 +18,20 @@ enum CmdType {
 
 // 定义通用策略类
 pub struct Policy<'a> {
-    top: &'a [&'a str],
-    only6: &'a [&'a str],
-    only7: &'a [&'a str],
-    middle: &'a [&'a str],
-    backend: &'a [&'a str],
+    top: &'a [&'a [u8]],
+    only6: &'a [&'a [u8]],
+    only7: &'a [&'a [u8]],
+    middle: &'a [&'a [u8]],
+    backend: &'a [&'a [u8]],
 }
 
 impl<'a> Policy<'a> {
-    // 构造函数
     pub const fn new(
-        top: &'a [&'a str],
-        only6: &'a [&'a str],
-        only7: &'a [&'a str],
-        middle: &'a [&'a str],
-        backend: &'a [&'a str],
+        top: &'a [&'a [u8]],
+        only6: &'a [&'a [u8]],
+        only7: &'a [&'a [u8]],
+        middle: &'a [&'a [u8]],
+        backend: &'a [&'a [u8]],
     ) -> Self {
         Self {
             top,
@@ -46,8 +42,7 @@ impl<'a> Policy<'a> {
         }
     }
 
-    // 根据线程名称获取线程类型
-    fn get_cmd_type(&self, comm: &str) -> CmdType {
+    fn get_cmd_type(&self, comm: &[u8]) -> CmdType {
         if self.top.iter().any(|&prefix| comm.starts_with(prefix)) {
             return CmdType::Top;
         }
@@ -66,38 +61,9 @@ impl<'a> Policy<'a> {
         CmdType::Middle
     }
 
-    // 执行策略
-    pub fn execute_policy(&self, task_map: &HashMap<pid_t, CompactString>) {
-        // smol::block_on(async {
-        // // let total_tasks = task_map.len();
-        // // let mut task_count = 0;
-        // #[cfg(debug_assertions)]
-        // let start = Instant::now();
-
-        // for (tid, comm) in task_map {
-        // let tid = *tid;
-        // let cmd_type = self.get_cmd_type(comm);
-        // let handle = smol::spawn(async move {
-        // execute_task(&cmd_type, tid);
-        // });
-        // // task_count += 1;
-        // // if task_count == total_tasks {
-        // handle.await;
-        // // }
-        // }
-        // #[cfg(debug_assertions)]
-        // {
-        // let end = start.elapsed();
-        // debug!(
-        // "多线程:一轮绑定核心完成时间: {:?} 数组长度{}",
-        // end,
-        // task_map.len()
-        // );
-        // }
-        // });
-
+    pub fn execute_policy(&self, task_map: &HashMap<pid_t, Box<[u8]>>) {
         #[cfg(debug_assertions)]
-        let start = Instant::now();
+        let start = std::time::Instant::now();
         for (tid, comm) in task_map {
             let cmd_type = self.get_cmd_type(comm);
             execute_task(&cmd_type, *tid);

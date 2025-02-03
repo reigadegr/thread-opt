@@ -1,34 +1,9 @@
-use crate::policy::{name_match::common::Policy, pkg_cfg::StartArgs};
-#[cfg(debug_assertions)]
-use log::debug;
-use std::time::Duration;
+use super::name_match_policy;
 
-const TOP: [&str; 1] = ["Pool"];
-const ONLY6: [&str; 2] = ["RHIThread", "RenderThread"];
-const ONLY7: [&str; 1] = ["GameThread"];
-const MIDDLE: [&str; 0] = [];
-const BACKEND: [&str; 0] = [];
+const TOP: [&[u8]; 1] = [b"Pool"];
+const ONLY6: [&[u8]; 2] = [b"RHIThread", b"RenderThread"];
+const ONLY7: [&[u8]; 1] = [b"GameThread"];
+const MIDDLE: [&[u8]; 0] = [];
+const BACKEND: [&[u8]; 0] = [];
 
-pub fn start_task(args: &mut StartArgs) {
-    loop {
-        let pid = args.activity_utils.top_app_utils.get_pid();
-        if pid != args.pid {
-            return;
-        }
-        #[cfg(debug_assertions)]
-        let start = std::time::Instant::now();
-        let task_map = args.activity_utils.tid_utils.get_task_map(*pid);
-        Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND).execute_policy(task_map);
-        #[cfg(debug_assertions)]
-        {
-            let end = start.elapsed();
-
-            debug!(
-                "单线程:一轮绑定核心完成时间: {:?} 数组长度{}",
-                end,
-                task_map.len()
-            );
-        }
-        std::thread::sleep(Duration::from_millis(2000));
-    }
-}
+name_match_policy!(start_task, &TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND);

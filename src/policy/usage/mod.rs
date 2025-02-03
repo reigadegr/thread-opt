@@ -1,4 +1,3 @@
-use compact_str::CompactString;
 use flume::{bounded, Receiver, Sender};
 use hashbrown::HashMap;
 use libc::pid_t;
@@ -13,7 +12,7 @@ type ChannelType = (Sender<Vec<pid_t>>, Receiver<Vec<pid_t>>);
 // // 使用别名定义全局变量
 pub static UNNAME_TIDS: Lazy<ChannelType> = Lazy::new(|| bounded(0));
 
-fn get_thread_tids(task_map: &HashMap<pid_t, CompactString>, prefix: &str) -> Vec<pid_t> {
+fn get_thread_tids(task_map: &HashMap<pid_t, Box<[u8]>>, prefix: &[u8]) -> Vec<pid_t> {
     task_map
         .iter()
         .filter(|(_, name)| name.starts_with(prefix))

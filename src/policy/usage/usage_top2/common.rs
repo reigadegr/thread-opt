@@ -2,7 +2,6 @@ use crate::{
     cgroup::group_info::{get_background_group, get_middle_group, get_top_group},
     utils::affinity_setter::{bind_thread_to_cpu, bind_tid_list_to_cgroup},
 };
-use compact_str::CompactString;
 use hashbrown::HashMap;
 use libc::pid_t;
 #[cfg(debug_assertions)]
@@ -15,7 +14,7 @@ enum CmdType {
 }
 
 // 执行策略
-pub fn execute_policy(task_map: &HashMap<pid_t, CompactString>, first: pid_t, second: pid_t) {
+pub fn execute_policy(task_map: &HashMap<pid_t, Box<[u8]>>, first: pid_t, second: pid_t) {
     execute_task(&CmdType::Only7, first);
     execute_task(&CmdType::Only6, second);
 
