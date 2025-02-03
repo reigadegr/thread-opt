@@ -1,9 +1,9 @@
 use super::name_match_policy;
 
-const TOP: [&str; 1] = ["Pool"];
-const ONLY6: [&str; 2] = ["RHIThread", "RenderThread"];
-const ONLY7: [&str; 1] = ["GameThread"];
-const MIDDLE: [&str; 0] = [];
-const BACKEND: [&str; 0] = [];
+const TOP: [&[u8]; 1] = [b"Pool"];
+const ONLY6: [&[u8]; 2] = [b"RHIThread", b"RenderThread"];
+const ONLY7: [&[u8]; 1] = [b"GameThread"];
+const MIDDLE: [&[u8]; 0] = [];
+const BACKEND: [&[u8]; 0] = [];
 
 name_match_policy!(start_task, &TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND);

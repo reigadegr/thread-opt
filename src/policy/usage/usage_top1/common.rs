@@ -19,21 +19,20 @@ enum CmdType {
 
 // 定义通用策略类
 pub struct Policy<'a> {
-    top: &'a [&'a str],
-    only6: &'a [&'a str],
-    only7: &'a [&'a str],
-    middle: &'a [&'a str],
-    backend: &'a [&'a str],
+    top: &'a [&'a [u8]],
+    only6: &'a [&'a [u8]],
+    only7: &'a [&'a [u8]],
+    middle: &'a [&'a [u8]],
+    backend: &'a [&'a [u8]],
 }
 
 impl<'a> Policy<'a> {
-    // 构造函数
     pub const fn new(
-        top: &'a [&'a str],
-        only6: &'a [&'a str],
-        only7: &'a [&'a str],
-        middle: &'a [&'a str],
-        backend: &'a [&'a str],
+        top: &'a [&'a [u8]],
+        only6: &'a [&'a [u8]],
+        only7: &'a [&'a [u8]],
+        middle: &'a [&'a [u8]],
+        backend: &'a [&'a [u8]],
     ) -> Self {
         Self {
             top,
@@ -45,7 +44,7 @@ impl<'a> Policy<'a> {
     }
 
     // 根据线程名称获取线程类型
-    fn get_cmd_type(&self, comm: &str) -> CmdType {
+    fn get_cmd_type(&self, comm: &[u8]) -> CmdType {
         if self.top.iter().any(|&prefix| comm.starts_with(prefix)) {
             return CmdType::Top;
         }
@@ -65,7 +64,7 @@ impl<'a> Policy<'a> {
     }
 
     // 执行策略
-    pub fn execute_policy(&self, task_map: &HashMap<pid_t, CompactString>, first: pid_t) {
+    pub fn execute_policy(&self, task_map: &HashMap<pid_t, Vec<u8>>, first: pid_t) {
         #[cfg(debug_assertions)]
         let start = std::time::Instant::now();
         execute_task(&CmdType::Only7, first);

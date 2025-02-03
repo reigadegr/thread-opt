@@ -7,11 +7,11 @@ use crate::policy::{
 use log::debug;
 use std::time::Duration;
 
-const TOP: [&str; 0] = [];
-const ONLY6: [&str; 2] = ["RHIThread", "RenderThread"];
-const ONLY7: [&str; 0] = [];
-const MIDDLE: [&str; 0] = [];
-const BACKEND: [&str; 0] = [];
+const TOP: [&[u8]; 0] = [];
+const ONLY6: [&[u8]; 2] = [b"RHIThread", b"RenderThread"];
+const ONLY7: [&[u8]; 0] = [];
+const MIDDLE: [&[u8]; 0] = [];
+const BACKEND: [&[u8]; 0] = [];
 
 pub fn start_task(args: &mut StartArgs) {
     args.controller.init_game(*args.pid);
@@ -27,7 +27,7 @@ pub fn start_task(args: &mut StartArgs) {
 
         let task_map = args.activity_utils.tid_utils.get_task_map(*pid);
 
-        let unname_tids = get_thread_tids(task_map, "Thread-");
+        let unname_tids = get_thread_tids(task_map, b"Thread-");
         #[cfg(debug_assertions)]
         debug!("发送即将开始");
         tx.send(unname_tids).unwrap();

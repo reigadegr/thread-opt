@@ -21,7 +21,7 @@ pub fn start_task(args: &mut StartArgs) {
 
         let task_map = args.activity_utils.tid_utils.get_task_map(*pid);
 
-        let unname_tids = get_thread_tids(task_map, "Thread-");
+        let unname_tids = get_thread_tids(task_map, b"Thread-");
         #[cfg(debug_assertions)]
         debug!("发送即将开始");
         tx.send(unname_tids).unwrap();
