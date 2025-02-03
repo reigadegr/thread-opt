@@ -1,4 +1,4 @@
-use crate::utils::node_reader::{read_file, read_to_byte};
+use crate::utils::node_reader::read_to_byte;
 use anyhow::Result;
 use compact_str::CompactString;
 use hashbrown::HashMap;

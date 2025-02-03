@@ -2,13 +2,10 @@ use crate::{
     cgroup::group_info::{get_background_group, get_middle_group, get_top_group},
     utils::affinity_setter::bind_thread_to_cpu,
 };
-use compact_str::CompactString;
 use hashbrown::HashMap;
 use libc::pid_t;
 #[cfg(debug_assertions)]
 use log::debug;
-#[cfg(debug_assertions)]
-use std::time::Instant;
 
 // 定义线程类型
 enum CmdType {

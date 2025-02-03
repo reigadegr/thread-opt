@@ -1,4 +1,3 @@
-use compact_str::CompactString;
 use flume::{bounded, Receiver, Sender};
 use hashbrown::HashMap;
 use libc::pid_t;
