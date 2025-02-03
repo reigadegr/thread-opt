@@ -33,7 +33,7 @@ const UE: [&str; 3] = [
 const COCOS: [&str; 1] = ["com.bf.sgs.hdexp"];
 
 pub struct StartArgs<'a> {
-    // pub task_map: &'a HashMap<pid_t, Vec<u8>>,
+    // pub task_map: &'a HashMap<pid_t, Box<[u8]>>,
     pub controller: &'a mut Controller,
     pub activity_utils: &'a mut ActivityUtils,
     pub pid: &'a mut pid_t,

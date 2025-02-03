@@ -61,7 +61,7 @@ impl<'a> Policy<'a> {
         CmdType::Middle
     }
 
-    pub fn execute_policy(&self, task_map: &HashMap<pid_t, Vec<u8>>) {
+    pub fn execute_policy(&self, task_map: &HashMap<pid_t, Box<[u8]>>) {
         #[cfg(debug_assertions)]
         let start = std::time::Instant::now();
         for (tid, comm) in task_map {

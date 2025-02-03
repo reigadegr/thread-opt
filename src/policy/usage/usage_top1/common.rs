@@ -63,7 +63,7 @@ impl<'a> Policy<'a> {
     }
 
     // 执行策略
-    pub fn execute_policy(&self, task_map: &HashMap<pid_t, Vec<u8>>, first: pid_t) {
+    pub fn execute_policy(&self, task_map: &HashMap<pid_t, Box<[u8]>>, first: pid_t) {
         #[cfg(debug_assertions)]
         let start = std::time::Instant::now();
         execute_task(&CmdType::Only7, first);

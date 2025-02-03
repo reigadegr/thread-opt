@@ -6,7 +6,8 @@ pub fn read_file(file: &Path) -> Result<CompactString> {
     Ok(CompactString::new(s.trim()))
 }
 
-pub fn read_to_byte(file: &Path) -> Result<Vec<u8>> {
-    let s = std::fs::read(file)?;
-    Ok(s[..s.len() - 1].to_vec())
+pub fn read_to_byte(file: &Path) -> Result<Box<[u8]>> {
+    let mut s: Vec<u8> = std::fs::read(file)?;
+    s.pop();
+    Ok(s.into_boxed_slice())
 }
