@@ -68,34 +68,6 @@ impl<'a> Policy<'a> {
 
     // 执行策略
     pub fn execute_policy(&self, task_map: &HashMap<pid_t, CompactString>) {
-        // smol::block_on(async {
-        // // let total_tasks = task_map.len();
-        // // let mut task_count = 0;
-        // #[cfg(debug_assertions)]
-        // let start = Instant::now();
-
-        // for (tid, comm) in task_map {
-        // let tid = *tid;
-        // let cmd_type = self.get_cmd_type(comm);
-        // let handle = smol::spawn(async move {
-        // execute_task(&cmd_type, tid);
-        // });
-        // // task_count += 1;
-        // // if task_count == total_tasks {
-        // handle.await;
-        // // }
-        // }
-        // #[cfg(debug_assertions)]
-        // {
-        // let end = start.elapsed();
-        // debug!(
-        // "多线程:一轮绑定核心完成时间: {:?} 数组长度{}",
-        // end,
-        // task_map.len()
-        // );
-        // }
-        // });
-
         #[cfg(debug_assertions)]
         let start = Instant::now();
         for (tid, comm) in task_map {
