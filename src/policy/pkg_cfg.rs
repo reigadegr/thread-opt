@@ -1,4 +1,4 @@
-use super::name_match::{policy_ue, policy_unity};
+use super::name_match::{policy_cocos, policy_ue, policy_unity};
 use crate::{
     activity::ActivityUtils,
     cpu_common::Controller,
@@ -22,17 +22,15 @@ const UE_USAGE_T1: [&str; 3] = [
     "com.tencent.tmgp.pubgmhd",
 ];
 
-const USAGE_T2: [&str; 3] = [
-    "com.netease.yyslscn",
-    "com.netease.yyslscn",
-    "com.netease.yyslscn",
-];
+const USAGE_T2: [&str; 1] = ["com.netease.yyslscn"];
 
 const UE: [&str; 3] = [
     "com.kurogame.mingchao",
     "com.papegames.infinitynikki",
     "com.kurogame.mingchao",
 ];
+
+const COCOS: [&str; 1] = ["com.bf.sgs.hdexp"];
 
 pub struct StartArgs<'a> {
     // pub task_map: &'a HashMap<pid_t, CompactString>,
@@ -42,11 +40,12 @@ pub struct StartArgs<'a> {
 }
 type ConfigTuple<'a> = (&'a [&'a str], fn(&mut StartArgs));
 
-pub static PACKAGE_CONFIGS: Lazy<[ConfigTuple; 4]> = Lazy::new(|| {
+pub static PACKAGE_CONFIGS: Lazy<[ConfigTuple; 5]> = Lazy::new(|| {
     [
         (&UE_USAGE_T1[..], policy_ue_top1::start_task),
         (&USAGE_T2[..], policy_usage2::start_task),
         (&UNITY[..], policy_unity::start_task),
         (&UE[..], policy_ue::start_task),
+        (&COCOS[..], policy_cocos::start_task),
     ]
 });
