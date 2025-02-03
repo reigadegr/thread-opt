@@ -15,10 +15,8 @@ macro_rules! name_match_policy {
                 #[cfg(debug_assertions)]
                 let start = std::time::Instant::now();
                 let task_map = args.activity_utils.tid_utils.get_task_map(*pid);
-                $crate::policy::name_match::common::Policy::new(
-                    $top, $only6, $only7, $middle, $backend,
-                )
-                .execute_policy(task_map);
+                super::common::Policy::new($top, $only6, $only7, $middle, $backend)
+                    .execute_policy(task_map);
                 #[cfg(debug_assertions)]
                 {
                     let end = start.elapsed();
