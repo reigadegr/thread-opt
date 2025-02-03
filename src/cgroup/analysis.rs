@@ -3,7 +3,6 @@ use anyhow::{anyhow, Result};
 use compact_str::CompactString;
 use log::info;
 use once_cell::sync::OnceCell;
-use std::fs;
 
 pub static TOP_GROUP: OnceCell<Box<[u8]>> = OnceCell::new();
 
@@ -13,7 +12,7 @@ pub static BACKEND_GROUP: OnceCell<Box<[u8]>> = OnceCell::new();
 
 pub fn analysis_cgroup_new() -> Result<()> {
     let cgroup = "/sys/devices/system/cpu/cpufreq";
-    let entries = fs::read_dir(cgroup)?;
+    let entries = std::fs::read_dir(cgroup)?;
     for entry in entries {
         let entry = entry?;
         let path = entry.path();
@@ -21,7 +20,7 @@ pub fn analysis_cgroup_new() -> Result<()> {
             continue;
         }
 
-        let core_dir = fs::read_dir(path)?;
+        let core_dir = std::fs::read_dir(path)?;
 
         for file in core_dir {
             let file = file?;

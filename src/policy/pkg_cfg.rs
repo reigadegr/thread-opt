@@ -1,7 +1,9 @@
 use super::name_match::{policy_ue, policy_unity};
-use crate::policy::usage::usage_top1::policy_unname1;
-use crate::policy::usage::usage_top2::policy_unname2;
-use crate::{activity::ActivityUtils, cpu_common::Controller};
+use crate::{
+    activity::ActivityUtils,
+    cpu_common::Controller,
+    policy::usage::{usage_top1::policy_ue_top1, usage_top2::policy_usage2},
+};
 use libc::pid_t;
 use once_cell::sync::Lazy;
 
@@ -14,13 +16,13 @@ const UNITY: [&str; 6] = [
     "com.tencent.tmgp.speedmobile",
 ];
 
-const UNNAME1: [&str; 3] = [
-    "com.tencent.tmgp.pubgmhd",
+const UE_USAGE_T1: [&str; 3] = [
+    "com.tencent.lzhx",
     "com.tencent.tmgp.pubgmhd",
     "com.tencent.tmgp.pubgmhd",
 ];
 
-const UNNAME2: [&str; 3] = [
+const USAGE_T2: [&str; 3] = [
     "com.netease.yyslscn",
     "com.netease.yyslscn",
     "com.netease.yyslscn",
@@ -42,8 +44,8 @@ type ConfigTuple<'a> = (&'a [&'a str], fn(&mut StartArgs));
 
 pub static PACKAGE_CONFIGS: Lazy<[ConfigTuple; 4]> = Lazy::new(|| {
     [
-        (&UNNAME1[..], policy_unname1::start_task),
-        (&UNNAME2[..], policy_unname2::start_task),
+        (&UE_USAGE_T1[..], policy_ue_top1::start_task),
+        (&USAGE_T2[..], policy_usage2::start_task),
         (&UNITY[..], policy_unity::start_task),
         (&UE[..], policy_ue::start_task),
     ]

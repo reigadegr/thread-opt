@@ -87,6 +87,7 @@ impl TidUtils {
                 Ok(comm) => comm,
                 Err(e) => {
                     info!("Failed to read comm file for tid {}: {}", tid, e);
+                    self.tid_info.task_map.clear();
                     return &self.tid_info;
                 }
             };
@@ -97,12 +98,9 @@ impl TidUtils {
     }
 
     pub fn set_tid_list(&mut self, pid: pid_t) -> &TidInfo {
-        let tid_list = match read_task_dir(pid) {
-            Ok(list) => list,
-            Err(e) => {
-                info!("Failed to read task directory: {}", e);
-                return &self.tid_info;
-            }
+        let Ok(tid_list) = read_task_dir(pid) else {
+            self.tid_info.tid_list.clear();
+            return &self.tid_info;
         };
         self.tid_info.tid_list = tid_list;
         &self.tid_info

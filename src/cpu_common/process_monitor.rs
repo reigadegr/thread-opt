@@ -147,7 +147,7 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
     }
 }
 
-fn get_target_tids(rx: &Receiver<Vec<i32>>) -> Result<Vec<pid_t>> {
+fn get_target_tids(rx: &Receiver<Vec<pid_t>>) -> Result<Vec<pid_t>> {
     #[cfg(debug_assertions)]
     debug!("开始计算负载喵，开始接收数据");
     rx.try_recv().map_or_else(

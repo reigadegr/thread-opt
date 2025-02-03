@@ -37,6 +37,7 @@ impl Looper {
     where
         F: Fn(&mut StartArgs),
     {
+        std::thread::sleep(Duration::from_millis(1000));
         start_task(&mut StartArgs {
             controller: &mut self.controller,
             activity_utils: &mut self.activity_utils,

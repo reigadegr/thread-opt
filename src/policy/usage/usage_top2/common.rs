@@ -16,8 +16,6 @@ enum CmdType {
 
 // 执行策略
 pub fn execute_policy(task_map: &HashMap<pid_t, CompactString>, first: pid_t, second: pid_t) {
-    #[cfg(debug_assertions)]
-    let start = std::time::Instant::now();
     execute_task(&CmdType::Only7, first);
     execute_task(&CmdType::Only6, second);
 
@@ -30,6 +28,8 @@ pub fn execute_policy(task_map: &HashMap<pid_t, CompactString>, first: pid_t, se
     let background_group = get_background_group();
     let middle_group = get_middle_group();
 
+    #[cfg(debug_assertions)]
+    let start = std::time::Instant::now();
     if background_group == middle_group {
         bind_tid_list_to_cgroup(middle_group, &filtered_keys);
     } else {
@@ -41,11 +41,7 @@ pub fn execute_policy(task_map: &HashMap<pid_t, CompactString>, first: pid_t, se
     {
         let end = start.elapsed();
 
-        debug!(
-            "单线程:一轮绑定核心完成时间: {:?} 数组长度{}",
-            end,
-            task_map.len()
-        );
+        debug!("一轮绑定核心完成时间: {:?} 数组长度{}", end, task_map.len());
     }
 }
 
