@@ -3,7 +3,7 @@ pub mod policy_cocos;
 pub mod policy_ue;
 pub mod policy_unity;
 
-#[macro_export]
+// 定义宏，但不导出
 macro_rules! name_match_policy {
     ($name:ident, $top:expr, $only6:expr, $only7:expr, $middle:expr, $backend:expr) => {
         pub fn $name(args: &mut $crate::policy::pkg_cfg::StartArgs) {
@@ -33,3 +33,6 @@ macro_rules! name_match_policy {
         }
     };
 }
+
+// 重新导出宏，使其在子模块中可用
+use name_match_policy;

@@ -1,4 +1,4 @@
-use crate::name_match_policy;
+use super::name_match_policy;
 #[cfg(debug_assertions)]
 use log::debug;
 
