@@ -6,6 +6,8 @@ pub mod policy_unity;
 // 定义宏，但不导出
 macro_rules! name_match_policy {
     ($name:ident, $top:expr, $only6:expr, $only7:expr, $middle:expr, $backend:expr) => {
+        #[cfg(debug_assertions)]
+        use log::debug;
         pub fn $name(args: &mut $crate::policy::pkg_cfg::StartArgs) {
             loop {
                 let pid = args.activity_utils.top_app_utils.get_pid();

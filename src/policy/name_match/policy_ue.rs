@@ -1,6 +1,4 @@
 use super::name_match_policy;
-#[cfg(debug_assertions)]
-use log::debug;
 
 const TOP: [&str; 1] = ["Pool"];
 const ONLY6: [&str; 2] = ["RHIThread", "RenderThread"];
