@@ -22,7 +22,7 @@ const UE_USAGE_T1: [&str; 3] = [
     "com.tencent.tmgp.pubgmhd",
 ];
 
-const UNNAME2: [&str; 3] = [
+const USAGE_T2: [&str; 3] = [
     "com.netease.yyslscn",
     "com.netease.yyslscn",
     "com.netease.yyslscn",
@@ -45,7 +45,7 @@ type ConfigTuple<'a> = (&'a [&'a str], fn(&mut StartArgs));
 pub static PACKAGE_CONFIGS: Lazy<[ConfigTuple; 4]> = Lazy::new(|| {
     [
         (&UE_USAGE_T1[..], policy_ue_top1::start_task),
-        (&UNNAME2[..], policy_usage2::start_task),
+        (&USAGE_T2[..], policy_usage2::start_task),
         (&UNITY[..], policy_unity::start_task),
         (&UE[..], policy_ue::start_task),
     ]
