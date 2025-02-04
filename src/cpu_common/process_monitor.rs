@@ -4,6 +4,7 @@ use anyhow::{anyhow, Result};
 use flume::{Receiver, Sender};
 use hashbrown::{hash_map::Entry, HashMap};
 use libc::{pid_t, sysconf, _SC_CLK_TCK};
+use likely_stable::likely;
 #[cfg(debug_assertions)]
 use log::debug;
 use std::{
@@ -142,7 +143,7 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
                 .collect();
             top_two.sort_by(|(_, a), (_, b)| b.partial_cmp(a).unwrap_or(cmp::Ordering::Equal));
             top_two.truncate(2);
-            if top_two.len() > 1 {
+            if likely(top_two.len() > 1) {
                 max_usage_tid.send((top_two[0].0, top_two[1].0)).unwrap();
             }
             #[cfg(debug_assertions)]
