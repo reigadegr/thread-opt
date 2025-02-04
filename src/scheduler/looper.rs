@@ -31,6 +31,8 @@ impl Looper {
         info!("Exiting game");
         let tid_list = self.activity_utils.tid_utils.get_tid_list(self.pid);
         bind_tid_list_to_cgroup(get_background_group(), tid_list);
+        self.activity_utils.tid_utils.tid_info.task_map.clear();
+        self.activity_utils.tid_utils.tid_info.tid_list.clear();
     }
 
     fn start_bind_common<F>(&mut self, start_task: F)
@@ -41,7 +43,7 @@ impl Looper {
         start_task(&mut StartArgs {
             controller: &mut self.controller,
             activity_utils: &mut self.activity_utils,
-            pid: &mut self.pid,
+            pid: &self.pid,
         });
         self.game_exit();
     }

@@ -1,9 +1,8 @@
-use crate::{
-    cgroup::group_info::{get_background_group, get_top_group},
-    utils::node_reader::read_file,
-};
+use super::group_info::{get_background_group, get_top_group};
+use crate::utils::node_reader::read_file;
 use anyhow::{anyhow, Result};
 use compact_str::CompactString;
+use likely_stable::unlikely;
 use log::info;
 use once_cell::sync::Lazy;
 
@@ -35,7 +34,7 @@ pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
     for entry in entries {
         let entry = entry?;
         let path = entry.path();
-        if !path.is_dir() {
+        if unlikely(!path.is_dir()) {
             continue;
         }
 

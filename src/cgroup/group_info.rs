@@ -1,17 +1,14 @@
 use super::analysis::{BACKEND_GROUP, MIDDLE_GROUP, TOP_GROUP};
 use log::info;
 
-#[inline(always)]
 pub fn get_top_group() -> &'static [u8] {
     &TOP_GROUP
 }
 
-#[inline(always)]
 pub fn get_middle_group() -> &'static [u8] {
     &MIDDLE_GROUP
 }
 
-#[inline(always)]
 pub fn get_background_group() -> &'static [u8] {
     &BACKEND_GROUP
 }

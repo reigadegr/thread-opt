@@ -52,14 +52,12 @@ impl ProcessMonitor {
         let (sender, receiver) = flume::bounded(0);
         let (max_usage_tid_sender, max_usage_tid) = flume::unbounded();
 
-        {
-            thread::Builder::new()
-                .name("ProcessMonitor".to_string())
-                .spawn(move || {
-                    monitor_thread(&receiver, &max_usage_tid_sender);
-                })
-                .unwrap();
-        }
+        thread::Builder::new()
+            .name("ProcessMonitor".to_string())
+            .spawn(move || {
+                monitor_thread(&receiver, &max_usage_tid_sender);
+            })
+            .unwrap();
 
         Self {
             sender,
@@ -113,19 +111,13 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
                         ))
                     })
                     .collect();
-                let mut top_threads: Vec<_> = all_trackers
-                    .iter()
-                    .filter_map(|(tid, tracker)| {
-                        Some((*tid, tracker.clone().try_calculate().ok()?))
-                    })
-                    .collect();
-                top_threads
-                    .sort_by(|(_, a), (_, b)| b.partial_cmp(a).unwrap_or(cmp::Ordering::Equal));
-                top_threads.truncate(5);
+                let top_threads = get_top_usage_tid(&mut all_trackers, 5);
                 top_trackers = top_threads
                     .into_iter()
                     .map(|(tid, _)| {
                         let tracker = all_trackers.get(&tid).cloned().unwrap_or_else(|| {
+                            #[cfg(debug_assertions)]
+                            debug!("需要重新创建跟踪对象，bug原因未知");
                             UsageTracker::new(pid, tid).expect("Failed to create UsageTracker")
                         });
                         (tid, tracker)
@@ -134,15 +126,7 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
 
                 last_full_update = Instant::now();
             }
-
-            let mut top_two: Vec<(pid_t, f32)> = top_trackers
-                .iter_mut()
-                .filter_map(|(tid, tracker)| {
-                    tracker.try_calculate().ok().map(|usage| (*tid, usage))
-                })
-                .collect();
-            top_two.sort_by(|(_, a), (_, b)| b.partial_cmp(a).unwrap_or(cmp::Ordering::Equal));
-            top_two.truncate(2);
+            let top_two = get_top_usage_tid(&mut top_trackers, 2);
             if likely(top_two.len() > 1) {
                 max_usage_tid.send((top_two[0].0, top_two[1].0)).unwrap();
             }
@@ -151,6 +135,19 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
         }
         thread::sleep(Duration::from_millis(521));
     }
+}
+
+fn get_top_usage_tid(
+    trackers: &mut HashMap<pid_t, UsageTracker>,
+    cut_num: usize,
+) -> Vec<(pid_t, Option<f32>)> {
+    let mut need_sort: Vec<_> = trackers
+        .iter_mut()
+        .map(|(tid, tracker)| (*tid, tracker.try_calculate().ok()))
+        .collect();
+    need_sort.sort_unstable_by(|(_, a), (_, b)| b.partial_cmp(a).unwrap_or(cmp::Ordering::Equal));
+    need_sort.truncate(cut_num);
+    need_sort
 }
 
 fn get_target_tids(rx: &Receiver<Vec<pid_t>>) -> Result<Vec<pid_t>> {
