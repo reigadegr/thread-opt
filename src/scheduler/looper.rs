@@ -28,7 +28,7 @@ impl Looper {
     }
 
     fn game_exit(&mut self) {
-        info!("Exiting game");
+        info!("Exiting game\n");
         let tid_list = self.activity_utils.tid_utils.get_tid_list(self.pid);
         bind_tid_list_to_cgroup(get_background_group(), tid_list);
         self.activity_utils.tid_utils.tid_info.task_map.clear();

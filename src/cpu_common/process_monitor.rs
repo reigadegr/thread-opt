@@ -88,6 +88,7 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
     let mut all_trackers = HashMap::new();
     let mut top_trackers = HashMap::new();
     let rx = &UNNAME_TIDS.1;
+
     loop {
         if let Ok(pid) = receiver.try_recv() {
             current_pid = pid;
@@ -140,6 +141,10 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
             }
             #[cfg(debug_assertions)]
             debug!("计算完一轮了");
+        } else {
+            all_trackers.clear();
+            top_trackers.clear();
+            thread::sleep(Duration::from_millis(1314));
         }
         thread::sleep(Duration::from_millis(521));
     }
