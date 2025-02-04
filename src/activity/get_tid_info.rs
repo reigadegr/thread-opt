@@ -14,8 +14,8 @@ use std::{
 pub struct TidInfo {
     task_map_name: CompactString,
     tid_list_name: CompactString,
-    task_map: HashMap<pid_t, Vec<u8>>,
-    tid_list: Vec<pid_t>,
+    pub task_map: HashMap<pid_t, Vec<u8>>,
+    pub tid_list: Vec<pid_t>,
 }
 
 impl TidInfo {
@@ -25,7 +25,7 @@ impl TidInfo {
 }
 
 pub struct TidUtils {
-    tid_info: TidInfo,
+    pub tid_info: TidInfo,
     last_refresh_task_map: Instant,
     last_refresh_tid_list: Instant,
 }
@@ -87,7 +87,6 @@ impl TidUtils {
                 Ok(comm) => comm,
                 Err(e) => {
                     info!("Failed to read comm file for tid {}: {}", tid, e);
-                    self.tid_info.task_map.clear();
                     return &self.tid_info;
                 }
             };
