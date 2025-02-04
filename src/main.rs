@@ -5,7 +5,8 @@
     clippy::cast_possible_truncation,
     clippy::cast_sign_loss,
     clippy::cast_precision_loss,
-    clippy::cast_possible_wrap
+    clippy::cast_possible_wrap,
+    clippy::non_std_lazy_statics
 )]
 
 mod activity;
@@ -15,14 +16,13 @@ mod misc;
 mod policy;
 mod scheduler;
 mod utils;
-use cgroup::{analysis::analysis_cgroup_new, group_info::print_group_core};
+use cgroup::group_info::print_group_core;
 
 use misc::init_misc;
 use scheduler::Scheduler;
 
 fn main() {
     init_misc();
-    let _ = analysis_cgroup_new();
     print_group_core();
     Scheduler::new().start_run();
 }

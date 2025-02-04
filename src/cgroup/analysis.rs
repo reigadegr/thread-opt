@@ -1,16 +1,35 @@
-use crate::utils::node_reader::read_file;
+use crate::{
+    cgroup::group_info::{get_background_group, get_top_group},
+    utils::node_reader::read_file,
+};
 use anyhow::{anyhow, Result};
 use compact_str::CompactString;
 use log::info;
-use once_cell::sync::OnceCell;
+use once_cell::sync::Lazy;
 
-pub static TOP_GROUP: OnceCell<Box<[u8]>> = OnceCell::new();
+pub static TOP_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| analysis_cgroup_new("7").unwrap());
 
-pub static MIDDLE_GROUP: OnceCell<Box<[u8]>> = OnceCell::new();
+pub static BACKEND_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| analysis_cgroup_new("0").unwrap());
 
-pub static BACKEND_GROUP: OnceCell<Box<[u8]>> = OnceCell::new();
+pub static MIDDLE_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| {
+    let mut all_core: Vec<u8> = [0, 1, 2, 3, 4, 5, 6, 7].to_vec();
+    let backend_values = get_background_group();
+    let top_values = get_top_group();
 
-pub fn analysis_cgroup_new() -> Result<()> {
+    for &value in backend_values.iter().chain(top_values.iter()) {
+        all_core.retain(|&x| x != value);
+    }
+
+    if all_core.is_empty() {
+        info!("MIDDLE_GROUP initializing with BACKEND_GROUP.");
+        backend_values.into()
+    } else {
+        // 否则，使用处理后的 all_core 初始化 MIDDLE_GROUP
+        all_core.into_boxed_slice()
+    }
+});
+
+pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
     let cgroup = "/sys/devices/system/cpu/cpufreq";
     let entries = std::fs::read_dir(cgroup)?;
     for entry in entries {
@@ -32,45 +51,30 @@ pub fn analysis_cgroup_new() -> Result<()> {
                 .and_then(|f| f.to_str())
                 .is_some_and(|f| f.contains("related_cpus"))
             {
-                let content = read_file(&path).unwrap_or_else(|_| CompactString::new("0"));
+                let content = read_file(&path).unwrap_or_else(|_| CompactString::new("8"));
 
                 // 解析文件内容
                 let nums: Vec<&str> = content.split_whitespace().collect();
 
-                let _ = init_group("7", &nums, &TOP_GROUP);
-                let _ = init_group("0", &nums, &BACKEND_GROUP);
+                let rs = init_group(target_core, &nums);
+                if rs.is_err() {
+                    continue;
+                }
+                return rs;
             }
         }
     }
-
-    let mut all_core: Vec<u8> = [0, 1, 2, 3, 4, 5, 6, 7].to_vec();
-    let backend_values = BACKEND_GROUP.get().unwrap();
-    let top_values = TOP_GROUP.get().unwrap();
-
-    for &value in backend_values.iter().chain(top_values.iter()) {
-        all_core.retain(|&x| x != value);
-    }
-
-    if all_core.is_empty() {
-        info!("MIDDLE_GROUP initializing with BACKEND_GROUP.");
-        MIDDLE_GROUP.set(backend_values.clone()).unwrap();
-    } else {
-        // 否则，使用处理后的 all_core 初始化 MIDDLE_GROUP
-        MIDDLE_GROUP.set(all_core.into_boxed_slice()).unwrap();
-    }
-
-    Ok(())
+    Err(anyhow!("Unexpected error in reading cgroup directory."))
 }
 
-fn init_group(core: &str, nums: &Vec<&str>, target_group: &OnceCell<Box<[u8]>>) -> Result<()> {
+fn init_group(core: &str, nums: &Vec<&str>) -> Result<Box<[u8]>> {
     if !nums.contains(&core) {
         return Err(anyhow!("With no need for init group."));
     }
     let mut need_init: Vec<u8> = Vec::new();
     for i in nums {
-        let i = i.parse::<u8>()?;
+        let i = i.parse::<u8>().unwrap();
         need_init.push(i);
     }
-    target_group.get_or_init(|| need_init.into_boxed_slice());
-    Ok(())
+    Ok(need_init.into_boxed_slice())
 }
