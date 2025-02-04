@@ -114,13 +114,12 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
                     })
                     .collect();
                 let mut top_threads: Vec<_> = all_trackers
-                    .iter()
-                    .filter_map(|(tid, tracker)| {
-                        Some((*tid, tracker.clone().try_calculate().ok()?))
-                    })
+                    .iter_mut()
+                    .filter_map(|(tid, tracker)| Some((*tid, tracker.try_calculate().ok()?)))
                     .collect();
-                top_threads
-                    .sort_by(|(_, a), (_, b)| b.partial_cmp(a).unwrap_or(cmp::Ordering::Equal));
+                top_threads.sort_unstable_by(|(_, a), (_, b)| {
+                    b.partial_cmp(a).unwrap_or(cmp::Ordering::Equal)
+                });
                 top_threads.truncate(5);
                 top_trackers = top_threads
                     .into_iter()
@@ -141,7 +140,9 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
                     tracker.try_calculate().ok().map(|usage| (*tid, usage))
                 })
                 .collect();
-            top_two.sort_by(|(_, a), (_, b)| b.partial_cmp(a).unwrap_or(cmp::Ordering::Equal));
+            top_two.sort_unstable_by(|(_, a), (_, b)| {
+                b.partial_cmp(a).unwrap_or(cmp::Ordering::Equal)
+            });
             top_two.truncate(2);
             if likely(top_two.len() > 1) {
                 max_usage_tid.send((top_two[0].0, top_two[1].0)).unwrap();

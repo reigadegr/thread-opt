@@ -33,11 +33,11 @@ const UE: [&str; 3] = [
 const COCOS: [&str; 1] = ["com.bf.sgs.hdexp"];
 
 pub struct StartArgs<'a> {
-    // pub task_map: &'a HashMap<pid_t, Vec<u8>>,
     pub controller: &'a mut Controller,
     pub activity_utils: &'a mut ActivityUtils,
-    pub pid: &'a mut pid_t,
+    pub pid: &'a pid_t,
 }
+
 type ConfigTuple<'a> = (&'a [&'a str], fn(&mut StartArgs));
 
 pub static PACKAGE_CONFIGS: Lazy<[ConfigTuple; 5]> = Lazy::new(|| {

@@ -43,7 +43,7 @@ impl Looper {
         start_task(&mut StartArgs {
             controller: &mut self.controller,
             activity_utils: &mut self.activity_utils,
-            pid: &mut self.pid,
+            pid: &self.pid,
         });
         self.game_exit();
     }
