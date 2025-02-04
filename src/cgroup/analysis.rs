@@ -1,3 +1,5 @@
+use crate::cgroup::group_info::get_background_group;
+use crate::cgroup::group_info::get_top_group;
 use crate::utils::node_reader::read_file;
 use anyhow::{anyhow, Result};
 use compact_str::CompactString;
@@ -6,10 +8,12 @@ use once_cell::sync::Lazy;
 
 pub static TOP_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| analysis_cgroup_new("7").unwrap());
 
+pub static BACKEND_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| analysis_cgroup_new("0").unwrap());
+
 pub static MIDDLE_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| {
     let mut all_core: Vec<u8> = [0, 1, 2, 3, 4, 5, 6, 7].to_vec();
-    let backend_values = BACKEND_GROUP.clone();
-    let top_values = TOP_GROUP.clone();
+    let backend_values = get_background_group();
+    let top_values = get_top_group();
 
     for &value in backend_values.iter().chain(top_values.iter()) {
         all_core.retain(|&x| x != value);
@@ -17,14 +21,12 @@ pub static MIDDLE_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| {
 
     if all_core.is_empty() {
         info!("MIDDLE_GROUP initializing with BACKEND_GROUP.");
-        backend_values
+        backend_values.into()
     } else {
         // 否则，使用处理后的 all_core 初始化 MIDDLE_GROUP
         all_core.into_boxed_slice()
     }
 });
-
-pub static BACKEND_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| analysis_cgroup_new("0").unwrap());
 
 pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
     let cgroup = "/sys/devices/system/cpu/cpufreq";
@@ -57,28 +59,11 @@ pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
                 if rs.is_err() {
                     continue;
                 }
-                return Ok(rs?);
+                return rs;
             }
         }
     }
-    Ok(Box::new([10]))
-    // let mut all_core: Vec<u8> = [0, 1, 2, 3, 4, 5, 6, 7].to_vec();
-    // let backend_values = BACKEND_GROUP.get().unwrap();
-    // let top_values = TOP_GROUP.get().unwrap();
-
-    // for &value in backend_values.iter().chain(top_values.iter()) {
-    // all_core.retain(|&x| x != value);
-    // }
-
-    // if all_core.is_empty() {
-    // info!("MIDDLE_GROUP initializing with BACKEND_GROUP.");
-    // MIDDLE_GROUP.set(backend_values.clone()).unwrap();
-    // } else {
-    // // 否则，使用处理后的 all_core 初始化 MIDDLE_GROUP
-    // MIDDLE_GROUP.set(all_core.into_boxed_slice()).unwrap();
-    // }
-
-    // Ok(())
+    Err(anyhow!("Unexpected error in reading cgroup directory."))
 }
 
 fn init_group(core: &str, nums: &Vec<&str>) -> Result<Box<[u8]>> {
