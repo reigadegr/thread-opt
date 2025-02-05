@@ -3,15 +3,15 @@ use crate::policy::usage::UNNAME_TIDS;
 use anyhow::{anyhow, Result};
 use flume::{Receiver, Sender};
 use hashbrown::{hash_map::Entry, HashMap};
-use libc::{pid_t, sysconf, _SC_CLK_TCK};
+use libc::pid_t;
 use likely_stable::likely;
-use once_cell::sync::Lazy;
+// use once_cell::sync::Lazy;
 
-static TICK_PER_SEC: Lazy<i64> = Lazy::new(|| unsafe { sysconf(_SC_CLK_TCK) });
+// static TICK_PER_SEC: Lazy<i64> = Lazy::new(|| unsafe { sysconf(_SC_CLK_TCK) });
 
-fn get_tick_per_sec() -> &'static i64 {
-    &TICK_PER_SEC
-}
+// fn get_tick_per_sec() -> &'static i64 {
+// &TICK_PER_SEC
+// }
 
 #[cfg(debug_assertions)]
 use log::debug;
@@ -22,30 +22,30 @@ use std::{
 
 #[derive(Debug, Clone)]
 struct UsageTracker {
-    pid: pid_t,
     tid: pid_t,
-    last_cputime: u32,
+    last_cputime: u64,
     read_timer: Instant,
 }
 
 impl UsageTracker {
-    fn new(pid: pid_t, tid: pid_t) -> Result<Self> {
+    fn new(tid: pid_t) -> Result<Self> {
         Ok(Self {
-            pid,
             tid,
-            last_cputime: get_thread_cpu_time(pid, tid)?,
+            last_cputime: get_thread_cpu_time(tid)?,
             read_timer: Instant::now(),
         })
     }
 
-    fn try_calculate(&mut self) -> Result<f32> {
-        let tick_per_sec = get_tick_per_sec();
-        let new_cputime = get_thread_cpu_time(self.pid, self.tid)?;
-        let elapsed_ticks = self.read_timer.elapsed().as_secs_f32() * *tick_per_sec as f32;
+    fn try_calculate(&mut self) -> Result<f64> {
+        let tick_per_sec = 1_000_000_000.0;
+        let new_cputime = get_thread_cpu_time(self.tid)?;
+        // #[cfg(debug_assertions)]
+        // debug!("持续时间:{:?}", self.read_timer.elapsed());
+        let elapsed_ticks = self.read_timer.elapsed().as_secs_f64() * tick_per_sec;
         self.read_timer = Instant::now();
         let cputime_slice = new_cputime - self.last_cputime;
         self.last_cputime = new_cputime;
-        Ok(cputime_slice as f32 / elapsed_ticks)
+        Ok(cputime_slice as f64 / elapsed_ticks)
     }
 }
 
@@ -96,7 +96,7 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
             top_trackers.clear();
         }
 
-        if let Some(pid) = current_pid {
+        if let Some(_pid) = current_pid {
             if last_full_update.elapsed() > Duration::from_millis(1600) {
                 #[cfg(debug_assertions)]
                 debug!("开始全量更新tid");
@@ -115,7 +115,7 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
                             tid,
                             match all_trackers.entry(tid) {
                                 Entry::Occupied(o) => o.remove(),
-                                Entry::Vacant(_) => UsageTracker::new(pid, tid).ok()?,
+                                Entry::Vacant(_) => UsageTracker::new(tid).ok()?,
                             },
                         ))
                     })
@@ -127,7 +127,7 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
                         let tracker = all_trackers.get(&tid).cloned().unwrap_or_else(|| {
                             #[cfg(debug_assertions)]
                             debug!("需要重新创建跟踪对象，bug原因未知");
-                            UsageTracker::new(pid, tid).expect("Failed to create UsageTracker")
+                            UsageTracker::new(tid).expect("Failed to create UsageTracker")
                         });
                         (tid, tracker)
                     })
@@ -153,7 +153,7 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
 fn get_top_usage_tid(
     trackers: &mut HashMap<pid_t, UsageTracker>,
     cut_num: usize,
-) -> Vec<(pid_t, Option<f32>)> {
+) -> Vec<(pid_t, Option<f64>)> {
     let mut need_sort: Vec<_> = trackers
         .iter_mut()
         .map(|(tid, tracker)| (*tid, tracker.try_calculate().ok()))
@@ -180,11 +180,9 @@ fn get_target_tids(rx: &Receiver<Vec<pid_t>>) -> Result<Vec<pid_t>> {
     )
 }
 
-fn get_thread_cpu_time(pid: pid_t, tid: pid_t) -> Result<u32> {
-    let stat_path = format!("/proc/{pid}/task/{tid}/stat");
+fn get_thread_cpu_time(tid: pid_t) -> Result<u64> {
+    let stat_path = format!("/proc/{tid}/schedstat");
     let stat_content = fs::read_to_string(stat_path)?;
     let parts: Vec<&str> = stat_content.split_whitespace().collect();
-    let utime = parts[13].parse::<u32>().unwrap_or(0);
-    let stime = parts[14].parse::<u32>().unwrap_or(0);
-    Ok(utime + stime)
+    Ok(parts[0].parse::<u64>().unwrap_or(0))
 }
