@@ -66,7 +66,7 @@ pub fn start_task(args: &mut StartArgs) {
                 // 按频次排序，取出频次最高的一个tid
                 let mut sorted_tids: Vec<_> = tid_counts.into_iter().collect();
 
-                sorted_tids.sort_by(|a, b| b.1.cmp(&a.1));
+                sorted_tids.sort_unstable_by(|a, b| b.1.cmp(&a.1));
                 if let Some((sort1, _)) = sorted_tids.first() {
                     usage_top1 = *sort1;
                 }

@@ -71,19 +71,27 @@ pub fn start_task(args: &mut StartArgs) {
 
                 // 按频次排序，取出频次最高的两个tid
                 let mut sorted_tids: Vec<_> = tid_counts.into_iter().collect();
-                sorted_tids.sort_by(|a, b| b.1.cmp(&a.1));
-                let (sort1, sort2) = if let Some((tid1, _)) = sorted_tids.first() {
-                    if let Some((tid2, _)) = sorted_tids.get(1) {
-                        (*tid1, *tid2)
-                    } else {
-                        (*tid1, *tid1)
-                    }
-                } else {
-                    (0, 0)
-                };
+                sorted_tids.sort_unstable_by(|a, b| b.1.cmp(&a.1));
+                // let (sort1, sort2) = if let Some((tid1, _)) = sorted_tids.first() {
+                // if let Some((tid2, _)) = sorted_tids.get(1) {
+                // (*tid1, *tid2)
+                // } else {
+                // (*tid1, *tid1)
+                // }
+                // } else {
+                // (0, 0)
+                // };
+
+                if let Some((sort1, _)) = sorted_tids.first() {
+                    usage_top1 = *sort1;
+                }
+
+                if let Some((sort2, _)) = sorted_tids.get(1) {
+                    usage_top2 = *sort2;
+                }
                 finish = true;
-                usage_top1 = sort1;
-                usage_top2 = sort2;
+                // usage_top1 = sort1;
+                // usage_top2 = sort2;
                 high_usage_tids.clear();
                 #[cfg(debug_assertions)]
                 debug!("计算后最终结果为:{usage_top1}\n第二高:{usage_top2}");
