@@ -9,14 +9,25 @@ use log::debug;
 
 // 定义线程类型
 enum CmdType {
+    Top,
     Only6,
     Only7,
 }
 
 // 执行策略
-pub fn execute_policy(task_map: &HashMap<pid_t, Vec<u8>>, first: pid_t, second: pid_t) {
-    execute_task(&CmdType::Only7, first);
-    execute_task(&CmdType::Only6, second);
+pub fn execute_policy(
+    task_map: &HashMap<pid_t, Vec<u8>>,
+    first: pid_t,
+    second: pid_t,
+    finish: bool,
+) {
+    if finish {
+        execute_task(&CmdType::Only7, first);
+        execute_task(&CmdType::Only6, second);
+    } else {
+        execute_task(&CmdType::Top, first);
+        execute_task(&CmdType::Top, second);
+    }
 
     let filtered_keys: Vec<pid_t> = task_map
         .keys()
@@ -47,6 +58,7 @@ pub fn execute_policy(task_map: &HashMap<pid_t, Vec<u8>>, first: pid_t, second: 
 // 执行线程绑定任务
 fn execute_task(cmd_type: &CmdType, tid: pid_t) {
     match cmd_type {
+        CmdType::Top => bind_thread_to_cpu(get_top_group(), tid),
         CmdType::Only6 => {
             let top_group = get_top_group();
             if top_group == [6, 7] {

@@ -6,6 +6,7 @@ use crate::policy::{
 use hashbrown::HashMap;
 #[cfg(debug_assertions)]
 use log::debug;
+use log::info;
 use std::time::Duration;
 
 const TOP: [&[u8]; 0] = [];
@@ -19,7 +20,7 @@ pub fn start_task(args: &mut StartArgs) {
     let tx = &UNNAME_TIDS.0;
     args.controller.init_game(*args.pid);
     // 创建一个容量为20的Vec<pid_t>
-    let mut high_usage_tids = Vec::with_capacity(10);
+    let mut high_usage_tids = Vec::with_capacity(20);
 
     let mut finish = false;
 
@@ -35,7 +36,7 @@ pub fn start_task(args: &mut StartArgs) {
         let task_map = args.activity_utils.tid_utils.get_task_map(*pid);
         if finish {
             Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND)
-                .execute_policy(task_map, usage_top1);
+                .execute_policy(task_map, usage_top1, true);
             std::thread::sleep(Duration::from_millis(100));
         } else {
             let unname_tids = get_thread_tids(task_map, b"Thread-");
@@ -51,11 +52,12 @@ pub fn start_task(args: &mut StartArgs) {
                 continue;
             };
 
-            if high_usage_tids.len() < 10 {
+            if high_usage_tids.len() < 20 {
                 high_usage_tids.push(tid1);
                 #[cfg(debug_assertions)]
                 debug!("负载第一高:{tid1}\n");
-                Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND).execute_policy(task_map, tid1);
+                Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND)
+                    .execute_policy(task_map, tid1, true);
             } else {
                 args.controller.init_default();
                 let mut tid_counts = HashMap::new();
@@ -73,9 +75,9 @@ pub fn start_task(args: &mut StartArgs) {
 
                 finish = true;
 
-                high_usage_tids.clear();
-                #[cfg(debug_assertions)]
-                debug!("计算后最终结果为:{usage_top1}\n");
+                // drop(high_usage_tids);
+                // #[cfg(debug_assertions)]
+                info!("计算后最终结果为:{usage_top1}\n");
                 continue;
             }
         }

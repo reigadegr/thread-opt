@@ -6,14 +6,15 @@ use crate::policy::{
 use hashbrown::HashMap;
 #[cfg(debug_assertions)]
 use log::debug;
+use log::info;
 use std::time::Duration;
 
 pub fn start_task(args: &mut StartArgs) {
     // 获取全局通道的发送端
     let tx = &UNNAME_TIDS.0;
     args.controller.init_game(*args.pid);
-    // 创建一个容量为20的Vec<pid_t>
-    let mut high_usage_tids = Vec::with_capacity(20);
+    // 创建一个容量为40的Vec<pid_t>
+    let mut high_usage_tids = Vec::with_capacity(40);
 
     let mut finish = false;
 
@@ -30,7 +31,7 @@ pub fn start_task(args: &mut StartArgs) {
         let task_map = args.activity_utils.tid_utils.get_task_map(*pid);
 
         if finish {
-            execute_policy(task_map, usage_top1, usage_top2);
+            execute_policy(task_map, usage_top1, usage_top2, true);
             std::thread::sleep(Duration::from_millis(100));
         } else {
             let unname_tids = get_thread_tids(task_map, b"Thread-");
@@ -55,12 +56,12 @@ pub fn start_task(args: &mut StartArgs) {
                 continue;
             };
 
-            if high_usage_tids.len() < 20 {
+            if high_usage_tids.len() < 40 {
                 high_usage_tids.push(tid1);
                 high_usage_tids.push(tid2);
                 #[cfg(debug_assertions)]
                 debug!("负载第一高:{tid1}\n第二高:{tid2}");
-                execute_policy(task_map, tid1, tid2);
+                execute_policy(task_map, tid1, tid2, false);
             } else {
                 args.controller.init_default();
 
@@ -72,15 +73,6 @@ pub fn start_task(args: &mut StartArgs) {
                 // 按频次排序，取出频次最高的两个tid
                 let mut sorted_tids: Vec<_> = tid_counts.into_iter().collect();
                 sorted_tids.sort_unstable_by(|a, b| b.1.cmp(&a.1));
-                // let (sort1, sort2) = if let Some((tid1, _)) = sorted_tids.first() {
-                // if let Some((tid2, _)) = sorted_tids.get(1) {
-                // (*tid1, *tid2)
-                // } else {
-                // (*tid1, *tid1)
-                // }
-                // } else {
-                // (0, 0)
-                // };
 
                 if let Some((sort1, _)) = sorted_tids.first() {
                     usage_top1 = *sort1;
@@ -90,11 +82,9 @@ pub fn start_task(args: &mut StartArgs) {
                     usage_top2 = *sort2;
                 }
                 finish = true;
-                // usage_top1 = sort1;
-                // usage_top2 = sort2;
-                high_usage_tids.clear();
-                #[cfg(debug_assertions)]
-                debug!("计算后最终结果为:{usage_top1}\n第二高:{usage_top2}");
+                // drop(high_usage_tids);
+                // #[cfg(debug_assertions)]
+                info!("计算后最终结果为:{usage_top1}\n第二高:{usage_top2}");
                 continue;
             }
         }
