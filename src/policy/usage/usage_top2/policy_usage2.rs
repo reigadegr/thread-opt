@@ -31,7 +31,7 @@ pub fn start_task(args: &mut StartArgs) {
         let task_map = args.activity_utils.tid_utils.get_task_map(*pid);
 
         if finish {
-            execute_policy(task_map, usage_top1, usage_top2, true);
+            execute_policy(task_map, usage_top1, usage_top2, finish);
             std::thread::sleep(Duration::from_millis(100));
         } else {
             let unname_tids = get_thread_tids(task_map, b"Thread-");
@@ -61,7 +61,7 @@ pub fn start_task(args: &mut StartArgs) {
                 high_usage_tids.push(tid2);
                 #[cfg(debug_assertions)]
                 debug!("负载第一高:{tid1}\n第二高:{tid2}");
-                execute_policy(task_map, tid1, tid2, false);
+                execute_policy(task_map, tid1, tid2, finish);
             } else {
                 args.controller.init_default();
 
