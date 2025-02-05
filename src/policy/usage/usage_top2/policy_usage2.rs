@@ -31,7 +31,7 @@ pub fn start_task(args: &mut StartArgs) {
 
         if finish {
             execute_policy(task_map, usage_top1, usage_top2);
-            std::thread::sleep(Duration::from_millis(2000));
+            std::thread::sleep(Duration::from_millis(100));
         } else {
             let unname_tids = get_thread_tids(task_map, b"Thread-");
             #[cfg(debug_assertions)]
@@ -58,6 +58,9 @@ pub fn start_task(args: &mut StartArgs) {
             if high_usage_tids.len() < 20 {
                 high_usage_tids.push(tid1);
                 high_usage_tids.push(tid2);
+                #[cfg(debug_assertions)]
+                debug!("负载第一高:{tid1}\n第二高:{tid2}");
+                execute_policy(task_map, tid1, tid2);
             } else {
                 args.controller.init_default();
 
@@ -81,14 +84,11 @@ pub fn start_task(args: &mut StartArgs) {
                 finish = true;
                 usage_top1 = sort1;
                 usage_top2 = sort2;
+                high_usage_tids.clear();
                 #[cfg(debug_assertions)]
                 debug!("计算后最终结果为:{usage_top1}\n第二高:{usage_top2}");
                 continue;
             }
-
-            #[cfg(debug_assertions)]
-            debug!("负载第一高:{tid1}\n第二高:{tid2}");
-            execute_policy(task_map, tid1, tid2);
         }
 
         std::thread::sleep(Duration::from_millis(1900));
