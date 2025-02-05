@@ -37,15 +37,20 @@ impl UsageTracker {
     }
 
     fn try_calculate(&mut self) -> Result<f64> {
-        let tick_per_sec = 1_000_000_000.0;
+        // let tick_per_sec = 1_000_000_000.0;
+
         let new_cputime = get_thread_cpu_time(self.tid)?;
+        // let cputime_slice = new_cputime - self.last_cputime;
+        // self.last_cputime = new_cputime;
+
+        // let elapsed_ticks = self.read_timer.elapsed().as_secs_f64() * tick_per_sec;
+        // self.read_timer = Instant::now();
+
+        // let load_percentage = cputime_slice as f64 / elapsed_ticks;
         // #[cfg(debug_assertions)]
-        // debug!("持续时间:{:?}", self.read_timer.elapsed());
-        let elapsed_ticks = self.read_timer.elapsed().as_secs_f64() * tick_per_sec;
-        self.read_timer = Instant::now();
-        let cputime_slice = new_cputime - self.last_cputime;
-        self.last_cputime = new_cputime;
-        Ok(cputime_slice as f64 / elapsed_ticks)
+        // println!("线程 {} 的负载: {:.5}%", self.tid, load_percentage * 100.0);
+        // Ok(load_percentage)
+        Ok(new_cputime as f64)
     }
 }
 
