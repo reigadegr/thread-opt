@@ -4,6 +4,7 @@ use crate::policy::{
     usage::{get_thread_tids, UNNAME_TIDS},
 };
 use hashbrown::HashMap;
+use libc::pid_t;
 #[cfg(debug_assertions)]
 use log::debug;
 use log::info;
@@ -22,7 +23,7 @@ pub fn start_task(args: &mut StartArgs) {
     args.controller.init_game(*args.pid);
 
     // 创建一个HashMap<i32, i32>
-    let mut high_usage_tids = HashMap::new();
+    let mut high_usage_tids: Option<HashMap<pid_t, i32>> = Some(HashMap::new());
 
     let mut finish = false;
     let mut usage_top1 = 0;
@@ -55,7 +56,9 @@ pub fn start_task(args: &mut StartArgs) {
             };
 
             if insert_count < 20 {
-                *high_usage_tids.entry(tid1).or_insert(0) += 1;
+                if let Some(map) = high_usage_tids.as_mut() {
+                    *map.entry(tid1).or_insert(0) += 1;
+                }
                 insert_count += 1;
                 #[cfg(debug_assertions)]
                 debug!("负载第一高:{tid1}\n");
@@ -64,15 +67,16 @@ pub fn start_task(args: &mut StartArgs) {
             } else {
                 args.controller.init_default();
                 // 按频次排序，取出频次最高的一个tid
-                let mut sorted_tids: Vec<_> = high_usage_tids.iter().collect();
-                sorted_tids.sort_unstable_by(|(_, a), (_, b)| {
-                    b.partial_cmp(a).unwrap_or(cmp::Ordering::Equal)
-                });
-                sorted_tids.truncate(1);
-                usage_top1 = *sorted_tids[0].0;
-
+                if let Some(map) = high_usage_tids.as_mut() {
+                    let mut sorted_tids: Vec<_> = map.iter().collect();
+                    sorted_tids.sort_unstable_by(|(_, a), (_, b)| {
+                        b.partial_cmp(a).unwrap_or(cmp::Ordering::Equal)
+                    });
+                    sorted_tids.truncate(1);
+                    usage_top1 = *sorted_tids[0].0;
+                }
                 finish = true;
-
+                high_usage_tids = None;
                 // #[cfg(debug_assertions)]
                 info!("计算后最终结果为:{usage_top1}\n");
                 continue;
