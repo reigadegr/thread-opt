@@ -53,7 +53,7 @@ pub fn start_task(args: &mut StartArgs) {
                 std::thread::sleep(Duration::from_millis(100));
                 continue;
             };
-        
+
             if insert_count < 20 {
                 *high_usage_tids.entry(tid1).or_insert(0) += 1;
                 insert_count += 1;

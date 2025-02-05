@@ -7,19 +7,21 @@ use hashbrown::HashMap;
 #[cfg(debug_assertions)]
 use log::debug;
 use log::info;
+use std::cmp;
 use std::time::Duration;
 
 pub fn start_task(args: &mut StartArgs) {
     // 获取全局通道的发送端
     let tx = &UNNAME_TIDS.0;
     args.controller.init_game(*args.pid);
-    // 创建一个容量为40的Vec<pid_t>
-    let mut high_usage_tids = Vec::with_capacity(40);
+    // 创建一个HashMap<i32, i32>
+    let mut high_usage_tids = HashMap::new();
 
     let mut finish = false;
 
     let mut usage_top1 = 0;
     let mut usage_top2 = 0;
+    let mut insert_count = 0;
 
     loop {
         let pid = args.activity_utils.top_app_utils.get_pid();
@@ -56,31 +58,31 @@ pub fn start_task(args: &mut StartArgs) {
                 continue;
             };
 
-            if high_usage_tids.len() < 40 {
-                high_usage_tids.push(tid1);
-                high_usage_tids.push(tid2);
+            if insert_count < 40 {
+                insert_count += 2;
+                // high_usage_tids.push(tid1);
+                *high_usage_tids.entry(tid1).or_insert(0) += 1;
+                // high_usage_tids.push(tid2);
+                *high_usage_tids.entry(tid2).or_insert(0) += 1;
                 #[cfg(debug_assertions)]
                 debug!("负载第一高:{tid1}\n第二高:{tid2}");
                 execute_policy(task_map, tid1, tid2, finish);
             } else {
                 args.controller.init_default();
 
-                let mut tid_counts = HashMap::new();
-                for &tid in &high_usage_tids {
-                    *tid_counts.entry(tid).or_insert(0) += 1;
-                }
+                // let mut tid_counts = HashMap::new();
+                // for &tid in &high_usage_tids {
+                // *tid_counts.entry(tid).or_insert(0) += 1;
+                // }
 
                 // 按频次排序，取出频次最高的两个tid
-                let mut sorted_tids: Vec<_> = tid_counts.into_iter().collect();
-                sorted_tids.sort_unstable_by(|a, b| b.1.cmp(&a.1));
-
-                if let Some((sort1, _)) = sorted_tids.first() {
-                    usage_top1 = *sort1;
-                }
-
-                if let Some((sort2, _)) = sorted_tids.get(1) {
-                    usage_top2 = *sort2;
-                }
+                let mut sorted_tids: Vec<_> = high_usage_tids.iter().collect();
+                sorted_tids.sort_unstable_by(|(_, a), (_, b)| {
+                    b.partial_cmp(a).unwrap_or(cmp::Ordering::Equal)
+                });
+                sorted_tids.truncate(2);
+                usage_top1 = *sorted_tids[0].0;
+                usage_top2 = *sorted_tids[1].0;
                 finish = true;
                 // drop(high_usage_tids);
                 // #[cfg(debug_assertions)]
