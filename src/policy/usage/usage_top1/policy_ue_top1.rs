@@ -39,7 +39,7 @@ pub fn start_task(args: &mut StartArgs) {
         let task_map = args.activity_utils.tid_utils.get_task_map(*pid);
         if finish {
             Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND)
-                .execute_policy(task_map, usage_top1, finish);
+                .execute_policy(task_map, usage_top1);
             std::thread::sleep(Duration::from_millis(100));
         } else {
             let unname_tids = get_thread_tids(task_map, b"Thread-");
@@ -62,14 +62,13 @@ pub fn start_task(args: &mut StartArgs) {
                 insert_count += 1;
                 #[cfg(debug_assertions)]
                 debug!("负载第一高:{tid1}\n");
-                Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND)
-                    .execute_policy(task_map, tid1, finish);
+                Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND).execute_policy(task_map, tid1);
             } else {
                 // 按频次排序，取出频次最高的一个tid
                 if let Some(map) = high_usage_tids.as_mut() {
-                    if map.len() > 1 || map.is_empty() {
+                    if map.len() != 1 {
                         #[cfg(debug_assertions)]
-                        debug!("map长度>1或者为空，重新vote");
+                        debug!("map长度不为1，重新vote");
                         map.clear();
                         insert_count = 0;
                         continue;

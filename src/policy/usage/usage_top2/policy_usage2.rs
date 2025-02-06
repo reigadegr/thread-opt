@@ -34,7 +34,7 @@ pub fn start_task(args: &mut StartArgs) {
         let task_map = args.activity_utils.tid_utils.get_task_map(*pid);
 
         if finish {
-            execute_policy(task_map, usage_top1, usage_top2, finish);
+            execute_policy(task_map, usage_top1, usage_top2);
             std::thread::sleep(Duration::from_millis(100));
         } else {
             let unname_tids = get_thread_tids(task_map, b"Thread-");
@@ -67,13 +67,13 @@ pub fn start_task(args: &mut StartArgs) {
                 }
                 #[cfg(debug_assertions)]
                 debug!("负载第一高:{tid1}\n第二高:{tid2}");
-                execute_policy(task_map, tid1, tid2, finish);
+                execute_policy(task_map, tid1, tid2);
             } else {
                 // 按频次排序，取出频次最高的两个tid
                 if let Some(map) = high_usage_tids.as_mut() {
-                    if map.len() > 2 || map.is_empty() {
+                    if map.len() != 2 {
                         #[cfg(debug_assertions)]
-                        debug!("map长度>2或者为空，重新vote");
+                        debug!("map长度不为2，重新vote");
                         map.clear();
                         insert_count = 0;
                         continue;
