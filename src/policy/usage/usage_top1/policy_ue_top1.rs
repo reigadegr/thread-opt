@@ -55,7 +55,7 @@ pub fn start_task(args: &mut StartArgs) {
                 continue;
             };
 
-            if insert_count < 20 {
+            if insert_count < 10 {
                 if let Some(map) = high_usage_tids.as_mut() {
                     *map.entry(tid1).or_insert(0) += 1;
                 }
@@ -65,9 +65,15 @@ pub fn start_task(args: &mut StartArgs) {
                 Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND)
                     .execute_policy(task_map, tid1, finish);
             } else {
-                args.controller.init_default();
                 // 按频次排序，取出频次最高的一个tid
                 if let Some(map) = high_usage_tids.as_mut() {
+                    if map.len() > 1 || map.is_empty() {
+                        #[cfg(debug_assertions)]
+                        debug!("map长度>1或者为空，重新vote");
+                        map.clear();
+                        insert_count = 0;
+                        continue;
+                    }
                     let mut sorted_tids: Vec<_> = map.iter().collect();
                     sorted_tids.sort_unstable_by(|(_, a), (_, b)| {
                         b.partial_cmp(a).unwrap_or(cmp::Ordering::Equal)
@@ -75,9 +81,11 @@ pub fn start_task(args: &mut StartArgs) {
                     sorted_tids.truncate(1);
                     usage_top1 = *sorted_tids[0].0;
                 }
+
+                args.controller.init_default();
                 finish = true;
                 high_usage_tids = None;
-                // #[cfg(debug_assertions)]
+                #[cfg(debug_assertions)]
                 info!("计算后最终结果为:{usage_top1}\n");
                 continue;
             }

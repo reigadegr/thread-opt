@@ -71,9 +71,9 @@ pub fn start_task(args: &mut StartArgs) {
             } else {
                 // 按频次排序，取出频次最高的两个tid
                 if let Some(map) = high_usage_tids.as_mut() {
-                    if map.len() > 2 || map.len() < 1 {
+                    if map.len() > 2 || map.is_empty() {
                         #[cfg(debug_assertions)]
-                        debug!("map长度>2或者小于1，重新vote");
+                        debug!("map长度>2或者为空，重新vote");
                         map.clear();
                         insert_count = 0;
                         continue;
@@ -87,10 +87,10 @@ pub fn start_task(args: &mut StartArgs) {
                     usage_top2 = *sorted_tids[1].0;
                 }
 
-                finish = true;
                 args.controller.init_default();
+                finish = true;
                 high_usage_tids = None;
-                // #[cfg(debug_assertions)]
+                #[cfg(debug_assertions)]
                 info!("计算后最终结果为:{usage_top1}\n第二高:{usage_top2}");
                 continue;
             }
