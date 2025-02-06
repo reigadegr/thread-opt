@@ -1,4 +1,4 @@
-//From shadow3aaa fas-rs
+// From shadow3aaa fas-rs
 use crate::policy::usage::UNNAME_TIDS;
 use anyhow::{anyhow, Result};
 use flume::{Receiver, Sender};
@@ -77,7 +77,7 @@ fn monitor_thread(receiver: &Receiver<Option<bool>>, max_usage_tid: &Sender<(pid
         let Ok(threads) = get_target_tids(rx) else {
             #[cfg(debug_assertions)]
             debug!("错误获取tids，休眠后跳过");
-            thread::sleep(Duration::from_millis(100));
+            thread::sleep(Duration::from_millis(150));
             continue;
         };
 
@@ -103,7 +103,7 @@ fn monitor_thread(receiver: &Receiver<Option<bool>>, max_usage_tid: &Sender<(pid
         }
         #[cfg(debug_assertions)]
         debug!("计算完一轮了");
-        thread::sleep(Duration::from_millis(1314));
+        thread::sleep(Duration::from_millis(1000));
     }
 }
 

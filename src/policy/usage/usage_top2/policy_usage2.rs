@@ -33,7 +33,7 @@ pub fn start_task(args: &mut StartArgs) {
 
         if likely(finish) {
             execute_policy(task_map, usage_top1, usage_top2);
-            std::thread::sleep(Duration::from_millis(800));
+            std::thread::sleep(Duration::from_millis(1000));
         } else {
             let unname_tids = get_thread_tids(task_map, b"Thread-");
             #[cfg(debug_assertions)]
@@ -81,6 +81,6 @@ pub fn start_task(args: &mut StartArgs) {
             }
         }
 
-        std::thread::sleep(Duration::from_millis(1200));
+        std::thread::sleep(Duration::from_millis(1000));
     }
 }

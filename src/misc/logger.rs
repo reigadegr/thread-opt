@@ -1,4 +1,4 @@
-//From shadow3aaa fas-rs
+// From shadow3aaa fas-rs
 use anyhow::Result;
 use chrono::{DateTime, FixedOffset, Utc};
 use flexi_logger::{DeferredNow, LogSpecification, Logger, Record};
