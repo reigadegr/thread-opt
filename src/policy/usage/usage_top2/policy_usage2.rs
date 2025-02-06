@@ -60,27 +60,26 @@ pub fn start_task(args: &mut StartArgs) {
 
             if likely(insert_count < 25) {
                 if let Some(map) = high_usage_tids.as_mut() {
+                    *map.entry(tid1).or_insert(0) += 1;
+                    *map.entry(tid2).or_insert(0) += 1;
+                    #[cfg(debug_assertions)]
+                    debug!("负载第一高:{tid1}\n第二高:{tid2}");
                     if unlikely(map.len() > 2) {
                         #[cfg(debug_assertions)]
                         debug!("检测到map长度大于2，重新vote");
                         map.clear();
-                        insert_count = 0;
+                        insert_count = 10;
                         continue;
                     }
-                    *map.entry(tid1).or_insert(0) += 1;
-                    *map.entry(tid2).or_insert(0) += 1;
+
                     insert_count += 1;
                 }
-                #[cfg(debug_assertions)]
-                debug!("负载第一高:{tid1}\n第二高:{tid2}");
+
                 execute_policy(task_map, tid1, tid2);
             } else {
-                // 按频次排序，取出频次最高的两个tid
-                if let Some(map) = high_usage_tids {
-                    let sorted_tids: Vec<_> = map.iter().collect();
-                    usage_top1 = *sorted_tids[0].0;
-                    usage_top2 = *sorted_tids[1].0;
-                }
+                //可以通过获取线程亲和性更准确的硬亲和
+                usage_top1 = tid1;
+                usage_top2 = tid2;
 
                 args.controller.init_default();
                 finish = true;
