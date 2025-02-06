@@ -32,11 +32,11 @@ macro_rules! bind_list {
 }
 
 // 生成单个绑定函数
-bind_thread!(bind_thread_to_top, get_top_cpu_set);
-bind_thread!(bind_thread_to_only7, get_only7_cpu_set);
-bind_thread!(bind_thread_to_only6, get_only6_cpu_set);
-bind_thread!(bind_thread_to_middle, get_middle_cpu_set);
-bind_thread!(bind_thread_to_background, get_background_cpu_set);
+bind_thread!(bind_tid_to_top, get_top_cpu_set);
+bind_thread!(bind_tid_to_only7, get_only7_cpu_set);
+bind_thread!(bind_tid_to_only6, get_only6_cpu_set);
+bind_thread!(bind_tid_to_middle, get_middle_cpu_set);
+bind_thread!(bind_tid_to_background, get_background_cpu_set);
 
 // 生成批量绑定函数
 bind_list!(bind_list_to_middle, get_middle_cpu_set);
