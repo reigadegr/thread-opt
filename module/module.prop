@@ -1,6 +1,6 @@
 id=thread_opt
 name=thread-opt
-version=v1.4.0
-versionCode=14
+version=v1.5.1
+versionCode=15
 author=Nigger
-description=Hard Affinity policy for games thread.
+description=The Hard Affinity policy binds threads to target cores in gaming.

@@ -9,7 +9,7 @@ for i in $(find ./src -name "*.rs"); do
     nohup dos2unix $i >/dev/null 2>&1 &
 done
 
-rm -rf $(find ./target -name "*thread-opt*")
+nohup rm -rf $(find ./target -name "*thread-opt*") >/dev/null 2>&1 &
 
 uid=$(dumpsys package com.termux | grep appId | awk 'NR==1{print $1}' | cut -d '=' -f2)
 chown -R $uid:$uid  ./src build.rs

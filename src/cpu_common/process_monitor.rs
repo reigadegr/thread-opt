@@ -3,8 +3,9 @@ use crate::policy::usage::UNNAME_TIDS;
 use anyhow::{anyhow, Result};
 use flume::{Receiver, Sender};
 use hashbrown::{hash_map::Entry, HashMap};
-use libc::{pid_t, sysconf, _SC_CLK_TCK};
+use libc::pid_t;
 use likely_stable::likely;
+
 #[cfg(debug_assertions)]
 use log::debug;
 use std::{
@@ -14,30 +15,16 @@ use std::{
 
 #[derive(Debug, Clone)]
 struct UsageTracker {
-    pid: pid_t,
     tid: pid_t,
-    last_cputime: u32,
-    read_timer: Instant,
 }
 
 impl UsageTracker {
-    fn new(pid: pid_t, tid: pid_t) -> Result<Self> {
-        Ok(Self {
-            pid,
-            tid,
-            last_cputime: get_thread_cpu_time(pid, tid)?,
-            read_timer: Instant::now(),
-        })
+    const fn new(tid: pid_t) -> Self {
+        Self { tid }
     }
 
-    fn try_calculate(&mut self) -> Result<f32> {
-        let tick_per_sec = unsafe { sysconf(_SC_CLK_TCK) };
-        let new_cputime = get_thread_cpu_time(self.pid, self.tid)?;
-        let elapsed_ticks = self.read_timer.elapsed().as_secs_f32() * tick_per_sec as f32;
-        self.read_timer = Instant::now();
-        let cputime_slice = new_cputime - self.last_cputime;
-        self.last_cputime = new_cputime;
-        Ok(cputime_slice as f32 / elapsed_ticks)
+    fn try_calculate(&self) -> u64 {
+        get_thread_cpu_time(self.tid)
     }
 }
 
@@ -53,7 +40,7 @@ impl ProcessMonitor {
         let (max_usage_tid_sender, max_usage_tid) = flume::unbounded();
 
         thread::Builder::new()
-            .name("ProcessMonitor".to_string())
+            .name("UsageCalculater".to_string())
             .spawn(move || {
                 monitor_thread(&receiver, &max_usage_tid_sender);
             })
@@ -80,6 +67,7 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
     let mut all_trackers = HashMap::new();
     let mut top_trackers = HashMap::new();
     let rx = &UNNAME_TIDS.1;
+
     loop {
         if let Ok(pid) = receiver.try_recv() {
             current_pid = pid;
@@ -87,7 +75,7 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
             top_trackers.clear();
         }
 
-        if let Some(pid) = current_pid {
+        if let Some(_pid) = current_pid {
             if last_full_update.elapsed() > Duration::from_millis(1600) {
                 #[cfg(debug_assertions)]
                 debug!("开始全量更新tid");
@@ -101,25 +89,26 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
                 all_trackers = threads
                     .iter()
                     .copied()
-                    .filter_map(|tid| {
-                        Some((
+                    .map(|tid| {
+                        (
                             tid,
                             match all_trackers.entry(tid) {
                                 Entry::Occupied(o) => o.remove(),
-                                Entry::Vacant(_) => UsageTracker::new(pid, tid).ok()?,
+                                Entry::Vacant(_) => UsageTracker::new(tid),
                             },
-                        ))
+                        )
                     })
                     .collect();
+
                 let top_threads = get_top_usage_tid(&mut all_trackers, 5);
+
                 top_trackers = top_threads
                     .into_iter()
                     .map(|(tid, _)| {
-                        let tracker = all_trackers.get(&tid).cloned().unwrap_or_else(|| {
-                            #[cfg(debug_assertions)]
-                            debug!("需要重新创建跟踪对象，bug原因未知");
-                            UsageTracker::new(pid, tid).expect("Failed to create UsageTracker")
-                        });
+                        let tracker = all_trackers
+                            .get(&tid)
+                            .cloned()
+                            .unwrap_or_else(|| UsageTracker::new(tid));
                         (tid, tracker)
                     })
                     .collect();
@@ -132,6 +121,10 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
             }
             #[cfg(debug_assertions)]
             debug!("计算完一轮了");
+        } else {
+            all_trackers.clear();
+            top_trackers.clear();
+            thread::sleep(Duration::from_millis(1314));
         }
         thread::sleep(Duration::from_millis(521));
     }
@@ -140,10 +133,10 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
 fn get_top_usage_tid(
     trackers: &mut HashMap<pid_t, UsageTracker>,
     cut_num: usize,
-) -> Vec<(pid_t, Option<f32>)> {
+) -> Vec<(pid_t, u64)> {
     let mut need_sort: Vec<_> = trackers
         .iter_mut()
-        .map(|(tid, tracker)| (*tid, tracker.try_calculate().ok()))
+        .map(|(tid, tracker)| (*tid, tracker.try_calculate()))
         .collect();
     need_sort.sort_unstable_by(|(_, a), (_, b)| b.partial_cmp(a).unwrap_or(cmp::Ordering::Equal));
     need_sort.truncate(cut_num);
@@ -159,19 +152,14 @@ fn get_target_tids(rx: &Receiver<Vec<pid_t>>) -> Result<Vec<pid_t>> {
             debug!("通道为空，返回一个错误");
             Err(anyhow!("Cannot get tids."))
         },
-        |tids| {
-            #[cfg(debug_assertions)]
-            debug!("成功获取，这是收到的未命名的tids:{tids:?}");
-            Ok(tids)
-        },
+        // |tids| Ok(tids),
+        Ok,
     )
 }
 
-fn get_thread_cpu_time(pid: pid_t, tid: pid_t) -> Result<u32> {
-    let stat_path = format!("/proc/{pid}/task/{tid}/stat");
-    let stat_content = fs::read_to_string(stat_path)?;
+fn get_thread_cpu_time(tid: pid_t) -> u64 {
+    let stat_path = format!("/proc/{tid}/schedstat");
+    let stat_content = fs::read_to_string(stat_path).unwrap_or_else(|_| String::from("0"));
     let parts: Vec<&str> = stat_content.split_whitespace().collect();
-    let utime = parts[13].parse::<u32>().unwrap_or(0);
-    let stime = parts[14].parse::<u32>().unwrap_or(0);
-    Ok(utime + stime)
+    parts[0].parse::<u64>().unwrap_or(0)
 }

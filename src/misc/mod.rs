@@ -6,7 +6,7 @@ use logger::{init_log, log_metainfo};
 
 pub fn init_misc() {
     working_in_background();
-    let rs = set_main_thread_name("affinity_opt");
+    let rs = set_main_thread_name("affinity_setter");
     if unlikely(rs.is_err()) {
         info!("Cannot rename the main thread name.");
     }
