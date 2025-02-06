@@ -5,7 +5,7 @@ use crate::policy::{
 };
 use hashbrown::HashSet;
 use libc::pid_t;
-use likely_stable::{likely, unlikely};
+use likely_stable::likely;
 #[cfg(debug_assertions)]
 use log::debug;
 use std::time::Duration;
@@ -21,7 +21,6 @@ pub fn start_task(args: &mut StartArgs) {
 
     let mut usage_top1 = 0;
     let mut usage_top2 = 0;
-    let mut insert_count: u8 = 0;
 
     loop {
         let pid = args.activity_utils.top_app_utils.get_pid();
@@ -58,35 +57,27 @@ pub fn start_task(args: &mut StartArgs) {
                 continue;
             };
 
-            if likely(insert_count < 25) {
-                if let Some(set) = high_usage_tids.as_mut() {
-                    set.insert(tid1);
-                    set.insert(tid2);
-                    #[cfg(debug_assertions)]
-                    debug!("负载第一高:{tid1}\n第二高:{tid2}");
-                    if unlikely(set.len() > 2) {
-                        #[cfg(debug_assertions)]
-                        debug!("检测到集合长度大于2，重新vote");
-                        set.clear();
-                        insert_count = 10;
-                        continue;
-                    }
-
-                    insert_count += 1;
-                }
-
-                execute_policy(task_map, tid1, tid2);
-            } else {
-                // 可以通过获取线程亲和性更准确的硬亲和
-                usage_top1 = tid1;
-                usage_top2 = tid2;
-
-                args.controller.init_default();
-                finish = true;
-                high_usage_tids = None;
+            if let Some(set) = high_usage_tids.as_mut() {
+                set.insert(tid1);
+                set.insert(tid2);
                 #[cfg(debug_assertions)]
-                debug!("计算后最终结果为:{usage_top1}\n第二高:{usage_top2}");
-                continue;
+                debug!("负载第一高:{tid1}\n第二高:{tid2}");
+                if likely(set.len() < 3) {
+                    execute_policy(task_map, tid1, tid2);
+                } else {
+                    args.controller.init_default();
+                    #[cfg(debug_assertions)]
+                    debug!("检测到集合长度大于2，可以结束了");
+                    set.clear();
+                    high_usage_tids = None;
+                    // 可以通过获取线程亲和性更准确的硬亲和
+                    usage_top1 = tid1;
+                    usage_top2 = tid2;
+                    finish = true;
+                    #[cfg(debug_assertions)]
+                    debug!("最终结果为:{usage_top1}\n第二高:{usage_top2}");
+                    continue;
+                }
             }
         }
 
