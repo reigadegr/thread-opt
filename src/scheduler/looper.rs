@@ -2,7 +2,7 @@ use crate::{
     activity::{get_tid_info::get_process_name, ActivityUtils},
     cpu_common::Controller,
     policy::pkg_cfg::{StartArgs, PACKAGE_CONFIGS},
-    utils::global_cpu_set::bind_list_to_background,
+    utils::global_cpu_utils::bind_list_to_background,
 };
 use compact_str::CompactString;
 use libc::pid_t;

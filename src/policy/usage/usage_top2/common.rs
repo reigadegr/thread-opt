@@ -2,9 +2,11 @@ use crate::{
     cgroup::group_info::{get_background_group, get_middle_group, get_top_group},
     utils::{
         affinity_setter::{bind_thread_to_cpu, bind_tid_list_to_cgroup},
-        global_cpu_set::bind_list_to_middle,
+        global_cpu_utils::bind_list_to_middle,
+        global_cpu_utils::bind_thread_to_middle,
     },
 };
+
 use hashbrown::HashMap;
 use libc::pid_t;
 #[cfg(debug_assertions)]
@@ -56,7 +58,7 @@ fn execute_task(cmd_type: &CmdType, tid: pid_t) {
                 bind_thread_to_cpu(&[6], tid);
                 return;
             }
-            bind_thread_to_cpu(get_middle_group(), tid);
+            bind_thread_to_middle(tid);
         }
         CmdType::Only7 => bind_thread_to_cpu(&[7], tid),
     }
