@@ -162,4 +162,7 @@ fn get_thread_cpu_time(tid: pid_t) -> u64 {
     let stat_content = fs::read_to_string(stat_path).unwrap_or_else(|_| String::from("0"));
     let parts: Vec<&str> = stat_content.split_whitespace().collect();
     parts[0].parse::<u64>().unwrap_or(0)
+    // let running_time = parts[0].parse::<u64>().unwrap_or(0);
+    // let waitting_time = parts[0].parse::<u64>().unwrap_or(0);
+    // running_time + waitting_time
 }

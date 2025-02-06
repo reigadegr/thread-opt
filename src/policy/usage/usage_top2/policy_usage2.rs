@@ -5,6 +5,7 @@ use crate::policy::{
 };
 use hashbrown::HashMap;
 use libc::pid_t;
+use likely_stable::unlikely;
 #[cfg(debug_assertions)]
 use log::debug;
 use std::cmp;
@@ -59,10 +60,17 @@ pub fn start_task(args: &mut StartArgs) {
             };
 
             if insert_count < 25 {
-                insert_count += 1;
                 if let Some(map) = high_usage_tids.as_mut() {
+                    if unlikely(map.len() > 2) {
+                        #[cfg(debug_assertions)]
+                        debug!("检测到map长度大于2，重新vote");
+                        map.clear();
+                        insert_count = 0;
+                        continue;
+                    }
                     *map.entry(tid1).or_insert(0) += 1;
                     *map.entry(tid2).or_insert(0) += 1;
+                    insert_count += 1;
                 }
                 #[cfg(debug_assertions)]
                 debug!("负载第一高:{tid1}\n第二高:{tid2}");
@@ -70,13 +78,6 @@ pub fn start_task(args: &mut StartArgs) {
             } else {
                 // 按频次排序，取出频次最高的两个tid
                 if let Some(map) = high_usage_tids.as_mut() {
-                    if map.len() != 2 {
-                        #[cfg(debug_assertions)]
-                        debug!("map长度不为2，重新vote");
-                        map.clear();
-                        insert_count = 0;
-                        continue;
-                    }
                     let mut sorted_tids: Vec<_> = map.iter().collect();
                     sorted_tids.sort_unstable_by(|(_, a), (_, b)| {
                         b.partial_cmp(a).unwrap_or(cmp::Ordering::Equal)
