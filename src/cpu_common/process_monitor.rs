@@ -121,11 +121,7 @@ fn get_top_usage_tid(
 
 fn get_target_tids(rx: &Receiver<Vec<pid_t>>) -> Result<Vec<pid_t>> {
     rx.try_recv().map_or_else(
-        |_| {
-            #[cfg(debug_assertions)]
-            debug!("通道为空，返回一个错误");
-            Err(anyhow!("Cannot get tids."))
-        },
+        |_| Err(anyhow!("Cannot get tids.")),
         // |tids| Ok(tids),
         Ok,
     )
