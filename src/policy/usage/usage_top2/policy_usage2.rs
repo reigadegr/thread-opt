@@ -3,7 +3,7 @@ use crate::policy::{
     pkg_cfg::StartArgs,
     usage::{get_thread_tids, UNNAME_TIDS},
 };
-use hashbrown::HashMap;
+use hashbrown::HashSet; // 修改为 HashSet
 use libc::pid_t;
 use likely_stable::{likely, unlikely};
 #[cfg(debug_assertions)]
@@ -14,8 +14,8 @@ pub fn start_task(args: &mut StartArgs) {
     args.controller.init_game(true);
     // 获取全局通道的发送端
     let tx = &UNNAME_TIDS.0;
-    // 创建一个HashMap<i32, i32>
-    let mut high_usage_tids: Option<HashMap<pid_t, u8>> = Some(HashMap::new());
+    // 创建一个HashSet<pid_t>
+    let mut high_usage_tids: Option<HashSet<pid_t>> = Some(HashSet::new());
 
     let mut finish = false;
 
@@ -59,15 +59,15 @@ pub fn start_task(args: &mut StartArgs) {
             };
 
             if likely(insert_count < 25) {
-                if let Some(map) = high_usage_tids.as_mut() {
-                    *map.entry(tid1).or_insert(0) += 1;
-                    *map.entry(tid2).or_insert(0) += 1;
+                if let Some(set) = high_usage_tids.as_mut() {
+                    set.insert(tid1); // 插入 tid1
+                    set.insert(tid2); // 插入 tid2
                     #[cfg(debug_assertions)]
                     debug!("负载第一高:{tid1}\n第二高:{tid2}");
-                    if unlikely(map.len() > 2) {
+                    if unlikely(set.len() > 2) {
                         #[cfg(debug_assertions)]
-                        debug!("检测到map长度大于2，重新vote");
-                        map.clear();
+                        debug!("检测到集合长度大于2，重新vote");
+                        set.clear();
                         insert_count = 10;
                         continue;
                     }
@@ -77,7 +77,7 @@ pub fn start_task(args: &mut StartArgs) {
 
                 execute_policy(task_map, tid1, tid2);
             } else {
-                //可以通过获取线程亲和性更准确的硬亲和
+                // 可以通过获取线程亲和性更准确的硬亲和
                 usage_top1 = tid1;
                 usage_top2 = tid2;
 
