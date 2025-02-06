@@ -58,7 +58,7 @@ pub fn start_task(args: &mut StartArgs) {
                 continue;
             };
 
-            if insert_count < 11 {
+            if insert_count < 25 {
                 insert_count += 1;
                 if let Some(map) = high_usage_tids.as_mut() {
                     *map.entry(tid1).or_insert(0) += 1;
