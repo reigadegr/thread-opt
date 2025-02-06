@@ -11,9 +11,9 @@ use log::debug;
 use std::time::Duration;
 
 pub fn start_task(args: &mut StartArgs) {
+    args.controller.init_game(true);
     // 获取全局通道的发送端
     let tx = &UNNAME_TIDS.0;
-    args.controller.init_game(*args.pid);
     // 创建一个HashMap<i32, i32>
     let mut high_usage_tids: Option<HashMap<pid_t, u8>> = Some(HashMap::new());
 

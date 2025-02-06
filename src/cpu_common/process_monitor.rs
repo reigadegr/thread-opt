@@ -27,7 +27,7 @@ impl UsageTracker {
 
 #[derive(Debug)]
 pub struct ProcessMonitor {
-    sender: Sender<Option<pid_t>>,
+    sender: Sender<Option<bool>>,
     max_usage_tid: Receiver<(pid_t, pid_t)>,
 }
 
@@ -49,7 +49,7 @@ impl ProcessMonitor {
         }
     }
 
-    pub fn set_pid(&self, pid: Option<pid_t>) {
+    pub fn set_pid(&self, pid: Option<bool>) {
         self.sender.send(pid).unwrap();
     }
 
@@ -58,50 +58,51 @@ impl ProcessMonitor {
     }
 }
 
-fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pid_t, pid_t)>) {
-    let mut current_pid = None;
+fn monitor_thread(receiver: &Receiver<Option<bool>>, max_usage_tid: &Sender<(pid_t, pid_t)>) {
+    let mut work_state = None;
     let mut all_trackers = HashMap::new();
     let rx = &UNNAME_TIDS.1;
 
     loop {
-        if let Ok(pid) = receiver.try_recv() {
-            current_pid = pid;
+        if let Ok(state) = receiver.try_recv() {
+            work_state = state;
             all_trackers.clear();
         }
 
-        if let Some(_pid) = current_pid {
-            let Ok(threads) = get_target_tids(rx) else {
-                #[cfg(debug_assertions)]
-                debug!("错误获取tids，休眠后跳过");
-                thread::sleep(Duration::from_millis(400));
-                continue;
-            };
+        if work_state.is_none() {
+            thread::sleep(Duration::from_millis(2000));
+            continue;
+        }
 
-            all_trackers = threads
-                .iter()
-                .copied()
-                .map(|tid| {
-                    (
-                        tid,
-                        match all_trackers.entry(tid) {
-                            Entry::Occupied(o) => o.remove(),
-                            Entry::Vacant(_) => UsageTracker::new(tid),
-                        },
-                    )
-                })
-                .collect();
-
-            let top_threads = get_top_usage_tid(&mut all_trackers, 5);
-            if likely(top_threads.len() > 1) {
-                max_usage_tid
-                    .send((top_threads[0].0, top_threads[1].0))
-                    .unwrap();
-            }
+        let Ok(threads) = get_target_tids(rx) else {
             #[cfg(debug_assertions)]
-            debug!("计算完一轮了");
-        } else {
-            all_trackers.clear();
+            debug!("错误获取tids，休眠后跳过");
+            thread::sleep(Duration::from_millis(100));
+            continue;
+        };
+
+        all_trackers = threads
+            .iter()
+            .copied()
+            .map(|tid| {
+                (
+                    tid,
+                    match all_trackers.entry(tid) {
+                        Entry::Occupied(o) => o.remove(),
+                        Entry::Vacant(_) => UsageTracker::new(tid),
+                    },
+                )
+            })
+            .collect();
+
+        let top_threads = get_top_usage_tid(&mut all_trackers, 2);
+        if likely(top_threads.len() > 1) {
+            max_usage_tid
+                .send((top_threads[0].0, top_threads[1].0))
+                .unwrap();
         }
+        #[cfg(debug_assertions)]
+        debug!("计算完一轮了");
         thread::sleep(Duration::from_millis(2000));
     }
 }

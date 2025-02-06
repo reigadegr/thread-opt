@@ -18,7 +18,7 @@ impl Controller {
         }
     }
 
-    pub fn init_game(&mut self, pid: pid_t) {
+    pub fn init_game(&mut self, pid: bool) {
         self.process_monitor.set_pid(Some(pid));
         self.max_tid = None;
         self.second_max_tid = None;
