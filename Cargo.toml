@@ -1,6 +1,6 @@
 [package]
 name = "thread-opt"
-version = "1.4.0"
+version = "1.5.0"
 edition = "2021"
 description = "The Hard Affinity policy binds threads to target cores in gaming."
 authors = ["reigadegr"]
