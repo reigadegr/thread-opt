@@ -49,8 +49,8 @@ impl ProcessMonitor {
         }
     }
 
-    pub fn set_pid(&self, pid: Option<bool>) {
-        self.sender.send(pid).unwrap();
+    pub fn set_work_state(&self, work_state: Option<bool>) {
+        self.sender.send(work_state).unwrap();
     }
 
     pub fn update_max_usage_tid(&self) -> Option<(pid_t, pid_t)> {
