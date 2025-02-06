@@ -1,8 +1,8 @@
 use crate::{
     cgroup::group_info::get_top_group,
-    utils::{
-        affinity_setter::bind_thread_to_cpu,
-        global_cpu_utils::{bind_thread_to_background, bind_thread_to_middle, bind_thread_to_top},
+    utils::global_cpu_utils::{
+        bind_thread_to_background, bind_thread_to_middle, bind_thread_to_only6,
+        bind_thread_to_only7, bind_thread_to_top,
     },
 };
 use hashbrown::HashMap;
@@ -97,12 +97,12 @@ fn execute_task(cmd_type: &CmdType, tid: pid_t) {
         CmdType::Only6 => {
             let top_group = get_top_group();
             if top_group == [6, 7] {
-                bind_thread_to_cpu(&[6], tid);
+                bind_thread_to_only6(tid);
                 return;
             }
             bind_thread_to_middle(tid);
         }
-        CmdType::Only7 => bind_thread_to_cpu(&[7], tid),
+        CmdType::Only7 => bind_thread_to_only7(tid),
         CmdType::Middle => bind_thread_to_middle(tid),
         CmdType::Background => bind_thread_to_background(tid),
     }
