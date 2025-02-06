@@ -40,7 +40,7 @@ impl ProcessMonitor {
         let (max_usage_tid_sender, max_usage_tid) = flume::unbounded();
 
         thread::Builder::new()
-            .name("UsageCalculater".to_string())
+            .name("UsageSampler".to_string())
             .spawn(move || {
                 monitor_thread(&receiver, &max_usage_tid_sender);
             })
