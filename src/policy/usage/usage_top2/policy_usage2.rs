@@ -5,7 +5,7 @@ use crate::policy::{
 };
 use hashbrown::HashSet;
 use libc::pid_t;
-use likely_stable::likely;
+use likely_stable::{likely, unlikely};
 #[cfg(debug_assertions)]
 use log::debug;
 use std::time::Duration;
@@ -24,14 +24,14 @@ pub fn start_task(args: &mut StartArgs) {
 
     loop {
         let pid = args.activity_utils.top_app_utils.get_pid();
-        if pid != args.pid {
+        if unlikely(pid != args.pid) {
             args.controller.init_default();
             return;
         }
 
         let task_map = args.activity_utils.tid_utils.get_task_map(*pid);
 
-        if finish {
+        if likely(finish) {
             execute_policy(task_map, usage_top1, usage_top2);
             std::thread::sleep(Duration::from_millis(800));
         } else {

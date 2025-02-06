@@ -3,9 +3,7 @@ use crate::policy::{
     pkg_cfg::StartArgs,
     usage::{get_thread_tids, UNNAME_TIDS},
 };
-// use hashbrown::HashSet;
-// use libc::pid_t;
-use likely_stable::likely;
+use likely_stable::{likely, unlikely};
 #[cfg(debug_assertions)]
 use log::debug;
 use std::time::Duration;
@@ -26,7 +24,7 @@ pub fn start_task(args: &mut StartArgs) {
 
     loop {
         let pid = args.activity_utils.top_app_utils.get_pid();
-        if pid != args.pid {
+        if unlikely(pid != args.pid) {
             args.controller.init_default();
             return;
         }
