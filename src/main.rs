@@ -1,6 +1,6 @@
 #![deny(clippy::pedantic)]
 #![warn(clippy::nursery)]
-#![allow(clippy::cast_precision_loss, clippy::non_std_lazy_statics)]
+#![allow(clippy::non_std_lazy_statics)]
 
 mod activity;
 mod cgroup;

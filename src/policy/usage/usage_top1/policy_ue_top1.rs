@@ -3,7 +3,7 @@ use crate::policy::{
     pkg_cfg::StartArgs,
     usage::{get_thread_tids, UNNAME_TIDS},
 };
-use hashbrown::HashSet; // 修改为 HashSet
+use hashbrown::HashSet;
 use libc::pid_t;
 use likely_stable::{likely, unlikely};
 #[cfg(debug_assertions)]
@@ -39,7 +39,7 @@ pub fn start_task(args: &mut StartArgs) {
         if finish {
             Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND)
                 .execute_policy(task_map, usage_top1);
-            std::thread::sleep(Duration::from_millis(100));
+            std::thread::sleep(Duration::from_millis(800));
         } else {
             let unname_tids = get_thread_tids(task_map, b"Thread-");
             #[cfg(debug_assertions)]
@@ -56,7 +56,7 @@ pub fn start_task(args: &mut StartArgs) {
 
             if likely(insert_count < 25) {
                 if let Some(set) = high_usage_tids.as_mut() {
-                    set.insert(tid1); // 插入 tid1
+                    set.insert(tid1);
                     #[cfg(debug_assertions)]
                     debug!("负载第一高:{tid1}");
 
@@ -84,6 +84,6 @@ pub fn start_task(args: &mut StartArgs) {
             }
         }
 
-        std::thread::sleep(Duration::from_millis(1900));
+        std::thread::sleep(Duration::from_millis(1200));
     }
 }

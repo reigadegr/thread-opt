@@ -103,7 +103,7 @@ fn monitor_thread(receiver: &Receiver<Option<bool>>, max_usage_tid: &Sender<(pid
         }
         #[cfg(debug_assertions)]
         debug!("计算完一轮了");
-        thread::sleep(Duration::from_millis(2000));
+        thread::sleep(Duration::from_millis(1314));
     }
 }
 
