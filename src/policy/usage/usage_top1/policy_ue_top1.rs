@@ -5,6 +5,7 @@ use crate::policy::{
 };
 use hashbrown::HashMap;
 use libc::pid_t;
+use likely_stable::{likely, unlikely};
 #[cfg(debug_assertions)]
 use log::debug;
 use std::cmp;
@@ -54,24 +55,24 @@ pub fn start_task(args: &mut StartArgs) {
                 continue;
             };
 
-            if insert_count < 10 {
+            if likely(insert_count < 25) {
                 if let Some(map) = high_usage_tids.as_mut() {
-                    *map.entry(tid1).or_insert(0) += 1;
-                }
-                insert_count += 1;
-                #[cfg(debug_assertions)]
-                debug!("负载第一高:{tid1}\n");
-                Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND).execute_policy(task_map, tid1);
-            } else {
-                // 按频次排序，取出频次最高的一个tid
-                if let Some(map) = high_usage_tids.as_mut() {
-                    if map.len() != 1 {
+                    if unlikely(map.len() > 1) {
                         #[cfg(debug_assertions)]
                         debug!("map长度不为1，重新vote");
                         map.clear();
                         insert_count = 0;
                         continue;
                     }
+                    *map.entry(tid1).or_insert(0) += 1;
+                    insert_count += 1;
+                }
+                #[cfg(debug_assertions)]
+                debug!("负载第一高:{tid1}\n");
+                Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND).execute_policy(task_map, tid1);
+            } else {
+                // 按频次排序，取出频次最高的一个tid
+                if let Some(map) = high_usage_tids.as_mut() {
                     let mut sorted_tids: Vec<_> = map.iter().collect();
                     sorted_tids.sort_unstable_by(|(_, a), (_, b)| {
                         b.partial_cmp(a).unwrap_or(cmp::Ordering::Equal)
