@@ -1,9 +1,8 @@
 use crate::{
     activity::{get_tid_info::get_process_name, ActivityUtils},
-    cgroup::group_info::get_background_group,
     cpu_common::Controller,
     policy::pkg_cfg::{StartArgs, PACKAGE_CONFIGS},
-    utils::affinity_setter::bind_tid_list_to_cgroup,
+    utils::global_cpu_set::bind_list_to_background,
 };
 use compact_str::CompactString;
 use libc::pid_t;
@@ -30,7 +29,7 @@ impl Looper {
     fn game_exit(&mut self) {
         info!("Exiting game\n");
         let tid_list = self.activity_utils.tid_utils.get_tid_list(self.pid);
-        bind_tid_list_to_cgroup(get_background_group(), tid_list);
+        bind_list_to_background(tid_list);
         self.activity_utils.tid_utils.tid_info.task_map.clear();
         self.activity_utils.tid_utils.tid_info.tid_list.clear();
     }

@@ -7,7 +7,6 @@ use hashbrown::HashMap;
 use libc::pid_t;
 #[cfg(debug_assertions)]
 use log::debug;
-use log::info;
 use std::cmp;
 use std::time::Duration;
 
@@ -85,7 +84,7 @@ pub fn start_task(args: &mut StartArgs) {
                 finish = true;
                 high_usage_tids = None;
                 #[cfg(debug_assertions)]
-                info!("计算后最终结果为:{usage_top1}\n");
+                debug!("计算后最终结果为:{usage_top1}\n");
                 continue;
             }
         }
