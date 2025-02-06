@@ -101,14 +101,14 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
                     .collect();
 
                 let top_threads = get_top_usage_tid(&mut all_trackers, 5);
+
                 top_trackers = top_threads
                     .into_iter()
                     .map(|(tid, _)| {
-                        let tracker = all_trackers.get(&tid).cloned().unwrap_or_else(|| {
-                            #[cfg(debug_assertions)]
-                            debug!("需要重新创建跟踪对象，bug原因未知");
-                            UsageTracker::new(tid)
-                        });
+                        let tracker = all_trackers
+                            .get(&tid)
+                            .cloned()
+                            .unwrap_or_else(|| UsageTracker::new(tid));
                         (tid, tracker)
                     })
                     .collect();
@@ -152,11 +152,8 @@ fn get_target_tids(rx: &Receiver<Vec<pid_t>>) -> Result<Vec<pid_t>> {
             debug!("通道为空，返回一个错误");
             Err(anyhow!("Cannot get tids."))
         },
-        |tids| {
-            #[cfg(debug_assertions)]
-            debug!("成功获取，这是收到的未命名的tids:{tids:?}");
-            Ok(tids)
-        },
+        // |tids| Ok(tids),
+        Ok,
     )
 }
 
