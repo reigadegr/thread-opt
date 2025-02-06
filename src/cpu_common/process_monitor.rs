@@ -77,11 +77,9 @@ fn monitor_thread(receiver: &Receiver<Option<pid_t>>, max_usage_tid: &Sender<(pi
 
         if let Some(_pid) = current_pid {
             if last_full_update.elapsed() > Duration::from_millis(1600) {
-                #[cfg(debug_assertions)]
-                debug!("开始全量更新tid");
                 let Ok(threads) = get_target_tids(rx) else {
                     #[cfg(debug_assertions)]
-                    debug!("错误获取，休眠后跳过");
+                    debug!("错误获取tids，休眠后跳过");
                     thread::sleep(Duration::from_millis(400));
                     continue;
                 };
@@ -144,8 +142,6 @@ fn get_top_usage_tid(
 }
 
 fn get_target_tids(rx: &Receiver<Vec<pid_t>>) -> Result<Vec<pid_t>> {
-    #[cfg(debug_assertions)]
-    debug!("开始计算负载喵，开始接收数据");
     rx.try_recv().map_or_else(
         |_| {
             #[cfg(debug_assertions)]
@@ -162,7 +158,4 @@ fn get_thread_cpu_time(tid: pid_t) -> u64 {
     let stat_content = fs::read_to_string(stat_path).unwrap_or_else(|_| String::from("0"));
     let parts: Vec<&str> = stat_content.split_whitespace().collect();
     parts[0].parse::<u64>().unwrap_or(0)
-    // let running_time = parts[0].parse::<u64>().unwrap_or(0);
-    // let waitting_time = parts[0].parse::<u64>().unwrap_or(0);
-    // running_time + waitting_time
 }

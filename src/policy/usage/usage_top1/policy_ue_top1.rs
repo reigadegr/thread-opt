@@ -5,7 +5,7 @@ use crate::policy::{
 };
 use hashbrown::HashMap;
 use libc::pid_t;
-use likely_stable::unlikely;
+use likely_stable::{likely, unlikely};
 #[cfg(debug_assertions)]
 use log::debug;
 use std::cmp;
@@ -55,7 +55,7 @@ pub fn start_task(args: &mut StartArgs) {
                 continue;
             };
 
-            if insert_count < 25 {
+            if likely(insert_count < 25) {
                 if let Some(map) = high_usage_tids.as_mut() {
                     if unlikely(map.len() > 1) {
                         #[cfg(debug_assertions)]
