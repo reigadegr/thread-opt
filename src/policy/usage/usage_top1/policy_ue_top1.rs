@@ -3,7 +3,7 @@ use crate::policy::{
     pkg_cfg::StartArgs,
     usage::{get_thread_tids, UNNAME_TIDS},
 };
-use hashbrown::HashMap;
+use hashbrown::HashSet; // 修改为 HashSet
 use libc::pid_t;
 use likely_stable::{likely, unlikely};
 #[cfg(debug_assertions)]
@@ -21,8 +21,8 @@ pub fn start_task(args: &mut StartArgs) {
     // 获取全局通道的发送端
     let tx = &UNNAME_TIDS.0;
 
-    // 创建一个HashMap<i32, i32>
-    let mut high_usage_tids: Option<HashMap<pid_t, u8>> = Some(HashMap::new());
+    // 创建一个HashSet<pid_t>
+    let mut high_usage_tids: Option<HashSet<pid_t>> = Some(HashSet::new());
 
     let mut finish = false;
     let mut usage_top1 = 0;
@@ -55,21 +55,22 @@ pub fn start_task(args: &mut StartArgs) {
             };
 
             if likely(insert_count < 25) {
-                if let Some(map) = high_usage_tids.as_mut() {
-                    *map.entry(tid1).or_insert(0) += 1;
+                if let Some(set) = high_usage_tids.as_mut() {
+                    set.insert(tid1); // 插入 tid1
+                    #[cfg(debug_assertions)]
+                    debug!("负载第一高:{tid1}");
 
-                    if unlikely(map.len() > 1) {
+                    if unlikely(set.len() > 1) {
                         #[cfg(debug_assertions)]
-                        debug!("map长度大于1，重新vote");
-                        map.clear();
+                        debug!("检测到集合长度大于1，重新vote");
+                        set.clear();
                         insert_count = 10;
                         continue;
                     }
 
                     insert_count += 1;
                 }
-                #[cfg(debug_assertions)]
-                debug!("负载第一高:{tid1}\n");
+
                 Policy::new(&TOP, &ONLY6, &ONLY7, &MIDDLE, &BACKEND).execute_policy(task_map, tid1);
             } else {
                 usage_top1 = tid1;
