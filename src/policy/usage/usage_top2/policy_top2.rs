@@ -55,6 +55,16 @@ pub fn start_task(args: &mut StartArgs) {
                 debug!("负载第一高:{tid1}\n第二高:{tid2}");
                 if likely(set.len() < 3) {
                     execute_policy(task_map, tid1, tid2);
+                    if unlikely((tid1 - tid2).abs() == 1) {
+                        args.controller.init_default();
+                        #[cfg(debug_assertions)]
+                        debug!("检测到tid差异为1，可能是打开后台再进的，完成判断");
+                        set.clear();
+                        high_usage_tids = None;
+                        usage_top1 = tid1;
+                        usage_top2 = tid2;
+                        finish = true;
+                    }
                 } else {
                     if unlikely((tid1 - tid2).abs() > 1) {
                         #[cfg(debug_assertions)]
