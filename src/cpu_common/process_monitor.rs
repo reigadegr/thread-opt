@@ -131,6 +131,6 @@ fn get_target_tids(rx: &Receiver<Vec<pid_t>>) -> Result<Vec<pid_t>> {
 fn get_thread_cpu_time(tid: pid_t) -> u64 {
     let stat_path = format!("/proc/{tid}/schedstat");
     let stat_content = fs::read_to_string(stat_path).unwrap_or_else(|_| String::from("0"));
-    let parts: Vec<&str> = stat_content.split_whitespace().collect();
-    parts[0].parse::<u64>().unwrap_or(0)
+    let parts: &str = stat_content.split_whitespace().next().unwrap_or_default();
+    parts.parse::<u64>().unwrap_or(0)
 }
