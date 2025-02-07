@@ -1,7 +1,7 @@
 use super::common::Policy;
 use crate::policy::{
     pkg_cfg::StartArgs,
-    usage::{get_thread_tids, UNNAME_TIDS},
+    usage::{check_some, get_thread_tids, UNNAME_TIDS},
 };
 use likely_stable::{likely, unlikely};
 #[cfg(debug_assertions)]
@@ -43,10 +43,7 @@ pub fn start_task(args: &mut StartArgs) {
             debug!("发送已经完毕");
             std::thread::sleep(Duration::from_millis(100));
             args.controller.update_max_usage_tid();
-            let Some(tid1) = args.controller.first_max_tid() else {
-                std::thread::sleep(Duration::from_millis(100));
-                continue;
-            };
+            check_some! {tid1, args.controller.first_max_tid(), "获取不到first max tid，直接循环"};
             usage_top1 = tid1;
             args.controller.init_default();
             finish = true;

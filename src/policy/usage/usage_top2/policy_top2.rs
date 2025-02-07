@@ -1,7 +1,7 @@
 use super::common::execute_policy;
 use crate::policy::{
     pkg_cfg::StartArgs,
-    usage::{get_thread_tids, UNNAME_TIDS},
+    usage::{check_some, get_thread_tids, UNNAME_TIDS},
 };
 use hashbrown::HashSet;
 use libc::pid_t;
@@ -43,19 +43,9 @@ pub fn start_task(args: &mut StartArgs) {
             debug!("发送已经完毕，喵等待一段时间计算");
             std::thread::sleep(Duration::from_millis(100));
             args.controller.update_max_usage_tid();
-            let Some(tid1) = args.controller.first_max_tid() else {
-                #[cfg(debug_assertions)]
-                debug!("获取不到first max tid，直接循环");
-                std::thread::sleep(Duration::from_millis(100));
-                continue;
-            };
-
-            let Some(tid2) = args.controller.second_max_tid() else {
-                #[cfg(debug_assertions)]
-                debug!("获取不到second max tid，直接循环");
-                std::thread::sleep(Duration::from_millis(100));
-                continue;
-            };
+      
+            check_some! {tid1, args.controller.first_max_tid(), "获取不到first max tid，直接循环"};
+            check_some! {tid2, args.controller.second_max_tid(), "获取不到second max tid，直接循环"};
 
             if let Some(set) = high_usage_tids.as_mut() {
                 set.insert(tid1);
