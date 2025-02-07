@@ -43,7 +43,7 @@ pub fn start_task(args: &mut StartArgs) {
             debug!("发送已经完毕");
             std::thread::sleep(Duration::from_millis(100));
             args.controller.update_max_usage_tid();
-            check_some! {tid1, args.controller.first_max_tid(), "获取不到first max tid，直接循环"};
+            check_some! {tid1, args.controller.first_max_tid(), "无法获取最大负载tid"};
             usage_top1 = tid1;
             args.controller.init_default();
             finish = true;

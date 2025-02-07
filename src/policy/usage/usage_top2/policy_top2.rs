@@ -43,18 +43,28 @@ pub fn start_task(args: &mut StartArgs) {
             debug!("发送已经完毕，喵等待一段时间计算");
             std::thread::sleep(Duration::from_millis(100));
             args.controller.update_max_usage_tid();
-      
-            check_some! {tid1, args.controller.first_max_tid(), "获取不到first max tid，直接循环"};
-            check_some! {tid2, args.controller.second_max_tid(), "获取不到second max tid，直接循环"};
+
+            check_some! {tid1, args.controller.first_max_tid(), "无法获取最大负载tid"};
+            check_some! {tid2, args.controller.second_max_tid(), "无法获取第二负载tid"};
 
             if let Some(set) = high_usage_tids.as_mut() {
                 set.insert(tid1);
                 set.insert(tid2);
+
                 #[cfg(debug_assertions)]
                 debug!("负载第一高:{tid1}\n第二高:{tid2}");
                 if likely(set.len() < 3) {
                     execute_policy(task_map, tid1, tid2);
                 } else {
+                    if unlikely((tid1 - tid2).abs() > 1) {
+                        #[cfg(debug_assertions)]
+                        debug!("tid差异过大，重新计算");
+                        set.clear();
+                        set.insert(tid1);
+                        set.insert(tid2);
+                        continue;
+                    }
+
                     args.controller.init_default();
                     #[cfg(debug_assertions)]
                     debug!("检测到集合长度大于2，可以结束了");
