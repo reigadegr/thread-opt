@@ -75,7 +75,6 @@ impl TidUtils {
         let tid_list = match read_task_dir(pid) {
             Ok(list) => list,
             Err(e) => {
-                info!("Failed to read task directory: {}", e);
                 return &self.tid_info;
             }
         };
@@ -86,7 +85,6 @@ impl TidUtils {
             let comm = match read_to_byte(Path::new(&comm_path)) {
                 Ok(comm) => comm,
                 Err(e) => {
-                    info!("Failed to read comm file for tid {}: {}", tid, e);
                     return &self.tid_info;
                 }
             };

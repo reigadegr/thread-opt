@@ -17,7 +17,7 @@ impl TopPidInfo {
             return Self::default();
         }
 
-        let dump: Vec<pid_t> = dump
+        let dump: pid_t = dump
             .lines()
             .filter(|l| l.contains(" TOP"))
             .take(1)
@@ -25,8 +25,10 @@ impl TopPidInfo {
             .filter_map(|l| l.split('/').next())
             .filter_map(|s| s.split(':').next())
             .map(|p| p.trim().parse().unwrap_or_default())
-            .collect();
-        Self { pid: dump[0] }
+            .next()
+            .unwrap_or_default();
+        // .collect();
+        Self { pid: dump }
     }
 }
 
