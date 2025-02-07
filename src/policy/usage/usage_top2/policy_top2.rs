@@ -80,13 +80,11 @@ pub fn start_task(args: &mut StartArgs) {
                     debug!("检测到集合长度大于2，可以结束了");
                     set.clear();
                     high_usage_tids = None;
-                    // 可以通过获取线程亲和性更准确的硬亲和
                     usage_top1 = tid1;
                     usage_top2 = tid2;
                     finish = true;
                     #[cfg(debug_assertions)]
                     debug!("最终结果为:{usage_top1}\n第二高:{usage_top2}");
-                    continue;
                 }
             }
         }
