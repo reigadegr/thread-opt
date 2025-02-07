@@ -2,7 +2,7 @@ use super::name_match::{policy_cocos, policy_ue, policy_unity};
 use crate::{
     activity::ActivityUtils,
     cpu_common::Controller,
-    policy::usage::{usage_top1::policy_ue_top1, usage_top2::policy_usage2},
+    policy::usage::{usage_top1::policy_top1, usage_top2::policy_top2},
 };
 use libc::pid_t;
 use once_cell::sync::Lazy;
@@ -42,8 +42,8 @@ type ConfigTuple<'a> = (&'a [&'a str], fn(&mut StartArgs));
 
 pub static PACKAGE_CONFIGS: Lazy<[ConfigTuple; 5]> = Lazy::new(|| {
     [
-        (&UE_USAGE_T1[..], policy_ue_top1::start_task),
-        (&USAGE_T2[..], policy_usage2::start_task),
+        (&UE_USAGE_T1[..], policy_top1::start_task),
+        (&USAGE_T2[..], policy_top2::start_task),
         (&UNITY[..], policy_unity::start_task),
         (&UE[..], policy_ue::start_task),
         (&COCOS[..], policy_cocos::start_task),
