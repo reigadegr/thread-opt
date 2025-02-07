@@ -11,7 +11,8 @@ pub unsafe fn create_cpu_set(cpu_indices: &[u8]) -> cpu_set_t {
 }
 
 // 绑定单个线程到指定的 CPU 核心
-pub fn bind_thread_to_cpu(cpu_indices: &[u8], tid: pid_t) {
+#[allow(dead_code)]
+pub fn bind_tid_to_cpu(cpu_indices: &[u8], tid: pid_t) {
     unsafe {
         let cpu_set = create_cpu_set(cpu_indices);
         let _ = sched_setaffinity(tid, size_of::<cpu_set_t>(), &cpu_set);

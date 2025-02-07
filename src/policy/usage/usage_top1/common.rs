@@ -1,8 +1,8 @@
 use crate::{
     cgroup::group_info::get_top_group,
     utils::global_cpu_utils::{
-        bind_thread_to_background, bind_thread_to_middle, bind_thread_to_only6,
-        bind_thread_to_only7, bind_thread_to_top,
+        bind_tid_to_background, bind_tid_to_middle, bind_tid_to_only6, bind_tid_to_only7,
+        bind_tid_to_top,
     },
 };
 use hashbrown::HashMap;
@@ -93,17 +93,17 @@ impl<'a> Policy<'a> {
 // 执行线程绑定任务
 fn execute_task(cmd_type: &CmdType, tid: pid_t) {
     match cmd_type {
-        CmdType::Top => bind_thread_to_top(tid),
+        CmdType::Top => bind_tid_to_top(tid),
         CmdType::Only6 => {
             let top_group = get_top_group();
             if top_group == [6, 7] {
-                bind_thread_to_only6(tid);
+                bind_tid_to_only6(tid);
                 return;
             }
-            bind_thread_to_middle(tid);
+            bind_tid_to_middle(tid);
         }
-        CmdType::Only7 => bind_thread_to_only7(tid),
-        CmdType::Middle => bind_thread_to_middle(tid),
-        CmdType::Background => bind_thread_to_background(tid),
+        CmdType::Only7 => bind_tid_to_only7(tid),
+        CmdType::Middle => bind_tid_to_middle(tid),
+        CmdType::Background => bind_tid_to_background(tid),
     }
 }

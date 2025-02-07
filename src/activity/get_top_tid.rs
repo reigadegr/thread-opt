@@ -1,5 +1,6 @@
 use dumpsys_rs::Dumpsys;
 use libc::pid_t;
+use likely_stable::unlikely;
 #[cfg(debug_assertions)]
 use log::debug;
 use log::info;
@@ -12,24 +13,20 @@ pub struct TopPidInfo {
 
 impl TopPidInfo {
     pub fn new(dump: &str) -> Self {
-        if !dump.contains(" TOP") {
+        if unlikely(!dump.contains(" TOP")) {
             return Self::default();
         }
 
-        let dump = dump
+        let dump: Vec<pid_t> = dump
             .lines()
             .filter(|l| l.contains(" TOP"))
-            .filter(|l| l.contains(": fg"))
+            .take(1)
             .filter_map(|l| l.split_whitespace().nth(4))
             .filter_map(|l| l.split('/').next())
-            .collect::<Vec<_>>()
-            .join("");
-
-        let pid = dump.split(':').next().unwrap_or("0");
-
-        Self {
-            pid: pid.parse::<pid_t>().unwrap_or_default(),
-        }
+            .filter_map(|s| s.split(':').next())
+            .map(|p| p.trim().parse().unwrap_or_default())
+            .collect();
+        Self { pid: dump[0] }
     }
 }
 

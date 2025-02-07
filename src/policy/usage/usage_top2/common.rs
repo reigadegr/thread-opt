@@ -3,7 +3,7 @@ use crate::{
     utils::{
         affinity_setter::bind_tid_list_to_cgroup,
         global_cpu_utils::{
-            bind_list_to_middle, bind_thread_to_middle, bind_thread_to_only6, bind_thread_to_only7,
+            bind_list_to_middle, bind_tid_to_middle, bind_tid_to_only6, bind_tid_to_only7,
         },
     },
 };
@@ -56,11 +56,11 @@ fn execute_task(cmd_type: &CmdType, tid: pid_t) {
         CmdType::Only6 => {
             let top_group = get_top_group();
             if top_group == [6, 7] {
-                bind_thread_to_only6(tid);
+                bind_tid_to_only6(tid);
                 return;
             }
-            bind_thread_to_middle(tid);
+            bind_tid_to_middle(tid);
         }
-        CmdType::Only7 => bind_thread_to_only7(tid),
+        CmdType::Only7 => bind_tid_to_only7(tid),
     }
 }

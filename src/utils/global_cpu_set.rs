@@ -3,36 +3,32 @@ use crate::cgroup::group_info::{get_background_group, get_middle_group, get_top_
 use libc::cpu_set_t;
 use once_cell::sync::Lazy;
 
-// 定义全局变量
-pub static TOP_CPU_SET: Lazy<cpu_set_t> = Lazy::new(|| unsafe { create_cpu_set(get_top_group()) });
-
-pub static ONLY7_CPU_SET: Lazy<cpu_set_t> = Lazy::new(|| unsafe { create_cpu_set(&[7]) });
-
-pub static ONLY6_CPU_SET: Lazy<cpu_set_t> = Lazy::new(|| unsafe { create_cpu_set(&[6]) });
-
-pub static MIDDLE_CPU_SET: Lazy<cpu_set_t> =
-    Lazy::new(|| unsafe { create_cpu_set(get_middle_group()) });
-
-pub static BACKGROUND_CPU_SET: Lazy<cpu_set_t> =
-    Lazy::new(|| unsafe { create_cpu_set(get_background_group()) });
-
-// 通过函数获取全局变量的引用
-pub fn get_top_cpu_set() -> &'static cpu_set_t {
-    &TOP_CPU_SET
+// 定义静态变量的宏
+macro_rules! define_once_lazy {
+    ($name:ident, $init:expr) => {
+        pub static $name: Lazy<cpu_set_t> = Lazy::new(|| unsafe { create_cpu_set($init) });
+    };
 }
 
-pub fn get_only7_cpu_set() -> &'static cpu_set_t {
-    &ONLY7_CPU_SET
+// 定义获取静态变量引用的宏
+macro_rules! define_getter {
+    ($name:ident, $static_name:ident) => {
+        pub fn $name() -> &'static cpu_set_t {
+            &$static_name
+        }
+    };
 }
 
-pub fn get_only6_cpu_set() -> &'static cpu_set_t {
-    &ONLY6_CPU_SET
-}
+// 使用宏定义静态变量
+define_once_lazy!(TOP_CPU_SET, get_top_group());
+define_once_lazy!(ONLY7_CPU_SET, &[7]);
+define_once_lazy!(ONLY6_CPU_SET, &[6]);
+define_once_lazy!(MIDDLE_CPU_SET, get_middle_group());
+define_once_lazy!(BACKGROUND_CPU_SET, get_background_group());
 
-pub fn get_middle_cpu_set() -> &'static cpu_set_t {
-    &MIDDLE_CPU_SET
-}
-
-pub fn get_background_cpu_set() -> &'static cpu_set_t {
-    &BACKGROUND_CPU_SET
-}
+// 使用宏定义获取函数
+define_getter!(get_top_cpu_set, TOP_CPU_SET);
+define_getter!(get_only7_cpu_set, ONLY7_CPU_SET);
+define_getter!(get_only6_cpu_set, ONLY6_CPU_SET);
+define_getter!(get_middle_cpu_set, MIDDLE_CPU_SET);
+define_getter!(get_background_cpu_set, BACKGROUND_CPU_SET);
