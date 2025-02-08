@@ -27,7 +27,6 @@ impl TopPidInfo {
             .map(|p| p.trim().parse().unwrap_or_default())
             .next()
             .unwrap_or_default();
-        // .collect();
         Self { pid: dump }
     }
 }

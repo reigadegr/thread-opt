@@ -11,10 +11,10 @@ use std::{
 
 #[derive(Default)]
 pub struct TidInfo {
-    task_map_name: CompactString,
-    tid_list_name: CompactString,
     pub task_map: HashMap<pid_t, Vec<u8>>,
     pub tid_list: Vec<pid_t>,
+    task_map_name: CompactString,
+    tid_list_name: CompactString,
 }
 
 impl TidInfo {

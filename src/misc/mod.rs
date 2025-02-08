@@ -12,6 +12,8 @@ pub fn init_misc() {
     }
     let _ = init_log();
     log_metainfo();
+    info!("免费软件，禁止商用");
+    info!("Free software, not for commercial use.");
 }
 
 fn working_in_background() {
