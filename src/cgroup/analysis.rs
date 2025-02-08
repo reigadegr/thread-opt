@@ -12,16 +12,16 @@ pub static BACKEND_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| analysis_cgroup_new("0"
 
 pub static MIDDLE_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| {
     let mut all_core: Vec<u8> = [0, 1, 2, 3, 4, 5, 6, 7].to_vec();
-    let backend_values = get_background_group();
+    let background_values = get_background_group();
     let top_values = get_top_group();
 
-    for &value in backend_values.iter().chain(top_values.iter()) {
+    for &value in background_values.iter().chain(top_values.iter()) {
         all_core.retain(|&x| x != value);
     }
 
     if all_core.is_empty() {
         info!("MIDDLE_GROUP initializing with BACKEND_GROUP.");
-        backend_values.into()
+        background_values.into()
     } else {
         // 否则，使用处理后的 all_core 初始化 MIDDLE_GROUP
         all_core.into_boxed_slice()

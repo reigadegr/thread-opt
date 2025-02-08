@@ -1,4 +1,5 @@
 mod process_monitor;
+mod usage_tracker;
 use libc::pid_t;
 use process_monitor::ProcessMonitor;
 

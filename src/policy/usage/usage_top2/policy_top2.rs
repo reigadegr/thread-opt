@@ -1,7 +1,7 @@
 use super::common::execute_policy;
 use crate::policy::{
     pkg_cfg::StartArgs,
-    usage::{get_thread_tids, UNNAME_TIDS},
+    usage::{check_some, get_thread_tids, UNNAME_TIDS},
 };
 use hashbrown::HashSet;
 use libc::pid_t;
@@ -43,40 +43,48 @@ pub fn start_task(args: &mut StartArgs) {
             debug!("发送已经完毕，喵等待一段时间计算");
             std::thread::sleep(Duration::from_millis(100));
             args.controller.update_max_usage_tid();
-            let Some(tid1) = args.controller.first_max_tid() else {
-                #[cfg(debug_assertions)]
-                debug!("获取不到first max tid，直接循环");
-                std::thread::sleep(Duration::from_millis(100));
-                continue;
-            };
 
-            let Some(tid2) = args.controller.second_max_tid() else {
-                #[cfg(debug_assertions)]
-                debug!("获取不到second max tid，直接循环");
-                std::thread::sleep(Duration::from_millis(100));
-                continue;
-            };
+            check_some! {tid1, args.controller.first_max_tid(), "无法获取最大负载tid"};
+            check_some! {tid2, args.controller.second_max_tid(), "无法获取第二负载tid"};
 
             if let Some(set) = high_usage_tids.as_mut() {
                 set.insert(tid1);
                 set.insert(tid2);
+
                 #[cfg(debug_assertions)]
                 debug!("负载第一高:{tid1}\n第二高:{tid2}");
                 if likely(set.len() < 3) {
                     execute_policy(task_map, tid1, tid2);
+                    if unlikely((tid1 - tid2).abs() == 1) {
+                        args.controller.init_default();
+                        #[cfg(debug_assertions)]
+                        debug!("检测到tid差异为1，可能是打开后台再进的，完成判断");
+                        set.clear();
+                        high_usage_tids = None;
+                        usage_top1 = tid1;
+                        usage_top2 = tid2;
+                        finish = true;
+                    }
                 } else {
+                    if unlikely((tid1 - tid2).abs() > 1) {
+                        #[cfg(debug_assertions)]
+                        debug!("tid差异过大，重新计算");
+                        set.clear();
+                        set.insert(tid1);
+                        set.insert(tid2);
+                        continue;
+                    }
+
                     args.controller.init_default();
                     #[cfg(debug_assertions)]
                     debug!("检测到集合长度大于2，可以结束了");
                     set.clear();
                     high_usage_tids = None;
-                    // 可以通过获取线程亲和性更准确的硬亲和
                     usage_top1 = tid1;
                     usage_top2 = tid2;
                     finish = true;
                     #[cfg(debug_assertions)]
                     debug!("最终结果为:{usage_top1}\n第二高:{usage_top2}");
-                    continue;
                 }
             }
         }

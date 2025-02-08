@@ -25,7 +25,7 @@ pub struct Policy<'a> {
     only6: &'a [&'a [u8]],
     only7: &'a [&'a [u8]],
     middle: &'a [&'a [u8]],
-    backend: &'a [&'a [u8]],
+    background: &'a [&'a [u8]],
 }
 
 impl<'a> Policy<'a> {
@@ -34,14 +34,14 @@ impl<'a> Policy<'a> {
         only6: &'a [&'a [u8]],
         only7: &'a [&'a [u8]],
         middle: &'a [&'a [u8]],
-        backend: &'a [&'a [u8]],
+        background: &'a [&'a [u8]],
     ) -> Self {
         Self {
             top,
             only6,
             only7,
             middle,
-            backend,
+            background,
         }
     }
 
@@ -58,7 +58,11 @@ impl<'a> Policy<'a> {
         if self.middle.iter().any(|&prefix| comm.starts_with(prefix)) {
             return CmdType::Middle;
         }
-        if self.backend.iter().any(|&prefix| comm.starts_with(prefix)) {
+        if self
+            .background
+            .iter()
+            .any(|&prefix| comm.starts_with(prefix))
+        {
             return CmdType::Background;
         }
         CmdType::Middle

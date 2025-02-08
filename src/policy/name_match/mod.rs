@@ -5,7 +5,7 @@ pub mod policy_unity;
 
 // 定义宏，但不导出
 macro_rules! name_match_policy {
-    ($name:ident, $top:expr, $only6:expr, $only7:expr, $middle:expr, $backend:expr) => {
+    ($name:ident, $top:expr, $only6:expr, $only7:expr, $middle:expr, $background:expr) => {
         use likely_stable::unlikely;
         #[cfg(debug_assertions)]
         use log::debug;
@@ -18,7 +18,7 @@ macro_rules! name_match_policy {
                 #[cfg(debug_assertions)]
                 let start = std::time::Instant::now();
                 let task_map = args.activity_utils.tid_utils.get_task_map(*pid);
-                super::common::Policy::new($top, $only6, $only7, $middle, $backend)
+                super::common::Policy::new($top, $only6, $only7, $middle, $background)
                     .execute_policy(task_map);
                 #[cfg(debug_assertions)]
                 {

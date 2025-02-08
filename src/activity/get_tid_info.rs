@@ -3,7 +3,6 @@ use anyhow::Result;
 use compact_str::CompactString;
 use hashbrown::HashMap;
 use libc::pid_t;
-use log::info;
 use std::{
     fs,
     path::Path,
@@ -12,10 +11,10 @@ use std::{
 
 #[derive(Default)]
 pub struct TidInfo {
-    task_map_name: CompactString,
-    tid_list_name: CompactString,
     pub task_map: HashMap<pid_t, Vec<u8>>,
     pub tid_list: Vec<pid_t>,
+    task_map_name: CompactString,
+    tid_list_name: CompactString,
 }
 
 impl TidInfo {
@@ -72,23 +71,15 @@ impl TidUtils {
     }
 
     pub fn set_task_map(&mut self, pid: pid_t) -> &TidInfo {
-        let tid_list = match read_task_dir(pid) {
-            Ok(list) => list,
-            Err(e) => {
-                info!("Failed to read task directory: {}", e);
-                return &self.tid_info;
-            }
+        let Ok(tid_list) = read_task_dir(pid) else {
+            return &self.tid_info;
         };
 
         let mut task_map: HashMap<pid_t, Vec<u8>> = HashMap::new();
         for tid in &tid_list {
             let comm_path = format!("/proc/{tid}/comm");
-            let comm = match read_to_byte(Path::new(&comm_path)) {
-                Ok(comm) => comm,
-                Err(e) => {
-                    info!("Failed to read comm file for tid {}: {}", tid, e);
-                    return &self.tid_info;
-                }
+            let Ok(comm) = read_to_byte(Path::new(&comm_path)) else {
+                return &self.tid_info;
             };
             task_map.insert(*tid, comm);
         }

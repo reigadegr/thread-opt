@@ -19,3 +19,15 @@ fn get_thread_tids(task_map: &HashMap<pid_t, Vec<u8>>, prefix: &[u8]) -> Vec<pid
         .map(|(&tid, _)| tid)
         .collect()
 }
+
+macro_rules! check_some {
+    ($var:ident, $expr:expr, $message:expr) => {
+        let Some($var) = $expr else {
+            #[cfg(debug_assertions)]
+            debug!($message);
+            std::thread::sleep(Duration::from_millis(100));
+            continue;
+        };
+    };
+}
+use check_some;
