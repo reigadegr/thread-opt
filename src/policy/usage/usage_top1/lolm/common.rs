@@ -1,2 +1,2 @@
-use crate::policy::usage::usage_top1::top1_common;
+use super::super::macro_common::top1_common;
 top1_common!(Only6);
