@@ -1,4 +1,5 @@
 // From shadow3aaa fas-rs
+use super::usage_tracker::UsageTracker;
 use crate::policy::usage::UNNAME_TIDS;
 use anyhow::{anyhow, Result};
 use flume::{Receiver, Sender};
@@ -8,22 +9,7 @@ use likely_stable::likely;
 
 #[cfg(debug_assertions)]
 use log::debug;
-use std::{cmp, fs, thread, time::Duration};
-
-#[derive(Debug, Clone)]
-struct UsageTracker {
-    tid: pid_t,
-}
-
-impl UsageTracker {
-    const fn new(tid: pid_t) -> Self {
-        Self { tid }
-    }
-
-    fn try_calculate(&self) -> u64 {
-        get_thread_cpu_time(self.tid)
-    }
-}
+use std::{cmp, thread, time::Duration};
 
 #[derive(Debug)]
 pub struct ProcessMonitor {
@@ -126,11 +112,4 @@ fn get_target_tids(rx: &Receiver<Vec<pid_t>>) -> Result<Vec<pid_t>> {
         // |tids| Ok(tids),
         Ok,
     )
-}
-
-fn get_thread_cpu_time(tid: pid_t) -> u64 {
-    let stat_path = format!("/proc/{tid}/schedstat");
-    let stat_content = fs::read_to_string(stat_path).unwrap_or_else(|_| String::from("0"));
-    let parts: &str = stat_content.split_whitespace().next().unwrap_or_default();
-    parts.parse::<u64>().unwrap_or(0)
 }
