@@ -1,9 +1,10 @@
 pub mod lolm;
 pub mod macro_common;
+pub mod ue5;
 pub mod unnamed;
 
 macro_rules! top1_policy {
-    ($Top: ident, $Only6: ident, $Only7: ident, $Middle: ident, $Backend: ident) => {
+    ($Top: ident, $Only6: ident, $Only7: ident, $Middle: ident, $Backend: ident,$CommPrefix:expr) => {
         pub fn start_task(args: &mut StartArgs) {
             args.controller.init_game(true);
             // 获取全局通道的发送端
@@ -25,7 +26,7 @@ macro_rules! top1_policy {
                         .execute_policy(task_map, usage_top1);
                     std::thread::sleep(Duration::from_millis(1000));
                 } else {
-                    let unname_tids = get_thread_tids(task_map, b"Thread-");
+                    let unname_tids = get_thread_tids(task_map, $CommPrefix);
                     #[cfg(debug_assertions)]
                     debug!("发送即将开始");
                     tx.send(unname_tids).unwrap();
