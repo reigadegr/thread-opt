@@ -2,7 +2,6 @@ use super::common::execute_policy;
 use crate::policy::{
     pkg_cfg::StartArgs,
     usage::{check_some, get_thread_tids, UNNAME_TIDS},
-    PolicyTasks,
 };
 use flume::Sender;
 use hashbrown::HashSet;
@@ -69,9 +68,9 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
                     if likely(set.len() < 3) {
                         execute_policy(task_map, tid1, tid2);
                         if unlikely((tid1 - tid2).abs() < 3) {
-                            self.args.controller.init_default();
                             #[cfg(debug_assertions)]
                             debug!("检测到tid差异为小于3，可能是打开后台再进的，完成判断");
+                            self.args.controller.init_default();
                             set.clear();
                             self.high_usage_tids = None;
                             self.usage_top1 = tid1;
@@ -87,10 +86,9 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
                             set.insert(tid2);
                             continue;
                         }
-
-                        self.args.controller.init_default();
                         #[cfg(debug_assertions)]
                         debug!("检测到集合长度大于2，可以结束了");
+                        self.args.controller.init_default();
                         set.clear();
                         self.high_usage_tids = None;
                         self.usage_top1 = tid1;
