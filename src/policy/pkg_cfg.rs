@@ -1,13 +1,11 @@
 use super::name_match::{policy_cocos, policy_ue, policy_unity};
+use crate::policy::usage::usage_top1::lolm::policy_second;
+use crate::policy::usage::usage_top1::unnamed::policy_top1;
 use crate::{
-    activity::ActivityUtils,
-    cpu_common::Controller,
-    policy::usage::usage_top2::policy_top2,
+    activity::ActivityUtils, cpu_common::Controller, policy::usage::usage_top2::policy_top2,
 };
 use libc::pid_t;
 use once_cell::sync::Lazy;
-use crate::policy::usage::usage_top1::unnamed::policy_top1;
-use crate::policy::usage::usage_top1::lolm::policy_second;
 
 const UNITY: [&str; 6] = [
     "com.miHoYo.Yuanshen",

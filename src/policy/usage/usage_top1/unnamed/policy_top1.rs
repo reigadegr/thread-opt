@@ -1,4 +1,4 @@
-use crate::policy::usage::usage_top1::unnamed::common::Policy;
+use super::common::Policy;
 use crate::policy::{
     pkg_cfg::StartArgs,
     usage::{check_some, get_thread_tids, UNNAME_TIDS},
