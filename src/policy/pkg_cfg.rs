@@ -31,7 +31,9 @@ const UE: [&str; 3] = [
 ];
 
 const COCOS: [&str; 1] = ["com.bf.sgs.hdexp"];
+
 const LOLM: [&str; 1] = ["com.tencent.lolm"];
+
 pub struct StartArgs<'a> {
     pub controller: &'a mut Controller,
     pub activity_utils: &'a mut ActivityUtils,
