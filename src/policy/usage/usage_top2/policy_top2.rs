@@ -1,7 +1,10 @@
 use super::common::execute_policy;
-use crate::policy::{
-    pkg_cfg::StartArgs,
-    usage::{check_some, get_thread_tids, UNNAME_TIDS},
+use crate::{
+    cpu_common::Controller,
+    policy::{
+        pkg_cfg::StartArgs,
+        usage::{check_some, get_thread_tids, UNNAME_TIDS},
+    },
 };
 use hashbrown::HashSet;
 use libc::pid_t;
@@ -10,6 +13,16 @@ use likely_stable::{likely, unlikely};
 use log::debug;
 use std::time::Duration;
 
+struct StartTask<'a> {
+    controller: &'a Controller,
+    usage_top1: pid_t,
+    usage_top2: pid_t,
+    finish: bool,
+}
+
+// impl PolicyTasks for StartTask{
+// fn new
+// }
 pub fn start_task(args: &mut StartArgs) {
     args.controller.init_game(true);
     // 获取全局通道的发送端

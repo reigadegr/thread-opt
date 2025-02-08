@@ -19,13 +19,10 @@ impl TopPidInfo {
 
         let dump: pid_t = dump
             .lines()
-            .filter(|l| l.contains(" TOP"))
-            .take(1)
-            .filter_map(|l| l.split_whitespace().nth(4))
-            .filter_map(|l| l.split('/').next())
-            .filter_map(|s| s.split(':').next())
-            .map(|p| p.trim().parse().unwrap_or_default())
-            .next()
+            .find(|l| l.contains(" TOP"))
+            .and_then(|line| line.split_whitespace().nth(4))
+            .and_then(|pid_part| pid_part.split(':').next())
+            .and_then(|pid_str| pid_str.parse::<pid_t>().ok())
             .unwrap_or_default();
         Self { pid: dump }
     }
