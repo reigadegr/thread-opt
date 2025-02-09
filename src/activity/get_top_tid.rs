@@ -47,8 +47,8 @@ impl TopAppUtils {
         }
     }
 
-    pub fn get_pid(&mut self) -> &pid_t {
-        &self.set_top_app_pid_name().pid
+    pub fn get_pid(&mut self) -> pid_t {
+        self.set_top_app_pid_name().pid
     }
 
     pub fn set_top_app_pid_name(&mut self) -> &TopPidInfo {

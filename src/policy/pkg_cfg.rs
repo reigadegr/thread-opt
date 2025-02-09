@@ -20,11 +20,7 @@ const UNITY: [&str; 7] = [
     "com.tencent.KiHan",
 ];
 
-const UE_USAGE_T1: [&str; 3] = [
-    "com.tencent.lzhx",
-    "com.tencent.tmgp.pubgmhd",
-    "com.tencent.tmgp.pubgmhd",
-];
+const UE_USAGE_T1: [&str; 2] = ["com.tencent.lzhx", "com.tencent.tmgp.pubgmhd"];
 
 const USAGE_T2: [&str; 1] = ["com.netease.yyslscn"];
 
@@ -39,7 +35,7 @@ const LOLM: [&str; 1] = ["com.tencent.lolm"];
 pub struct StartArgs<'a> {
     pub controller: &'a mut Controller,
     pub activity_utils: &'a mut ActivityUtils,
-    pub pid: &'a pid_t,
+    pub pid: pid_t,
 }
 
 type ConfigTuple<'a> = (&'a [&'a str], fn(&mut StartArgs));
