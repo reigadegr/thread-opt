@@ -31,7 +31,18 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
             finish: false,
         }
     }
-
+    
+    fn usage_task_finish(&mut self, tid1: pid_t, tid2: pid_t) {
+        self.args.controller.init_default();
+        if let Some(set) = self.high_usage_tids.as_mut() {
+            set.clear();
+        }
+        self.high_usage_tids = None;
+        self.usage_top1 = tid1;
+        self.usage_top2 = tid2;
+        self.finish = true;
+    }
+    
     fn start_task(&mut self) {
         self.args.controller.init_game(true);
         loop {
@@ -67,15 +78,10 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
                     debug!("负载第一高:{tid1}\n第二高:{tid2}");
                     if likely(set.len() < 3) {
                         execute_policy(task_map, tid1, tid2);
-                        if unlikely((tid1 - tid2).abs() < 3) {
+                        if unlikely((tid1 - tid2).abs() < 20) {
                             #[cfg(debug_assertions)]
                             debug!("检测到tid差异为小于3，可能是打开后台再进的，完成判断");
-                            self.args.controller.init_default();
-                            set.clear();
-                            self.high_usage_tids = None;
-                            self.usage_top1 = tid1;
-                            self.usage_top2 = tid2;
-                            self.finish = true;
+                            self.usage_task_finish(tid1, tid2);
                         }
                     } else {
                         if unlikely((tid1 - tid2).abs() > 1) {
@@ -88,12 +94,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
                         }
                         #[cfg(debug_assertions)]
                         debug!("检测到集合长度大于2，可以结束了");
-                        self.args.controller.init_default();
-                        set.clear();
-                        self.high_usage_tids = None;
-                        self.usage_top1 = tid1;
-                        self.usage_top2 = tid2;
-                        self.finish = true;
+                        self.usage_task_finish(tid1, tid2);
                         #[cfg(debug_assertions)]
                         debug!(
                             "最终结果为:{0}\n第二高:{1}",

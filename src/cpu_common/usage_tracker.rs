@@ -1,5 +1,6 @@
 use atoi::atoi;
 use libc::pid_t;
+
 #[derive(Debug, Clone)]
 pub struct UsageTracker {
     tid: pid_t,
