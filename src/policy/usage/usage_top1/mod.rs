@@ -20,7 +20,7 @@ macro_rules! top1_policy {
                     return;
                 }
 
-                let task_map = args.activity_utils.tid_utils.get_task_map(*pid);
+                let task_map = args.activity_utils.tid_utils.get_task_map(pid);
                 if likely(finish) {
                     Policy::new(&$Top, &$Only6, &$Only7, &$Middle, &$Backend)
                         .execute_policy(task_map, usage_top1);

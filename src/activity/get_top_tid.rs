@@ -1,8 +1,6 @@
 use dumpsys_rs::Dumpsys;
 use libc::pid_t;
 use likely_stable::unlikely;
-#[cfg(debug_assertions)]
-use log::debug;
 use log::info;
 use std::time::{Duration, Instant};
 
@@ -19,13 +17,10 @@ impl TopPidInfo {
 
         let dump: pid_t = dump
             .lines()
-            .filter(|l| l.contains(" TOP"))
-            .take(1)
-            .filter_map(|l| l.split_whitespace().nth(4))
-            .filter_map(|l| l.split('/').next())
-            .filter_map(|s| s.split(':').next())
-            .map(|p| p.trim().parse().unwrap_or_default())
-            .next()
+            .find(|l| l.contains(" TOP"))
+            .and_then(|line| line.split_whitespace().nth(4))
+            .and_then(|pid_part| pid_part.split(':').next())
+            .and_then(|pid_str| pid_str.parse::<pid_t>().ok())
             .unwrap_or_default();
         Self { pid: dump }
     }
@@ -52,16 +47,14 @@ impl TopAppUtils {
         }
     }
 
-    pub fn get_pid(&mut self) -> &pid_t {
-        &self.set_top_app_pid_name().pid
+    pub fn get_pid(&mut self) -> pid_t {
+        self.set_top_app_pid_name().pid
     }
 
     pub fn set_top_app_pid_name(&mut self) -> &TopPidInfo {
         if self.last_refresh.elapsed() < Duration::from_millis(1000) {
             return &self.activity_info;
         }
-        #[cfg(debug_assertions)]
-        let start = std::time::Instant::now();
         let dump = loop {
             match self.dumper.dump(&["lru"]) {
                 Ok(dump) => break dump,
@@ -72,11 +65,6 @@ impl TopAppUtils {
             }
         };
         self.activity_info = TopPidInfo::new(&dump);
-        #[cfg(debug_assertions)]
-        {
-            let end = start.elapsed();
-            debug!("读取包名时间: {:?}", end);
-        }
         self.last_refresh = Instant::now();
         &self.activity_info
     }

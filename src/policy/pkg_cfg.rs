@@ -10,20 +10,17 @@ use crate::{
 use libc::pid_t;
 use once_cell::sync::Lazy;
 
-const UNITY: [&str; 6] = [
+const UNITY: [&str; 7] = [
     "com.miHoYo.Yuanshen",
     "com.miHoYo.hkrpg",
     "com.tencent.tmgp.sgame",
     "com.miHoYo.Nap",
     "com.yongshi.tenojo.ys",
     "com.tencent.tmgp.speedmobile",
+    "com.tencent.KiHan",
 ];
 
-const UE_USAGE_T1: [&str; 3] = [
-    "com.tencent.lzhx",
-    "com.tencent.tmgp.pubgmhd",
-    "com.tencent.tmgp.pubgmhd",
-];
+const UE_USAGE_T1: [&str; 2] = ["com.tencent.lzhx", "com.tencent.tmgp.pubgmhd"];
 
 const USAGE_T2: [&str; 1] = ["com.netease.yyslscn"];
 
@@ -38,7 +35,7 @@ const LOLM: [&str; 1] = ["com.tencent.lolm"];
 pub struct StartArgs<'a> {
     pub controller: &'a mut Controller,
     pub activity_utils: &'a mut ActivityUtils,
-    pub pid: &'a pid_t,
+    pub pid: pid_t,
 }
 
 type ConfigTuple<'a> = (&'a [&'a str], fn(&mut StartArgs));
