@@ -1,8 +1,6 @@
 use dumpsys_rs::Dumpsys;
 use libc::pid_t;
 use likely_stable::unlikely;
-#[cfg(debug_assertions)]
-use log::debug;
 use log::info;
 use std::time::{Duration, Instant};
 
@@ -57,8 +55,6 @@ impl TopAppUtils {
         if self.last_refresh.elapsed() < Duration::from_millis(1000) {
             return &self.activity_info;
         }
-        #[cfg(debug_assertions)]
-        let start = std::time::Instant::now();
         let dump = loop {
             match self.dumper.dump(&["lru"]) {
                 Ok(dump) => break dump,
@@ -69,11 +65,6 @@ impl TopAppUtils {
             }
         };
         self.activity_info = TopPidInfo::new(&dump);
-        #[cfg(debug_assertions)]
-        {
-            let end = start.elapsed();
-            debug!("读取包名时间: {:?}", end);
-        }
         self.last_refresh = Instant::now();
         &self.activity_info
     }
