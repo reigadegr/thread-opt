@@ -10,13 +10,14 @@ use crate::{
 use libc::pid_t;
 use once_cell::sync::Lazy;
 
-const UNITY: [&str; 6] = [
+const UNITY: [&str; 7] = [
     "com.miHoYo.Yuanshen",
     "com.miHoYo.hkrpg",
     "com.tencent.tmgp.sgame",
     "com.miHoYo.Nap",
     "com.yongshi.tenojo.ys",
     "com.tencent.tmgp.speedmobile",
+    "com.tencent.KiHan",
 ];
 
 const UE_USAGE_T1: [&str; 3] = [
