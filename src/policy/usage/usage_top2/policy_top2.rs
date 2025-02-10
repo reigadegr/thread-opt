@@ -4,6 +4,7 @@ use crate::policy::{
     usage::{check_some, get_thread_tids, UNNAME_TIDS},
 };
 use flume::Sender;
+use hashbrown::HashMap;
 use hashbrown::HashSet;
 use libc::pid_t;
 use likely_stable::{likely, unlikely};
@@ -12,7 +13,7 @@ use log::debug;
 use std::time::Duration;
 
 struct StartTask<'b, 'a: 'b> {
-    high_usage_tids: Option<HashSet<pid_t>>,
+    high_usage_tids: HashSet<pid_t>,
     args: &'b mut StartArgs<'a>,
     tx: &'b Sender<Vec<pid_t>>,
     usage_top1: pid_t,
@@ -23,7 +24,7 @@ struct StartTask<'b, 'a: 'b> {
 impl<'b, 'a: 'b> StartTask<'b, 'a> {
     fn new(start_args: &'b mut StartArgs<'a>) -> Self {
         Self {
-            high_usage_tids: Some(HashSet::new()),
+            high_usage_tids: HashSet::new(),
             args: start_args,
             tx: &UNNAME_TIDS.0,
             usage_top1: 0,
@@ -32,18 +33,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         }
     }
 
-    fn usage_task_finish(&mut self, tid1: pid_t, tid2: pid_t) {
-        self.args.controller.init_default();
-        if let Some(set) = self.high_usage_tids.as_mut() {
-            set.clear();
-        }
-        self.high_usage_tids = None;
-        self.usage_top1 = tid1;
-        self.usage_top2 = tid2;
-        self.finish = true;
-    }
-
-    fn pre_task_finish(&mut self) {
+    fn after_usage_task(&mut self) {
         let task_map = self
             .args
             .activity_utils
@@ -53,19 +43,33 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         std::thread::sleep(Duration::from_millis(1000));
     }
 
+    fn change_to_finish_state(&mut self, tid1: pid_t, tid2: pid_t) {
+        self.args.controller.init_default();
+        self.high_usage_tids.clear();
+        self.usage_top1 = tid1;
+        self.usage_top2 = tid2;
+        self.finish = true;
+    }
+
     fn start_task(&mut self) {
         self.args.controller.init_game(true);
         loop {
-            let pid = self.args.activity_utils.top_app_utils.get_pid();
-            if unlikely(pid != self.args.pid) {
-                self.args.controller.init_default();
-                return;
+            {
+                let pid = self.args.activity_utils.top_app_utils.get_pid();
+                if unlikely(pid != self.args.pid) {
+                    self.args.controller.init_default();
+                    return;
+                }
             }
 
             if likely(self.finish) {
-                self.pre_task_finish();
+                self.after_usage_task();
             } else {
-                let task_map = self.args.activity_utils.tid_utils.get_task_map(pid);
+                let task_map = self
+                    .args
+                    .activity_utils
+                    .tid_utils
+                    .get_task_map(self.args.pid);
                 let unname_tids = get_thread_tids(task_map, b"Thread-");
                 #[cfg(debug_assertions)]
                 debug!("发送即将开始");
@@ -78,37 +82,35 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
                 check_some! {tid1, self.args.controller.first_max_tid(), "无法获取最大负载tid"};
                 check_some! {tid2, self.args.controller.second_max_tid(), "无法获取第二负载tid"};
 
-                if let Some(set) = self.high_usage_tids.as_mut() {
-                    set.insert(tid1);
-                    set.insert(tid2);
+                self.high_usage_tids.insert(tid1);
+                self.high_usage_tids.insert(tid2);
 
-                    #[cfg(debug_assertions)]
-                    debug!("负载第一高:{tid1}\n第二高:{tid2}");
-                    if likely(set.len() < 3) {
-                        execute_policy(task_map, tid1, tid2);
-                        if unlikely((tid1 - tid2).abs() < 20) {
-                            #[cfg(debug_assertions)]
-                            debug!("检测到tid差异为小于20，可能是打开后台再进的，完成判断");
-                            self.usage_task_finish(tid1, tid2);
-                        }
-                    } else {
-                        if unlikely((tid1 - tid2).abs() > 20) {
-                            #[cfg(debug_assertions)]
-                            debug!("tid差异过大，重新计算");
-                            set.clear();
-                            set.insert(tid1);
-                            set.insert(tid2);
-                            continue;
-                        }
+                #[cfg(debug_assertions)]
+                debug!("负载第一高:{tid1}\n第二高:{tid2}");
+                if likely(self.high_usage_tids.len() < 3) {
+                    execute_policy(task_map, tid1, tid2);
+                    if unlikely((tid1 - tid2).abs() < 20) {
                         #[cfg(debug_assertions)]
-                        debug!("检测到集合长度大于2，可以结束了");
-                        self.usage_task_finish(tid1, tid2);
-                        #[cfg(debug_assertions)]
-                        debug!(
-                            "最终结果为:{0}\n第二高:{1}",
-                            self.usage_top1, self.usage_top2
-                        );
+                        debug!("检测到tid差异为小于20，可能是打开后台再进的，完成判断");
+                        self.change_to_finish_state(tid1, tid2);
                     }
+                } else {
+                    if unlikely((tid1 - tid2).abs() > 20) {
+                        #[cfg(debug_assertions)]
+                        debug!("tid差异过大，重新计算");
+                        self.high_usage_tids.clear();
+                        self.high_usage_tids.insert(tid1);
+                        self.high_usage_tids.insert(tid2);
+                        continue;
+                    }
+                    #[cfg(debug_assertions)]
+                    debug!("检测到集合长度大于3，可以结束了");
+                    self.change_to_finish_state(tid1, tid2);
+                    #[cfg(debug_assertions)]
+                    debug!(
+                        "最终结果为:{0}\n第二高:{1}",
+                        self.usage_top1, self.usage_top2
+                    );
                 }
             }
 
