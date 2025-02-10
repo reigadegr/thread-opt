@@ -43,6 +43,16 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         self.finish = true;
     }
 
+    fn pre_task_finish(&mut self) {
+        let task_map = self
+            .args
+            .activity_utils
+            .tid_utils
+            .get_task_map(self.args.pid);
+        execute_policy(task_map, self.usage_top1, self.usage_top2);
+        std::thread::sleep(Duration::from_millis(1000));
+    }
+
     fn start_task(&mut self) {
         self.args.controller.init_game(true);
         loop {
@@ -52,22 +62,18 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
                 return;
             }
 
-            let task_map = self.args.activity_utils.tid_utils.get_task_map(pid);
-
             if likely(self.finish) {
-                execute_policy(task_map, self.usage_top1, self.usage_top2);
-                std::thread::sleep(Duration::from_millis(1000));
+                self.pre_task_finish();
             } else {
-                {
-                    let unname_tids = get_thread_tids(task_map, b"Thread-");
-                    #[cfg(debug_assertions)]
-                    debug!("发送即将开始");
-                    self.tx.send(unname_tids).unwrap();
-                    #[cfg(debug_assertions)]
-                    debug!("发送已经完毕，喵等待一段时间计算");
-                    std::thread::sleep(Duration::from_millis(100));
-                    self.args.controller.update_max_usage_tid();
-                }
+                let task_map = self.args.activity_utils.tid_utils.get_task_map(pid);
+                let unname_tids = get_thread_tids(task_map, b"Thread-");
+                #[cfg(debug_assertions)]
+                debug!("发送即将开始");
+                self.tx.send(unname_tids).unwrap();
+                #[cfg(debug_assertions)]
+                debug!("发送已经完毕，喵等待一段时间计算");
+                std::thread::sleep(Duration::from_millis(100));
+                self.args.controller.update_max_usage_tid();
 
                 check_some! {tid1, self.args.controller.first_max_tid(), "无法获取最大负载tid"};
                 check_some! {tid2, self.args.controller.second_max_tid(), "无法获取第二负载tid"};
