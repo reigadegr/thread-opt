@@ -3,8 +3,8 @@ use crate::policy::{
     pkg_cfg::StartArgs,
     usage::{check_some, get_thread_tids, UNNAME_TIDS},
 };
+use anyhow::{anyhow, Result};
 use flume::Sender;
-use hashbrown::HashMap;
 use hashbrown::HashSet;
 use libc::pid_t;
 use likely_stable::{likely, unlikely};
@@ -49,6 +49,30 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         self.usage_top1 = tid1;
         self.usage_top2 = tid2;
         self.finish = true;
+        #[cfg(debug_assertions)]
+        debug!(
+            "最终结果为:{0}\n第二高:{1}",
+            self.usage_top1, self.usage_top2
+        );
+    }
+
+    fn analysis_set(&mut self, tid1: pid_t, tid2: pid_t) -> Result<()> {
+        if likely(self.high_usage_tids.len() < 3) {
+            self.collecting_tids(tid1, tid2);
+        } else {
+            if unlikely((tid1 - tid2).abs() > 20) {
+                #[cfg(debug_assertions)]
+                debug!("tid差异过大，重新计算");
+                self.high_usage_tids.clear();
+                self.high_usage_tids.insert(tid1);
+                self.high_usage_tids.insert(tid2);
+                return Err(anyhow!("Tid difference value too huge."));
+            }
+            #[cfg(debug_assertions)]
+            debug!("检测到集合长度大于3，可以结束了");
+            self.change_to_finish_state(tid1, tid2);
+        }
+        Ok(())
     }
 
     fn collecting_tids(&mut self, tid1: pid_t, tid2: pid_t) {
@@ -84,12 +108,10 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
     fn start_task(&mut self) {
         self.args.controller.init_game(true);
         loop {
-            {
-                let pid = self.args.activity_utils.top_app_utils.get_pid();
-                if unlikely(pid != self.args.pid) {
-                    self.args.controller.init_default();
-                    return;
-                }
+            let pid = self.args.activity_utils.top_app_utils.get_pid();
+            if unlikely(pid != self.args.pid) {
+                self.args.controller.init_default();
+                return;
             }
 
             if likely(self.finish) {
@@ -104,25 +126,8 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
 
                 #[cfg(debug_assertions)]
                 debug!("负载第一高:{tid1}\n第二高:{tid2}");
-                if likely(self.high_usage_tids.len() < 3) {
-                    self.collecting_tids(tid1, tid2);
-                } else {
-                    if unlikely((tid1 - tid2).abs() > 20) {
-                        #[cfg(debug_assertions)]
-                        debug!("tid差异过大，重新计算");
-                        self.high_usage_tids.clear();
-                        self.high_usage_tids.insert(tid1);
-                        self.high_usage_tids.insert(tid2);
-                        continue;
-                    }
-                    #[cfg(debug_assertions)]
-                    debug!("检测到集合长度大于3，可以结束了");
-                    self.change_to_finish_state(tid1, tid2);
-                    #[cfg(debug_assertions)]
-                    debug!(
-                        "最终结果为:{0}\n第二高:{1}",
-                        self.usage_top1, self.usage_top2
-                    );
+                if unlikely(self.analysis_set(tid1, tid2).is_err()) {
+                    continue;
                 }
             }
 
