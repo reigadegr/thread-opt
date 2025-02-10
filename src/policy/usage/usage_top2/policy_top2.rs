@@ -51,6 +51,36 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         self.finish = true;
     }
 
+    fn collecting_tids(&mut self, tid1: pid_t, tid2: pid_t) {
+        let task_map = self
+            .args
+            .activity_utils
+            .tid_utils
+            .get_task_map(self.args.pid);
+        execute_policy(task_map, tid1, tid2);
+        if unlikely((tid1 - tid2).abs() < 20) {
+            #[cfg(debug_assertions)]
+            debug!("检测到tid差异为小于20，可能是打开后台再进的，完成判断");
+            self.change_to_finish_state(tid1, tid2);
+        }
+    }
+
+    fn update_tids(&mut self) {
+        let task_map = self
+            .args
+            .activity_utils
+            .tid_utils
+            .get_task_map(self.args.pid);
+        let unname_tids = get_thread_tids(task_map, b"Thread-");
+        #[cfg(debug_assertions)]
+        debug!("发送即将开始");
+        self.tx.send(unname_tids).unwrap();
+        #[cfg(debug_assertions)]
+        debug!("发送已经完毕，喵等待一段时间计算");
+        std::thread::sleep(Duration::from_millis(100));
+        self.args.controller.update_max_usage_tid();
+    }
+
     fn start_task(&mut self) {
         self.args.controller.init_game(true);
         loop {
@@ -65,20 +95,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
             if likely(self.finish) {
                 self.after_usage_task();
             } else {
-                let task_map = self
-                    .args
-                    .activity_utils
-                    .tid_utils
-                    .get_task_map(self.args.pid);
-                let unname_tids = get_thread_tids(task_map, b"Thread-");
-                #[cfg(debug_assertions)]
-                debug!("发送即将开始");
-                self.tx.send(unname_tids).unwrap();
-                #[cfg(debug_assertions)]
-                debug!("发送已经完毕，喵等待一段时间计算");
-                std::thread::sleep(Duration::from_millis(100));
-                self.args.controller.update_max_usage_tid();
-
+                self.update_tids();
                 check_some! {tid1, self.args.controller.first_max_tid(), "无法获取最大负载tid"};
                 check_some! {tid2, self.args.controller.second_max_tid(), "无法获取第二负载tid"};
 
@@ -88,12 +105,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
                 #[cfg(debug_assertions)]
                 debug!("负载第一高:{tid1}\n第二高:{tid2}");
                 if likely(self.high_usage_tids.len() < 3) {
-                    execute_policy(task_map, tid1, tid2);
-                    if unlikely((tid1 - tid2).abs() < 20) {
-                        #[cfg(debug_assertions)]
-                        debug!("检测到tid差异为小于20，可能是打开后台再进的，完成判断");
-                        self.change_to_finish_state(tid1, tid2);
-                    }
+                    self.collecting_tids(tid1, tid2);
                 } else {
                     if unlikely((tid1 - tid2).abs() > 20) {
                         #[cfg(debug_assertions)]
