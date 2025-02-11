@@ -44,7 +44,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         std::thread::sleep(Duration::from_millis(1000));
     }
 
-    fn start_task(&mut self, comm_prefix: &[u8]) {
+    fn start_task(&mut self, comm_prefix: &[u8], cmd_type: &CmdType) {
         self.args.controller.init_game(true);
         loop {
             let pid = self.args.activity_utils.top_app_utils.get_pid();
@@ -55,7 +55,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
 
             let task_map = self.args.activity_utils.tid_utils.get_task_map(pid);
             if likely(self.finish) {
-                self.after_usage_task(&CmdType::Only7);
+                self.after_usage_task(cmd_type);
             } else {
                 let unname_tids = get_thread_tids(task_map, comm_prefix);
                 #[cfg(debug_assertions)]
@@ -80,7 +80,8 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
 }
 
 macro_rules! top1_macro_init {
-    ($CommPrefix:expr) => {
+    ($CommPrefix:expr,$initial_cmd:ident) => {
+        use crate::policy::usage::usage_top1::CmdType;
         pub fn start_task(args: &mut StartArgs<'_>) {
             let policy = Policy {
                 top: &TOP,
@@ -89,7 +90,8 @@ macro_rules! top1_macro_init {
                 middle: &MIDDLE,
                 background: &BACKEND,
             };
-            super::super::StartTask::new(args, &policy).start_task($CommPrefix);
+            super::super::StartTask::new(args, &policy)
+                .start_task($CommPrefix, &CmdType::$initial_cmd);
         }
     };
 }
