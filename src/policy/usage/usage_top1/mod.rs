@@ -36,6 +36,7 @@ macro_rules! top1_policy {
             }
 
             fn start_task(&mut self) {
+            self.args.controller.init_game(true);
                 loop {
                     let pid = self.args.activity_utils.top_app_utils.get_pid();
                     if unlikely(pid != self.args.pid) {
