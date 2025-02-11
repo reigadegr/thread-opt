@@ -11,7 +11,7 @@ use libc::pid_t;
 use log::debug;
 
 // 动态生成 CmdType 枚举
-enum CmdType {
+pub enum CmdType {
     Top,
     Middle,
     Background,
@@ -64,11 +64,16 @@ impl<'a> Policy<'a> {
     }
 
     // 执行策略
-    pub fn execute_policy(&self, task_map: &HashMap<pid_t, Vec<u8>>, first: pid_t) {
+    pub fn execute_policy(
+        &self,
+        task_map: &HashMap<pid_t, Vec<u8>>,
+        first: pid_t,
+        cmd_type: &CmdType,
+    ) {
         #[cfg(debug_assertions)]
         let start = std::time::Instant::now();
 
-        execute_task(&CmdType::Only7, first);
+        execute_task(cmd_type, first);
 
         for (&tid, comm) in task_map.iter().filter(|(&tid, _)| tid != first) {
             let cmd_type = self.get_cmd_type(comm);

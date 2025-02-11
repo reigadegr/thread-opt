@@ -3,8 +3,6 @@ pub mod macro_common;
 pub mod ue5;
 pub mod unnamed;
 
-// use super::super::check_some;
-// use crate::policy::usage::get_thread_tids;
 use crate::policy::{
     pkg_cfg::StartArgs,
     usage::{check_some, get_thread_tids, UNNAME_TIDS},
@@ -14,16 +12,8 @@ use libc::pid_t;
 use likely_stable::{likely, unlikely};
 #[cfg(debug_assertions)]
 use log::debug;
-use macro_common::Policy;
+use macro_common::{CmdType, Policy};
 use std::time::Duration;
-
-// struct Policy<'a> {
-// pub top: &'a [&'a [u8]],
-// pub only6: &'a [&'a [u8]],
-// pub only7: &'a [&'a [u8]],
-// pub middle: &'a [&'a [u8]],
-// pub background: &'a [&'a [u8]],
-// }
 
 struct StartTask<'b, 'a: 'b> {
     policy: &'b Policy<'b>,
@@ -44,13 +34,13 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         }
     }
 
-    fn after_usage_task(&mut self) {
+    fn after_usage_task(&mut self, cmd_type: &CmdType) {
         let task_map = self
             .args
             .activity_utils
             .tid_utils
             .get_task_map(self.args.pid);
-        Policy::new(self.policy).execute_policy(task_map, self.usage_top1);
+        Policy::new(self.policy).execute_policy(task_map, self.usage_top1, cmd_type);
         std::thread::sleep(Duration::from_millis(1000));
     }
 
@@ -65,7 +55,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
 
             let task_map = self.args.activity_utils.tid_utils.get_task_map(pid);
             if likely(self.finish) {
-                self.after_usage_task();
+                self.after_usage_task(&CmdType::Only7);
             } else {
                 let unname_tids = get_thread_tids(task_map, comm_prefix);
                 #[cfg(debug_assertions)]
