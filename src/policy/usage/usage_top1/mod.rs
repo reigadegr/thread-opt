@@ -50,7 +50,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
             .activity_utils
             .tid_utils
             .get_task_map(self.args.pid);
-        Policy::new(&self.policy).execute_policy(task_map, self.usage_top1);
+        Policy::new(self.policy).execute_policy(task_map, self.usage_top1);
         std::thread::sleep(Duration::from_millis(1000));
     }
 
