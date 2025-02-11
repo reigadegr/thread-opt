@@ -44,6 +44,30 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         std::thread::sleep(Duration::from_millis(1000));
     }
 
+    fn change_to_finish_state(&mut self, tid1: pid_t) {
+        self.args.controller.init_default();
+        self.usage_top1 = tid1;
+        self.finish = true;
+        #[cfg(debug_assertions)]
+        debug!("计算后最终结果为:{0}\n", self.usage_top1);
+    }
+
+    fn update_tids(&mut self, comm_prefix: &[u8]) {
+        let task_map = self
+            .args
+            .activity_utils
+            .tid_utils
+            .get_task_map(self.args.pid);
+        let unname_tids = get_thread_tids(task_map, comm_prefix);
+        #[cfg(debug_assertions)]
+        debug!("发送即将开始");
+        self.tx.send(unname_tids).unwrap();
+        #[cfg(debug_assertions)]
+        debug!("发送已经完毕");
+        std::thread::sleep(Duration::from_millis(100));
+        self.args.controller.update_max_usage_tid();
+    }
+
     fn start_task(&mut self, comm_prefix: &[u8], cmd_type: &CmdType) {
         self.args.controller.init_game(true);
         loop {
@@ -53,25 +77,12 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
                 return;
             }
 
-            let task_map = self.args.activity_utils.tid_utils.get_task_map(pid);
             if likely(self.finish) {
                 self.after_usage_task(cmd_type);
             } else {
-                let unname_tids = get_thread_tids(task_map, comm_prefix);
-                #[cfg(debug_assertions)]
-                debug!("发送即将开始");
-                self.tx.send(unname_tids).unwrap();
-                #[cfg(debug_assertions)]
-                debug!("发送已经完毕");
-                std::thread::sleep(Duration::from_millis(100));
-                self.args.controller.update_max_usage_tid();
+                self.update_tids(comm_prefix);
                 check_some! {tid1, self.args.controller.first_max_tid(), "无法获取最大负载tid"};
-                self.usage_top1 = tid1;
-                self.args.controller.init_default();
-                self.finish = true;
-                #[cfg(debug_assertions)]
-                debug!("计算后最终结果为:{0}\n", self.usage_top1);
-                continue;
+                self.change_to_finish_state(tid1);
             }
 
             std::thread::sleep(Duration::from_millis(1000));

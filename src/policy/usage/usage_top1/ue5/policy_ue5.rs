@@ -1,5 +1,7 @@
-use crate::policy::usage::usage_top1::macro_common::Policy;
-use crate::policy::{pkg_cfg::StartArgs, usage::usage_top1::top1_macro_init};
+use crate::policy::{
+    pkg_cfg::StartArgs,
+    usage::usage_top1::{macro_common::Policy, top1_macro_init},
+};
 
 const TOP: [&[u8]; 0] = [];
 const ONLY6: [&[u8]; 1] = [b"RHIThread"];
