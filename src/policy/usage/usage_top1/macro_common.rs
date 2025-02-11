@@ -32,19 +32,13 @@ macro_rules! top1_common {
         }
 
         impl<'a> Policy<'a> {
-            pub const fn new(
-                top: &'a [&'a [u8]],
-                only6: &'a [&'a [u8]],
-                only7: &'a [&'a [u8]],
-                middle: &'a [&'a [u8]],
-                background: &'a [&'a [u8]],
-            ) -> Self {
+            pub const fn new(policy: &'a Policy) -> Self {
                 Self {
-                    top,
-                    only6,
-                    only7,
-                    middle,
-                    background,
+                    top: policy.top,
+                    only6: policy.only6,
+                    only7: policy.only7,
+                    middle: policy.middle,
+                    background: policy.background,
                 }
             }
 

@@ -9,6 +9,7 @@ macro_rules! top1_policy {
         use libc::pid_t;
 
         struct StartTask<'b, 'a: 'b> {
+            policy:&'b Policy<'b>,
             args: &'b mut StartArgs<'a>,
             tx: &'b Sender<Vec<pid_t>>,
             usage_top1: pid_t,
@@ -16,8 +17,9 @@ macro_rules! top1_policy {
         }
 
         impl<'b, 'a: 'b> StartTask<'b, 'a> {
-            fn new(start_args: &'b mut StartArgs<'a>) -> Self {
+            fn new(start_args: &'b mut StartArgs<'a>,policy:&'b Policy) -> Self {
                 Self {
+                policy,
                     args: start_args,
                     tx: &UNNAME_TIDS.0,
                     usage_top1: 0,
@@ -31,12 +33,12 @@ macro_rules! top1_policy {
                     .activity_utils
                     .tid_utils
                     .get_task_map(self.args.pid);
-                Policy::new(&$Top, &$Only6, &$Only7, &$Middle, &$Backend).execute_policy(task_map, self.usage_top1);
+                Policy::new(&self.policy).execute_policy(task_map, self.usage_top1);
                 std::thread::sleep(Duration::from_millis(1000));
             }
 
             fn start_task(&mut self) {
-            self.args.controller.init_game(true);
+                self.args.controller.init_game(true);
                 loop {
                     let pid = self.args.activity_utils.top_app_utils.get_pid();
                     if unlikely(pid != self.args.pid) {
@@ -71,7 +73,14 @@ macro_rules! top1_policy {
         }
 
         pub fn start_task(args: &mut StartArgs<'_>) {
-            StartTask::new(args).start_task();
+            let policy=Policy{
+                top:&TOP,
+               only6: &ONLY6,
+              only7: &ONLY7,
+              middle: &MIDDLE,
+              background: &BACKEND,
+        };
+            StartTask::new(args,&policy).start_task();
         }
 
     };
