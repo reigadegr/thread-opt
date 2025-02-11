@@ -43,7 +43,7 @@ jobs:
       - name: Other deps
         run: |
           sudo apt update
-          sudo apt install gcc-multilib
+          sudo apt install gcc-multilib llvm clang make cmake
       - name: Build
         run: |
           export ANDROID_NDK_HOME=$(realpath ~/ndk_temp)
