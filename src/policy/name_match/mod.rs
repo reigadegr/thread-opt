@@ -1,6 +1,5 @@
 mod common;
-pub mod policy_ue;
-pub mod policy_unity;
+pub mod policies;
 
 use crate::policy::pkg_cfg::StartArgs;
 use common::Policy;
@@ -48,7 +47,8 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
 // 定义宏，但不导出
 macro_rules! name_match_init {
     () => {
-        use super::{super::pkg_cfg::StartArgs, common::Policy};
+        use super::super::common::Policy;
+        use crate::policy::pkg_cfg::StartArgs;
         pub fn start_task(args: &mut StartArgs<'_>) {
             let policy = Policy {
                 top: &TOP,
@@ -57,7 +57,7 @@ macro_rules! name_match_init {
                 middle: &MIDDLE,
                 background: &BACKEND,
             };
-            super::StartTask::new(args, &policy).start_task();
+            super::super::StartTask::new(args, &policy).start_task();
         }
     };
 }
