@@ -1,7 +1,5 @@
-pub mod lolm;
 pub mod macro_common;
-pub mod ue5;
-pub mod unnamed;
+pub mod policies;
 
 use crate::policy::{
     pkg_cfg::StartArgs,

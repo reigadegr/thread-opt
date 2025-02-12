@@ -3,7 +3,7 @@ use crate::{
     activity::ActivityUtils,
     cpu_common::Controller,
     policy::usage::{
-        usage_top1::{lolm::policy_second, ue5::policy_ue5, unnamed::policy_top1},
+        usage_top1::{policies::policy_second, policies::policy_top1, policies::policy_ue5},
         usage_top2::policy_top2,
     },
 };
