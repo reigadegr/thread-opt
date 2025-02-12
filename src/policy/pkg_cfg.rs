@@ -1,7 +1,7 @@
 use super::{
-    name_match::{policy_cocos, policy_ue, policy_unity},
+    name_match::{policy_ue, policy_unity},
     usage::{
-        usage_top1::{policies::policy_second, policies::policy_top1, policies::policy_ue5},
+        usage_top1::policies::{policy_cocos, policy_second, policy_top1, policy_ue5},
         usage_top2::policy_top2,
     },
 };
@@ -32,7 +32,7 @@ const UE: [&str; 1] = ["com.kurogame.mingchao"];
 // 需要取一个cputime最大的线程，其线程前缀名为"GameThread"，只有无限暖暖
 const UE5: [&str; 1] = ["com.papegames.infinitynikki"];
 
-// 单纯的的线程名匹配，对于三国杀
+// 对于三国杀，跟暖暖策略一样，只是线程名不同
 const COCOS: [&str; 1] = ["com.bf.sgs.hdexp"];
 
 // 需要取一个cputime第二大的线程，其线程前缀名为"Thread-"
