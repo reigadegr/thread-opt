@@ -90,7 +90,8 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
 
 macro_rules! top1_macro_init {
     ($CommPrefix:expr,$initial_cmd:ident) => {
-        use crate::policy::usage::usage_top1::CmdType;
+        use super::super::macro_common::{CmdType, Policy};
+        use crate::policy::pkg_cfg::StartArgs;
         pub fn start_task(args: &mut StartArgs<'_>) {
             let policy = Policy {
                 top: &TOP,
