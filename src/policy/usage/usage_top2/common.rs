@@ -3,7 +3,8 @@ use crate::{
     utils::{
         affinity_setter::bind_tid_list_to_cgroup,
         global_cpu_utils::{
-            bind_list_to_middle, bind_tid_to_middle, bind_tid_to_only6, bind_tid_to_only7,
+            bind_list_to_middle, bind_list_to_middle_background, bind_tid_to_middle,
+            bind_tid_to_only6, bind_tid_to_only7,
         },
     },
 };
@@ -39,7 +40,7 @@ pub fn execute_policy(task_map: &HashMap<pid_t, Vec<u8>>, first: pid_t, second: 
         bind_list_to_middle(&filtered_keys);
     } else {
         let new_array = [background_group, middle_group].concat();
-        bind_tid_list_to_cgroup(&new_array, &filtered_keys);
+        bind_list_to_middle_background(&filtered_keys);
     }
 
     #[cfg(debug_assertions)]

@@ -1,6 +1,6 @@
 use super::global_cpu_set::{
-    get_background_cpu_set, get_middle_cpu_set, get_only6_cpu_set, get_only7_cpu_set,
-    get_top_cpu_set,
+    get_background_cpu_set, get_middle_background_cpu_set, get_middle_cpu_set, get_only6_cpu_set,
+    get_only7_cpu_set, get_top_cpu_set,
 };
 use libc::{cpu_set_t, pid_t, sched_setaffinity};
 use std::mem::size_of;
@@ -41,3 +41,7 @@ bind_thread!(bind_tid_to_background, get_background_cpu_set);
 // 生成批量绑定函数
 bind_list!(bind_list_to_middle, get_middle_cpu_set);
 bind_list!(bind_list_to_background, get_background_cpu_set);
+bind_list!(
+    bind_list_to_middle_background,
+    get_middle_background_cpu_set
+);

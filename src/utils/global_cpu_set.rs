@@ -25,6 +25,10 @@ define_once_lazy!(ONLY7_CPU_SET, &[7]);
 define_once_lazy!(ONLY6_CPU_SET, &[6]);
 define_once_lazy!(MIDDLE_CPU_SET, get_middle_group());
 define_once_lazy!(BACKGROUND_CPU_SET, get_background_group());
+define_once_lazy!(
+    BACKGROUND_MIDDLE_CPU_SET,
+    &[get_background_group(), get_middle_group()].concat()
+);
 
 // 使用宏定义获取函数
 define_getter!(get_top_cpu_set, TOP_CPU_SET);
@@ -32,3 +36,4 @@ define_getter!(get_only7_cpu_set, ONLY7_CPU_SET);
 define_getter!(get_only6_cpu_set, ONLY6_CPU_SET);
 define_getter!(get_middle_cpu_set, MIDDLE_CPU_SET);
 define_getter!(get_background_cpu_set, BACKGROUND_CPU_SET);
+define_getter!(get_middle_background_cpu_set, BACKGROUND_MIDDLE_CPU_SET);
