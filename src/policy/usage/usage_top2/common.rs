@@ -1,11 +1,8 @@
 use crate::{
     cgroup::group_info::{get_background_group, get_middle_group, get_top_group},
-    utils::{
-        affinity_setter::bind_tid_list_to_cgroup,
-        global_cpu_utils::{
-            bind_list_to_middle, bind_list_to_middle_background, bind_tid_to_middle,
-            bind_tid_to_only6, bind_tid_to_only7,
-        },
+    utils::global_cpu_utils::{
+        bind_list_to_middle, bind_list_to_middle_background, bind_tid_to_middle, bind_tid_to_only6,
+        bind_tid_to_only7,
     },
 };
 
@@ -39,7 +36,6 @@ pub fn execute_policy(task_map: &HashMap<pid_t, Vec<u8>>, first: pid_t, second: 
     if background_group == middle_group {
         bind_list_to_middle(&filtered_keys);
     } else {
-        let new_array = [background_group, middle_group].concat();
         bind_list_to_middle_background(&filtered_keys);
     }
 

@@ -20,6 +20,7 @@ pub fn bind_tid_to_cpu(cpu_indices: &[u8], tid: pid_t) {
 }
 
 // 绑定多个线程到指定的 CPU 核心
+#[allow(dead_code)]
 pub fn bind_tid_list_to_cgroup(cpu_indices: &[u8], tids: &[pid_t]) {
     unsafe {
         let cpu_set = create_cpu_set(cpu_indices);
