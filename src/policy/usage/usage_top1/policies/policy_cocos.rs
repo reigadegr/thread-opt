@@ -4,8 +4,8 @@ use crate::policy::{
 };
 
 const TOP: [&[u8]; 0] = [];
-const ONLY6: [&[u8]; 0] = [];
-const ONLY7: [&[u8]; 1] = [b"GLThread"];
+const ONLY6:[&[u8]; 1] = [b"GLThread"];
+const ONLY7: [&[u8]; 0] = [];
 const MIDDLE: [&[u8]; 0] = [];
 const BACKEND: [&[u8]; 0] = [];
 
