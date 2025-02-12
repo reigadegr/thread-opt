@@ -1,15 +1,15 @@
-use super::name_match::{policy_cocos, policy_ue, policy_unity};
-use crate::{
-    activity::ActivityUtils,
-    cpu_common::Controller,
-    policy::usage::{
+use super::{
+    name_match::{policy_cocos, policy_ue, policy_unity},
+    usage::{
         usage_top1::{policies::policy_second, policies::policy_top1, policies::policy_ue5},
         usage_top2::policy_top2,
     },
 };
+use crate::{activity::ActivityUtils, cpu_common::Controller};
 use libc::pid_t;
 use once_cell::sync::Lazy;
 
+// 对于普通的Unity游戏
 const UNITY: [&str; 7] = [
     "com.miHoYo.Yuanshen",
     "com.miHoYo.hkrpg",
@@ -20,16 +20,22 @@ const UNITY: [&str; 7] = [
     "com.tencent.KiHan",
 ];
 
+// 对于需要取一个cputime最大的线程，其线程前缀名为"Thread-"
 const UE_USAGE_T1: [&str; 2] = ["com.tencent.lzhx", "com.tencent.tmgp.pubgmhd"];
 
+// 对于需要取两个重负载线程的游戏，其线程前缀名均为"Thread-"，目前策略是燕云十六声特调
 const USAGE_T2: [&str; 1] = ["com.netease.yyslscn"];
 
+// 单纯的的线程名匹配，对于ue游戏
 const UE: [&str; 1] = ["com.kurogame.mingchao"];
 
+// 需要取一个cputime最大的线程，其线程前缀名为"GameThread"，只有无限暖暖
 const UE5: [&str; 1] = ["com.papegames.infinitynikki"];
 
+// 单纯的的线程名匹配，对于三国杀
 const COCOS: [&str; 1] = ["com.bf.sgs.hdexp"];
 
+// 需要取一个cputime第二大的线程，其线程前缀名为"Thread-"
 const LOLM: [&str; 1] = ["com.tencent.lolm"];
 
 pub struct StartArgs<'a> {
