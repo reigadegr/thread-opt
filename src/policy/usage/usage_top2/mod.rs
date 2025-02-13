@@ -36,18 +36,13 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         execute_policy(task_map, tid1, tid2);
     }
 
-    fn update_tids(&mut self, comm_prefix1: &[u8], comm_prefix2: Option<&[u8]>) {
+    fn update_tids(&mut self, comm_prefix1: &[u8]) {
         let task_map = self
             .args
             .activity_utils
             .tid_utils
             .get_task_map(self.args.pid);
-        let mut unname_tids = get_thread_tids(task_map, comm_prefix1);
-
-        if let Some(prefix2) = comm_prefix2 {
-            let unname_tids2 = get_thread_tids(task_map, prefix2);
-            unname_tids.extend(unname_tids2);
-        }
+        let unname_tids = get_thread_tids(task_map, comm_prefix1);
 
         #[cfg(debug_assertions)]
         debug!("发送即将开始");
@@ -61,20 +56,29 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
     fn start_task(&mut self, comm_prefix1: &[u8], comm_prefix2: Option<&[u8]>) {
         self.args.controller.init_game(true);
         loop {
+            std::thread::sleep(Duration::from_millis(2000));
             let pid = self.args.activity_utils.top_app_utils.get_pid();
             if unlikely(pid != self.args.pid) {
                 self.args.controller.init_default();
                 return;
             }
 
-            self.update_tids(comm_prefix1, comm_prefix2);
+            self.update_tids(comm_prefix1);
             check_some! {tid1, self.args.controller.first_max_tid(), "无法获取最大负载tid"};
             check_some! {tid2, self.args.controller.second_max_tid(), "无法获取第二负载tid"};
+
+            if let Some(prefix2) = comm_prefix2 {
+                self.update_tids(prefix2);
+                check_some! {tid2, self.args.controller.first_max_tid(), "无法获取最大负载tid"};
+                #[cfg(debug_assertions)]
+                debug!("负载第一高:{tid1}\n第二高:{tid2}");
+                self.bind_tids(tid1, tid2);
+                continue;
+            }
 
             #[cfg(debug_assertions)]
             debug!("负载第一高:{tid1}\n第二高:{tid2}");
             self.bind_tids(tid1, tid2);
-            std::thread::sleep(Duration::from_millis(2000));
         }
     }
 }

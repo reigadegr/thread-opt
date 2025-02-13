@@ -9,7 +9,7 @@ use likely_stable::likely;
 
 #[cfg(debug_assertions)]
 use log::debug;
-use std::{cmp, thread, time::Duration};
+use std::{cmp, time::Duration};
 
 #[derive(Debug)]
 pub struct ProcessMonitor {
@@ -22,7 +22,7 @@ impl ProcessMonitor {
         let (sender, receiver) = flume::bounded(0);
         let (max_usage_tid_sender, max_usage_tid) = flume::unbounded();
 
-        thread::Builder::new()
+        std::thread::Builder::new()
             .name("UsageSampler".to_string())
             .spawn(move || {
                 monitor_thread(&receiver, &max_usage_tid_sender);
@@ -50,20 +50,19 @@ fn monitor_thread(receiver: &Receiver<Option<bool>>, max_usage_tid: &Sender<(pid
     let rx = &UNNAME_TIDS.1;
 
     loop {
+        std::thread::sleep(Duration::from_millis(1000));
         if let Ok(state) = receiver.try_recv() {
             work_state = state;
             all_trackers.clear();
         }
 
         if work_state.is_none() {
-            thread::sleep(Duration::from_millis(1000));
             continue;
         }
 
         let Ok(threads) = get_target_tids(rx) else {
             #[cfg(debug_assertions)]
             debug!("错误获取tids，休眠后跳过");
-            thread::sleep(Duration::from_millis(150));
             continue;
         };
 
@@ -89,7 +88,6 @@ fn monitor_thread(receiver: &Receiver<Option<bool>>, max_usage_tid: &Sender<(pid
         }
         #[cfg(debug_assertions)]
         debug!("计算完一轮了");
-        thread::sleep(Duration::from_millis(1000));
     }
 }
 
