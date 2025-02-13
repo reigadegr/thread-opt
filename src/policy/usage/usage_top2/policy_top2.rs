@@ -3,9 +3,7 @@ use crate::policy::{
     pkg_cfg::StartArgs,
     usage::{check_some, get_thread_tids, UNNAME_TIDS},
 };
-use anyhow::{anyhow, Result};
 use flume::Sender;
-use hashbrown::HashSet;
 use libc::pid_t;
 use likely_stable::{likely, unlikely};
 #[cfg(debug_assertions)]
@@ -13,66 +11,16 @@ use log::debug;
 use std::time::Duration;
 
 struct StartTask<'b, 'a: 'b> {
-    high_usage_tids: HashSet<pid_t>,
     args: &'b mut StartArgs<'a>,
     tx: &'b Sender<Vec<pid_t>>,
-    usage_top1: pid_t,
-    usage_top2: pid_t,
-    finish: bool,
 }
 
 impl<'b, 'a: 'b> StartTask<'b, 'a> {
     fn new(start_args: &'b mut StartArgs<'a>) -> Self {
         Self {
-            high_usage_tids: HashSet::new(),
             args: start_args,
             tx: &UNNAME_TIDS.0,
-            usage_top1: 0,
-            usage_top2: 0,
-            finish: false,
         }
-    }
-
-    fn after_usage_task(&mut self) {
-        let task_map = self
-            .args
-            .activity_utils
-            .tid_utils
-            .get_task_map(self.args.pid);
-        execute_policy(task_map, self.usage_top1, self.usage_top2);
-        std::thread::sleep(Duration::from_millis(1000));
-    }
-
-    fn change_to_finish_state(&mut self, tid1: pid_t, tid2: pid_t) {
-        self.args.controller.init_default();
-        self.high_usage_tids.clear();
-        self.usage_top1 = tid1;
-        self.usage_top2 = tid2;
-        self.finish = true;
-        #[cfg(debug_assertions)]
-        debug!(
-            "最终结果为:{0}\n第二高:{1}",
-            self.usage_top1, self.usage_top2
-        );
-    }
-
-    fn analysis_set(&mut self, tid1: pid_t, tid2: pid_t) -> Result<()> {
-        if likely(self.high_usage_tids.len() < 3) {
-            self.collecting_tids(tid1, tid2);
-        } else {
-            if unlikely((tid1 - tid2).abs() > 20) {
-                #[cfg(debug_assertions)]
-                debug!("tid差异过大，重新计算");
-                self.high_usage_tids.clear();
-                self.high_usage_tids.insert(tid1);
-                self.high_usage_tids.insert(tid2);
-                return Err(anyhow!("Tid difference value too huge."));
-            }
-            #[cfg(debug_assertions)]
-            debug!("检测到集合长度大于3，可以结束了");
-            self.change_to_finish_state(tid1, tid2);
-        }
-        Ok(())
     }
 
     fn collecting_tids(&mut self, tid1: pid_t, tid2: pid_t) {
@@ -82,20 +30,15 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
             .tid_utils
             .get_task_map(self.args.pid);
         execute_policy(task_map, tid1, tid2);
-        if unlikely((tid1 - tid2).abs() < 20) {
-            #[cfg(debug_assertions)]
-            debug!("检测到tid差异为小于20，可能是打开后台再进的，完成判断");
-            self.change_to_finish_state(tid1, tid2);
-        }
     }
 
-    fn update_tids(&mut self) {
+    fn update_tids(&mut self, comm_prefix: &[u8]) {
         let task_map = self
             .args
             .activity_utils
             .tid_utils
             .get_task_map(self.args.pid);
-        let unname_tids = get_thread_tids(task_map, b"Thread-");
+        let unname_tids = get_thread_tids(task_map, comm_prefix);
         #[cfg(debug_assertions)]
         debug!("发送即将开始");
         self.tx.send(unname_tids).unwrap();
@@ -105,7 +48,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         self.args.controller.update_max_usage_tid();
     }
 
-    fn start_task(&mut self) {
+    fn start_task(&mut self, comm_prefix: &[u8]) {
         self.args.controller.init_game(true);
         loop {
             let pid = self.args.activity_utils.top_app_utils.get_pid();
@@ -114,28 +57,18 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
                 return;
             }
 
-            if likely(self.finish) {
-                self.after_usage_task();
-            } else {
-                self.update_tids();
-                check_some! {tid1, self.args.controller.first_max_tid(), "无法获取最大负载tid"};
-                check_some! {tid2, self.args.controller.second_max_tid(), "无法获取第二负载tid"};
+            self.update_tids(comm_prefix);
+            check_some! {tid1, self.args.controller.first_max_tid(), "无法获取最大负载tid"};
+            check_some! {tid2, self.args.controller.second_max_tid(), "无法获取第二负载tid"};
 
-                self.high_usage_tids.insert(tid1);
-                self.high_usage_tids.insert(tid2);
-
-                #[cfg(debug_assertions)]
-                debug!("负载第一高:{tid1}\n第二高:{tid2}");
-                if unlikely(self.analysis_set(tid1, tid2).is_err()) {
-                    continue;
-                }
-            }
-
+            #[cfg(debug_assertions)]
+            debug!("负载第一高:{tid1}\n第二高:{tid2}");
+            self.collecting_tids(tid1, tid2);
             std::thread::sleep(Duration::from_millis(1000));
         }
     }
 }
 
 pub fn start_task(args: &mut StartArgs<'_>) {
-    StartTask::new(args).start_task();
+    StartTask::new(args).start_task(b"Thread-");
 }
