@@ -65,7 +65,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
 
             self.update_tids(comm_prefix1);
             check_some! { tid1, self.args.controller.first_max_tid(), "无法获取最大负载tid" };
-            
+
             let tid2 = if let Some(prefix2) = comm_prefix2 {
                 self.update_tids(prefix2);
                 check_some! { tid2, self.args.controller.first_max_tid(), "无法获取最大负载tid" };

@@ -22,6 +22,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
 
     fn start_task(&mut self) {
         loop {
+            std::thread::sleep(std::time::Duration::from_millis(2000));
             let pid = self.args.activity_utils.top_app_utils.get_pid();
             if unlikely(pid != self.args.pid) {
                 return;
@@ -39,7 +40,6 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
                     task_map.len()
                 );
             }
-            std::thread::sleep(std::time::Duration::from_millis(2000));
         }
     }
 }
