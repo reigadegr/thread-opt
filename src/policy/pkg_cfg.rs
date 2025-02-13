@@ -10,9 +10,15 @@ use libc::pid_t;
 use once_cell::sync::Lazy;
 
 // 对于普通的Unity游戏
-const UNITY: [&str; 7] = [
+const UNITY: [&str; 13] = [
     "com.miHoYo.Yuanshen",
+    "com.miHoYo.GenshinImpact",
+    "com.miHoYo.ys.bilibili",
+    "com.miHoYo.yuanshencb",
     "com.miHoYo.hkrpg",
+    "com.miHoYo.hkrpg.bilibili",
+    "com.HoYoverse.hkrpgoversea",
+    "com.miHoYo.hkrpgcb",
     "com.tencent.tmgp.sgame",
     "com.miHoYo.Nap",
     "com.yongshi.tenojo.ys",
