@@ -7,7 +7,7 @@ use crate::policy::{
 use common::execute_policy;
 use flume::Sender;
 use libc::pid_t;
-use likely_stable::{likely, unlikely};
+use likely_stable::unlikely;
 #[cfg(debug_assertions)]
 use log::debug;
 use std::time::Duration;
@@ -25,7 +25,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         }
     }
 
-    fn collecting_tids(&mut self, tid1: pid_t, tid2: pid_t) {
+    fn bind_tids(&mut self, tid1: pid_t, tid2: pid_t) {
         let task_map = self
             .args
             .activity_utils
@@ -34,13 +34,19 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         execute_policy(task_map, tid1, tid2);
     }
 
-    fn update_tids(&mut self, comm_prefix: &[u8]) {
+    fn update_tids(&mut self, comm_prefix1: &[u8], comm_prefix2: Option<&[u8]>) {
         let task_map = self
             .args
             .activity_utils
             .tid_utils
             .get_task_map(self.args.pid);
-        let unname_tids = get_thread_tids(task_map, comm_prefix);
+        let mut unname_tids = get_thread_tids(task_map, comm_prefix1);
+        
+        if let Some(prefix2) = comm_prefix2 {
+            let unname_tids2 = get_thread_tids(task_map, prefix2);
+            unname_tids.extend(unname_tids2);
+        }
+        
         #[cfg(debug_assertions)]
         debug!("发送即将开始");
         self.tx.send(unname_tids).unwrap();
@@ -50,7 +56,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         self.args.controller.update_max_usage_tid();
     }
 
-    fn start_task(&mut self, comm_prefix: &[u8]) {
+    fn start_task(&mut self, comm_prefix1: &[u8], comm_prefix2: Option<&[u8]>) {
         self.args.controller.init_game(true);
         loop {
             let pid = self.args.activity_utils.top_app_utils.get_pid();
@@ -59,14 +65,14 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
                 return;
             }
 
-            self.update_tids(comm_prefix);
+            self.update_tids(comm_prefix1, comm_prefix2);
             check_some! {tid1, self.args.controller.first_max_tid(), "无法获取最大负载tid"};
             check_some! {tid2, self.args.controller.second_max_tid(), "无法获取第二负载tid"};
 
             #[cfg(debug_assertions)]
             debug!("负载第一高:{tid1}\n第二高:{tid2}");
-            self.collecting_tids(tid1, tid2);
-            std::thread::sleep(Duration::from_millis(1000));
+            self.bind_tids(tid1, tid2);
+            std::thread::sleep(Duration::from_millis(2000));
         }
     }
 }
