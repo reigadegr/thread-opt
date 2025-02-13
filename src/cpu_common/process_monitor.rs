@@ -56,7 +56,7 @@ fn monitor_thread(receiver: &Receiver<Option<bool>>, max_usage_tid: &Sender<(pid
         }
 
         if work_state.is_none() {
-            thread::sleep(Duration::from_millis(2000));
+            thread::sleep(Duration::from_millis(1000));
             continue;
         }
 
