@@ -88,7 +88,7 @@ fn monitor_thread(receiver: &Receiver<Option<bool>>, max_usage_tid: &Sender<(pid
     }
 }
 
-fn get_high_usage_tids(target_tids: &[pid_t]) -> (pid_t, pid_t) {
+pub fn get_high_usage_tids(target_tids: &[pid_t]) -> (pid_t, pid_t) {
     let mut all_trackers = HashMap::new();
     all_trackers = target_tids
         .iter()
