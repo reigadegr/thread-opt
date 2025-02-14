@@ -39,10 +39,10 @@ impl ProcessMonitor {
         self.sender.send(work_state).unwrap();
     }
 
-    pub fn update_max_usage_tid(&self) -> Option<(pid_t, pid_t)> {
+    pub fn update_max_usage_tid(&self) -> (pid_t, pid_t) {
         #[cfg(debug_assertions)]
         debug!("开始获取最大tid");
-        self.max_usage_tid.recv().ok()
+        self.max_usage_tid.recv().unwrap()
     }
 }
 

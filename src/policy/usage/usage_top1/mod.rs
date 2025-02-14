@@ -80,7 +80,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
                 self.after_usage_task(cmd_type);
             } else {
                 self.update_tids(comm_prefix);
-                check_some! {tid1, self.args.controller.first_max_tid(), "无法获取最大负载tid"};
+                check_some! {tid1, self.args.controller.first_max_tid()};
                 self.change_to_finish_state(tid1);
             }
         }
