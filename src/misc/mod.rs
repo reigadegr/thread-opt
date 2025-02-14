@@ -39,6 +39,4 @@ fn set_main_thread_name(name: &str) -> Result<()> {
 fn print_misc() {
     info!("免费软件，禁止商用");
     info!("Free software, not for commercial use.");
-    info!("祝各位大佬们情人节快乐，在这个充满爱意的日子 里，愿单身的您能邂逅心动，开启浪漫篇章；有伴的您与爱人情比金坚，甜蜜满溢。生活不止忙碌奔波，还有此刻的温柔缱绻。愿大家都能被爱包围，幸福长存，每一天都如情人节般美好！😘🌹");
-    info!("Happy Valentine's Day to all the big shots out there! May those who are single encounter someone who makes their heart skip a beat and start a romantic journey. And for those who are already in a relationship, may you and your loved one have an unbreakable bond and be filled with sweetness. Life is not just about the hustle and bustle; there are also moments of tenderness and affection like this one. I hope everyone can be surrounded by love, enjoy lasting happiness, and have every day be as wonderful as Valentine's Day！😘🌹");
 }
