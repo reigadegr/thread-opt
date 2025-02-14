@@ -30,6 +30,7 @@ impl Looper {
         info!("Exiting game\n");
         let tid_list = self.activity_utils.tid_utils.get_tid_list(self.pid);
         bind_list_to_background(tid_list);
+        self.pid = -1;
         self.activity_utils.tid_utils.tid_info.task_map.clear();
         self.activity_utils.tid_utils.tid_info.tid_list.clear();
     }
