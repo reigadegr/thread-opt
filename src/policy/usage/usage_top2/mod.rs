@@ -3,13 +3,9 @@ pub mod policy_party;
 pub mod policy_top2;
 use crate::{
     cpu_common::process_monitor::get_high_usage_tids,
-    policy::{
-        pkg_cfg::StartArgs,
-        usage::{check_some, get_thread_tids, UNNAME_TIDS},
-    },
+    policy::{pkg_cfg::StartArgs, usage::get_thread_tids},
 };
 use common::execute_policy;
-use flume::Sender;
 use libc::pid_t;
 use likely_stable::unlikely;
 #[cfg(debug_assertions)]

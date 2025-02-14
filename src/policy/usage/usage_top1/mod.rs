@@ -1,11 +1,7 @@
 pub mod macro_common;
 pub mod policies;
 use crate::cpu_common::process_monitor::get_high_usage_tids;
-use crate::policy::{
-    pkg_cfg::StartArgs,
-    usage::{check_some, get_thread_tids, UNNAME_TIDS},
-};
-use flume::Sender;
+use crate::policy::{pkg_cfg::StartArgs, usage::get_thread_tids};
 use libc::pid_t;
 use likely_stable::{likely, unlikely};
 #[cfg(debug_assertions)]
@@ -41,7 +37,6 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
     }
 
     fn change_to_finish_state(&mut self, tid1: pid_t) {
-        self.args.controller.init_default();
         self.usage_top1 = tid1;
         self.finish = true;
         #[cfg(debug_assertions)]
@@ -57,13 +52,6 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         let unname_tids = get_thread_tids(task_map, comm_prefix);
         let (tid1, _) = get_high_usage_tids(&unname_tids);
         tid1
-        // #[cfg(debug_assertions)]
-        // debug!("发送即将开始");
-        // self.tx.send(unname_tids).unwrap();
-        // #[cfg(debug_assertions)]
-        // debug!("发送已经完毕");
-        // // std::thread::sleep(Duration::from_millis(100));
-        // self.args.controller.update_max_usage_tid();
     }
 
     fn start_task(&mut self, comm_prefix: &[u8], cmd_type: &CmdType) {
@@ -72,7 +60,6 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
             std::thread::sleep(Duration::from_millis(1000));
             let pid = self.args.activity_utils.top_app_utils.get_pid();
             if unlikely(pid != self.args.pid) {
-                // self.args.controller.init_default();
                 return;
             }
 
@@ -80,7 +67,6 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
                 self.after_usage_task(cmd_type);
             } else {
                 let tid1 = self.update_tids(comm_prefix);
-                // check_some! {tid1, self.args.controller.first_max_tid()};
                 self.change_to_finish_state(tid1);
             }
         }

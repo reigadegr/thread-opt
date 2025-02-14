@@ -5,7 +5,7 @@ use super::{
         usage_top2::{policy_party, policy_top2},
     },
 };
-use crate::{activity::ActivityUtils, cpu_common::Controller};
+use crate::activity::ActivityUtils;
 use libc::pid_t;
 use once_cell::sync::Lazy;
 
@@ -48,7 +48,6 @@ const USAGE_T2: [&str; 1] = ["com.netease.yyslscn"];
 const PARTY_T2: [&str; 1] = ["com.netease.party"];
 
 pub struct StartArgs<'a> {
-    pub controller: &'a mut Controller,
     pub activity_utils: &'a mut ActivityUtils,
     pub pid: pid_t,
 }
