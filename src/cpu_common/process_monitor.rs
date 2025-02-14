@@ -97,6 +97,10 @@ fn get_top_usage_tid(trackers: &mut HashMap<pid_t, UsageTracker>) -> (pid_t, pid
     for (tid, tracker) in trackers {
         let cputime = tracker.try_calculate();
         if cputime > usage1 {
+            // 避免极端情况下获取到的cputime永远比上一个大导致tid2不被赋值
+            usage2 = usage1;
+            tid2 = tid1;
+
             usage1 = cputime;
             tid1 = *tid;
             continue;
