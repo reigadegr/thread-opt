@@ -1,4 +1,4 @@
-use super::name_match_init;
+use super::super::name_match_init;
 
 const TOP: [&[u8]; 1] = [b"Pool"];
 const ONLY6: [&[u8]; 1] = [b"RHIThread"];

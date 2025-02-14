@@ -1,7 +1,4 @@
-use crate::policy::{
-    pkg_cfg::StartArgs,
-    usage::usage_top1::{macro_common::Policy, top1_macro_init},
-};
+use super::super::top1_macro_init;
 
 const TOP: [&[u8]; 0] = [];
 const ONLY6: [&[u8]; 0] = [];

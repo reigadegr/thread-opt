@@ -1,7 +1,5 @@
 mod common;
-pub mod policy_cocos;
-pub mod policy_ue;
-pub mod policy_unity;
+pub mod policies;
 
 use crate::policy::pkg_cfg::StartArgs;
 use common::Policy;
@@ -24,6 +22,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
 
     fn start_task(&mut self) {
         loop {
+            std::thread::sleep(std::time::Duration::from_millis(2000));
             let pid = self.args.activity_utils.top_app_utils.get_pid();
             if unlikely(pid != self.args.pid) {
                 return;
@@ -41,7 +40,6 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
                     task_map.len()
                 );
             }
-            std::thread::sleep(std::time::Duration::from_millis(2000));
         }
     }
 }
@@ -49,7 +47,8 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
 // 定义宏，但不导出
 macro_rules! name_match_init {
     () => {
-        use super::{super::pkg_cfg::StartArgs, common::Policy};
+        use super::super::common::Policy;
+        use crate::policy::pkg_cfg::StartArgs;
         pub fn start_task(args: &mut StartArgs<'_>) {
             let policy = Policy {
                 top: &TOP,
@@ -58,7 +57,7 @@ macro_rules! name_match_init {
                 middle: &MIDDLE,
                 background: &BACKEND,
             };
-            super::StartTask::new(args, &policy).start_task();
+            super::super::StartTask::new(args, &policy).start_task();
         }
     };
 }

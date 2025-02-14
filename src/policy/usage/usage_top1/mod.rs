@@ -62,13 +62,14 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         self.tx.send(unname_tids).unwrap();
         #[cfg(debug_assertions)]
         debug!("发送已经完毕");
-        std::thread::sleep(Duration::from_millis(100));
+        // std::thread::sleep(Duration::from_millis(100));
         self.args.controller.update_max_usage_tid();
     }
 
     fn start_task(&mut self, comm_prefix: &[u8], cmd_type: &CmdType) {
         self.args.controller.init_game(true);
         loop {
+            std::thread::sleep(Duration::from_millis(1000));
             let pid = self.args.activity_utils.top_app_utils.get_pid();
             if unlikely(pid != self.args.pid) {
                 self.args.controller.init_default();
@@ -79,18 +80,17 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
                 self.after_usage_task(cmd_type);
             } else {
                 self.update_tids(comm_prefix);
-                check_some! {tid1, self.args.controller.first_max_tid(), "无法获取最大负载tid"};
+                check_some! {tid1, self.args.controller.first_max_tid()};
                 self.change_to_finish_state(tid1);
             }
-
-            std::thread::sleep(Duration::from_millis(1000));
         }
     }
 }
 
 macro_rules! top1_macro_init {
     ($CommPrefix:expr,$initial_cmd:ident) => {
-        use crate::policy::usage::usage_top1::CmdType;
+        use super::super::macro_common::{CmdType, Policy};
+        use crate::policy::pkg_cfg::StartArgs;
         pub fn start_task(args: &mut StartArgs<'_>) {
             let policy = Policy {
                 top: &TOP,

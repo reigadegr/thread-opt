@@ -30,6 +30,7 @@ impl Looper {
         info!("Exiting game\n");
         let tid_list = self.activity_utils.tid_utils.get_tid_list(self.pid);
         bind_list_to_background(tid_list);
+        self.pid = -1;
         self.activity_utils.tid_utils.tid_info.task_map.clear();
         self.activity_utils.tid_utils.tid_info.tid_list.clear();
     }
@@ -38,7 +39,6 @@ impl Looper {
     where
         F: Fn(&mut StartArgs),
     {
-        std::thread::sleep(Duration::from_millis(1000));
         start_task(&mut StartArgs {
             controller: &mut self.controller,
             activity_utils: &mut self.activity_utils,
@@ -63,10 +63,10 @@ impl Looper {
 
     pub fn enter_loop(&mut self) {
         'outer: loop {
+            std::thread::sleep(Duration::from_millis(1000));
             {
                 let pid = self.activity_utils.top_app_utils.get_pid();
                 if self.pid == pid {
-                    std::thread::sleep(Duration::from_millis(1000));
                     continue 'outer;
                 }
                 self.pid = pid;
@@ -78,7 +78,6 @@ impl Looper {
                     continue 'outer;
                 }
             }
-            std::thread::sleep(Duration::from_millis(1000));
         }
     }
 }
