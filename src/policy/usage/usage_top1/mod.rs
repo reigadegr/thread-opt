@@ -62,7 +62,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         self.tx.send(unname_tids).unwrap();
         #[cfg(debug_assertions)]
         debug!("发送已经完毕");
-        std::thread::sleep(Duration::from_millis(100));
+        // std::thread::sleep(Duration::from_millis(100));
         self.args.controller.update_max_usage_tid();
     }
 

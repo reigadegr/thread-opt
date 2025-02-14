@@ -42,17 +42,7 @@ impl ProcessMonitor {
     pub fn update_max_usage_tid(&self) -> Option<(pid_t, pid_t)> {
         #[cfg(debug_assertions)]
         debug!("开始获取最大tid");
-        self.max_usage_tid
-            .try_recv()
-            .map_or_else(
-                |_| {
-                    #[cfg(debug_assertions)]
-                    debug!("无法获取");
-                    Err(anyhow!("Cannot get tids."))
-                },
-                Ok,
-            )
-            .ok()
+        self.max_usage_tid.recv().ok()
     }
 }
 
