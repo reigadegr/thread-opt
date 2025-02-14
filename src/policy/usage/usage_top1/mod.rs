@@ -55,7 +55,6 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
     }
 
     fn start_task(&mut self, comm_prefix: &[u8], cmd_type: &CmdType) {
-        // self.args.controller.init_game(true);
         loop {
             std::thread::sleep(Duration::from_millis(1000));
             let pid = self.args.activity_utils.top_app_utils.get_pid();
