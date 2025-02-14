@@ -49,14 +49,11 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
                 return;
             }
 
-            let (tid1, tid2) = self.update_tids(comm_prefix1);
+            let (tid1, mut tid2) = self.update_tids(comm_prefix1);
 
             if let Some(prefix2) = comm_prefix2 {
-                let (tid2, _) = self.update_tids(prefix2);
-                self.bind_tids(tid1, tid2);
-                #[cfg(debug_assertions)]
-                debug!("负载第一高:{tid1}\n第二高:{tid2}");
-                continue;
+                let (new_tid1, _) = self.update_tids(prefix2);
+                tid2 = new_tid1;
             }
 
             #[cfg(debug_assertions)]

@@ -7,12 +7,7 @@ pub fn get_high_usage_tids(target_tids: &[pid_t]) -> (pid_t, pid_t) {
     let all_trackers: HashMap<pid_t, UsageTracker> = target_tids
         .iter()
         .copied()
-        .map(|tid| {
-            (
-                tid,
-                UsageTracker::new(tid),
-            )
-        })
+        .map(|tid| (tid, UsageTracker::new(tid)))
         .collect();
 
     let (tid1, tid2) = get_top_usage_tid(&all_trackers);
