@@ -5,7 +5,7 @@ use anyhow::{anyhow, Result};
 use flume::{Receiver, Sender};
 use hashbrown::{hash_map::Entry, HashMap};
 use libc::pid_t;
-use likely_stable::likely;
+use likely_stable::unlikely;
 
 #[cfg(debug_assertions)]
 use log::debug;
@@ -82,27 +82,26 @@ fn monitor_thread(receiver: &Receiver<Option<bool>>, max_usage_tid: &Sender<(pid
             })
             .collect();
 
-        let (tid1, tid2) = get_top_usage_tid(&mut all_trackers, 2);
+        let (tid1, tid2) = get_top_usage_tid(&mut all_trackers);
         max_usage_tid.send((tid1, tid2)).unwrap();
         #[cfg(debug_assertions)]
         debug!("计算完一轮了");
     }
 }
 
-fn get_top_usage_tid(
-    trackers: &mut HashMap<pid_t, UsageTracker>,
-    cut_num: usize,
-) -> (pid_t, pid_t) {
+fn get_top_usage_tid(trackers: &mut HashMap<pid_t, UsageTracker>) -> (pid_t, pid_t) {
     let mut need_sort: Vec<_> = trackers
         .iter_mut()
         .map(|(tid, tracker)| (*tid, tracker.try_calculate()))
         .collect();
-    need_sort.sort_unstable_by(|(_, a), (_, b)| b.partial_cmp(a).unwrap_or(cmp::Ordering::Equal));
-    need_sort.truncate(cut_num);
-    if likely(need_sort.len() > 1) {
-        return (need_sort[0].0, need_sort[1].0);
+
+    if unlikely(need_sort.len() < 2) {
+        return (-1, -1);
     }
-    (-1, -1)
+    
+    need_sort.sort_unstable_by(|(_, a), (_, b)| b.partial_cmp(a).unwrap_or(cmp::Ordering::Equal));
+    need_sort.truncate(2);
+    (need_sort[0].0, need_sort[1].0)
 }
 
 fn get_target_tids(rx: &Receiver<Vec<pid_t>>) -> Result<Vec<pid_t>> {
