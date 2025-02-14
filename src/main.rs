@@ -9,13 +9,11 @@ mod misc;
 mod policy;
 mod scheduler;
 mod utils;
-use cgroup::group_info::print_group_core;
 
 use misc::init_misc;
 use scheduler::Scheduler;
 
 fn main() {
     init_misc();
-    print_group_core();
     Scheduler::new().start_run();
 }

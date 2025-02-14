@@ -1,4 +1,5 @@
 pub mod logger;
+use crate::cgroup::group_info::print_group_core;
 use anyhow::Result;
 use likely_stable::unlikely;
 use log::info;
@@ -12,8 +13,8 @@ pub fn init_misc() {
     }
     let _ = init_log();
     log_metainfo();
-    info!("免费软件，禁止商用");
-    info!("Free software, not for commercial use.");
+    print_group_core();
+    print_misc();
 }
 
 fn working_in_background() {
@@ -33,4 +34,9 @@ fn set_main_thread_name(name: &str) -> Result<()> {
         libc::pthread_setname_np(libc::pthread_self(), thread_name.as_ptr());
     }
     Ok(())
+}
+
+fn print_misc() {
+    info!("免费软件，禁止商用");
+    info!("Free software, not for commercial use.");
 }
