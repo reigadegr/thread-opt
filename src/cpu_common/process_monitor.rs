@@ -5,11 +5,10 @@ use anyhow::{anyhow, Result};
 use flume::{Receiver, Sender};
 use hashbrown::{hash_map::Entry, HashMap};
 use libc::pid_t;
-use likely_stable::unlikely;
 
 #[cfg(debug_assertions)]
 use log::debug;
-use std::{cmp, time::Duration};
+use std::time::Duration;
 
 #[derive(Debug)]
 pub struct ProcessMonitor {
@@ -100,15 +99,15 @@ fn get_top_usage_tid(trackers: &mut HashMap<pid_t, UsageTracker>) -> (pid_t, pid
     let mut usage2: u64 = 0;
 
     for (tid, cputime) in &need_sort {
-        if *cputime > usage1 {
-            usage1 = *cputime;
-            tid1 = *tid;
+        if cputime > usage1 {
+            usage1 = cputime;
+            tid1 = tid;
             continue;
         }
 
-        if *cputime > usage2 {
-            usage2 = *cputime;
-            tid2 = *tid;
+        if cputime > usage2 {
+            usage2 = cputime;
+            tid2 = tid;
         }
     }
     (tid1, tid2)
