@@ -90,18 +90,28 @@ fn monitor_thread(receiver: &Receiver<Option<bool>>, max_usage_tid: &Sender<(pid
 }
 
 fn get_top_usage_tid(trackers: &mut HashMap<pid_t, UsageTracker>) -> (pid_t, pid_t) {
-    let mut need_sort: Vec<_> = trackers
+    let need_sort: Vec<_> = trackers
         .iter_mut()
         .map(|(tid, tracker)| (*tid, tracker.try_calculate()))
         .collect();
+    let mut tid1 = -1;
+    let mut tid2 = -1;
+    let mut usage1: u64 = 0;
+    let mut usage2: u64 = 0;
 
-    if unlikely(need_sort.len() < 2) {
-        return (-1, -1);
+    for (tid, cputime) in &need_sort {
+        if *cputime > usage1 {
+            usage1 = *cputime;
+            tid1 = *tid;
+            continue;
+        }
+
+        if *cputime > usage2 {
+            usage2 = *cputime;
+            tid2 = *tid;
+        }
     }
-    
-    need_sort.sort_unstable_by(|(_, a), (_, b)| b.partial_cmp(a).unwrap_or(cmp::Ordering::Equal));
-    need_sort.truncate(2);
-    (need_sort[0].0, need_sort[1].0)
+    (tid1, tid2)
 }
 
 fn get_target_tids(rx: &Receiver<Vec<pid_t>>) -> Result<Vec<pid_t>> {
