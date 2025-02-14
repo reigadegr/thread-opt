@@ -89,25 +89,22 @@ fn monitor_thread(receiver: &Receiver<Option<bool>>, max_usage_tid: &Sender<(pid
 }
 
 fn get_top_usage_tid(trackers: &mut HashMap<pid_t, UsageTracker>) -> (pid_t, pid_t) {
-    let need_sort: Vec<_> = trackers
-        .iter_mut()
-        .map(|(tid, tracker)| (*tid, tracker.try_calculate()))
-        .collect();
     let mut tid1 = -1;
     let mut tid2 = -1;
     let mut usage1: u64 = 0;
     let mut usage2: u64 = 0;
 
-    for (tid, cputime) in &need_sort {
+    for (tid, tracker) in trackers {
+        let cputime = tracker.try_calculate();
         if cputime > usage1 {
             usage1 = cputime;
-            tid1 = tid;
+            tid1 = *tid;
             continue;
         }
 
         if cputime > usage2 {
             usage2 = cputime;
-            tid2 = tid;
+            tid2 = *tid;
         }
     }
     (tid1, tid2)
