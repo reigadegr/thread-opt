@@ -1,29 +1,25 @@
 // From shadow3aaa fas-rs
 use super::usage_tracker::UsageTracker;
-use hashbrown::{hash_map::Entry, HashMap};
+use hashbrown::HashMap;
 use libc::pid_t;
 
 pub fn get_high_usage_tids(target_tids: &[pid_t]) -> (pid_t, pid_t) {
-    let mut all_trackers = HashMap::new();
-    all_trackers = target_tids
+    let all_trackers: HashMap<pid_t, UsageTracker> = target_tids
         .iter()
         .copied()
         .map(|tid| {
             (
                 tid,
-                match all_trackers.entry(tid) {
-                    Entry::Occupied(o) => o.remove(),
-                    Entry::Vacant(_) => UsageTracker::new(tid),
-                },
+                UsageTracker::new(tid),
             )
         })
         .collect();
 
-    let (tid1, tid2) = get_top_usage_tid(&mut all_trackers);
+    let (tid1, tid2) = get_top_usage_tid(&all_trackers);
     (tid1, tid2)
 }
 
-fn get_top_usage_tid(trackers: &mut HashMap<pid_t, UsageTracker>) -> (pid_t, pid_t) {
+fn get_top_usage_tid(trackers: &HashMap<pid_t, UsageTracker>) -> (pid_t, pid_t) {
     let mut tid1 = -1;
     let mut tid2 = -1;
     let mut usage1: u64 = 0;
