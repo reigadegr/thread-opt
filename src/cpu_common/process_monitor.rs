@@ -20,7 +20,7 @@ pub struct ProcessMonitor {
 impl ProcessMonitor {
     pub fn new() -> Self {
         let (sender, receiver) = flume::bounded(0);
-        let (max_usage_tid_sender, max_usage_tid) = flume::unbounded();
+        let (max_usage_tid_sender, max_usage_tid) = flume::bounded(0);
 
         std::thread::Builder::new()
             .name("UsageSampler".to_string())
@@ -40,7 +40,19 @@ impl ProcessMonitor {
     }
 
     pub fn update_max_usage_tid(&self) -> Option<(pid_t, pid_t)> {
-        self.max_usage_tid.try_iter().last()
+        #[cfg(debug_assertions)]
+        debug!("开始获取最大tid");
+        self.max_usage_tid
+            .try_recv()
+            .map_or_else(
+                |_| {
+                    #[cfg(debug_assertions)]
+                    debug!("无法获取");
+                    Err(anyhow!("Cannot get tids."))
+                },
+                Ok,
+            )
+            .ok()
     }
 }
 
