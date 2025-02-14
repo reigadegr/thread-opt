@@ -82,12 +82,8 @@ fn monitor_thread(receiver: &Receiver<Option<bool>>, max_usage_tid: &Sender<(pid
             })
             .collect();
 
-        let top_threads = get_top_usage_tid(&mut all_trackers, 2);
-        if likely(top_threads.len() > 1) {
-            max_usage_tid
-                .send((top_threads[0].0, top_threads[1].0))
-                .unwrap();
-        }
+        let (tid1, tid2) = get_top_usage_tid(&mut all_trackers, 2);
+        max_usage_tid.send((tid1, tid2)).unwrap();
         #[cfg(debug_assertions)]
         debug!("计算完一轮了");
     }
@@ -96,14 +92,17 @@ fn monitor_thread(receiver: &Receiver<Option<bool>>, max_usage_tid: &Sender<(pid
 fn get_top_usage_tid(
     trackers: &mut HashMap<pid_t, UsageTracker>,
     cut_num: usize,
-) -> Vec<(pid_t, u64)> {
+) -> (pid_t, pid_t) {
     let mut need_sort: Vec<_> = trackers
         .iter_mut()
         .map(|(tid, tracker)| (*tid, tracker.try_calculate()))
         .collect();
     need_sort.sort_unstable_by(|(_, a), (_, b)| b.partial_cmp(a).unwrap_or(cmp::Ordering::Equal));
     need_sort.truncate(cut_num);
-    need_sort
+    if likely(need_sort.len() > 1) {
+        return (need_sort[0].0, need_sort[1].0);
+    }
+    (-1, -1)
 }
 
 fn get_target_tids(rx: &Receiver<Vec<pid_t>>) -> Result<Vec<pid_t>> {
