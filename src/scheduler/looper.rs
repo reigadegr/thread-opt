@@ -1,6 +1,5 @@
 use crate::{
     activity::{get_tid_info::get_process_name, ActivityUtils},
-    cpu_common::Controller,
     policy::pkg_cfg::{StartArgs, PACKAGE_CONFIGS},
     utils::global_cpu_utils::bind_list_to_background,
 };
@@ -13,16 +12,14 @@ pub struct Looper {
     pid: pid_t,
     global_package: CompactString,
     activity_utils: ActivityUtils,
-    controller: Controller,
 }
 
 impl Looper {
-    pub fn new(activity_utils: ActivityUtils, controller: Controller) -> Self {
+    pub fn new(activity_utils: ActivityUtils) -> Self {
         Self {
-            pid: 0,
+            pid: -1,
             global_package: CompactString::new(""),
             activity_utils,
-            controller,
         }
     }
 
@@ -40,7 +37,6 @@ impl Looper {
         F: Fn(&mut StartArgs),
     {
         start_task(&mut StartArgs {
-            controller: &mut self.controller,
             activity_utils: &mut self.activity_utils,
             pid: self.pid,
         });
