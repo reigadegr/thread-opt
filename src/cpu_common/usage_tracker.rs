@@ -19,7 +19,7 @@ impl UsageTracker {
 fn get_thread_cpu_time(tid: pid_t) -> u64 {
     let stat_path = format!("/proc/{tid}/schedstat");
     let stat_content = std::fs::read(stat_path).unwrap_or_else(|_| Vec::new());
-    let mut parts = stat_content.split(|b| *b == b' ');
+    let mut parts = stat_content.split(|&b| b == b' ');
     let first_part = parts.next().unwrap_or_default();
     atoi::<u64>(first_part).unwrap_or(0)
 }
