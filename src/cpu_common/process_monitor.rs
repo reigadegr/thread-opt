@@ -10,11 +10,11 @@ pub fn get_high_usage_tids(target_tids: &[pid_t]) -> (pid_t, pid_t) {
         .map(|tid| (tid, UsageTracker::new(tid).try_calculate()))
         .collect();
 
-    let (tid1, tid2) = get_top_usage_tid(&all_trackers);
+    let (tid1, tid2) = calculate_top_tid(&all_trackers);
     (tid1, tid2)
 }
 
-fn get_top_usage_tid(trackers: &HashMap<pid_t, u64>) -> (pid_t, pid_t) {
+fn calculate_top_tid(trackers: &HashMap<pid_t, u64>) -> (pid_t, pid_t) {
     let mut tid1 = -1;
     let mut tid2 = -1;
     let mut usage1: u64 = 0;

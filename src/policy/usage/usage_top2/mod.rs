@@ -44,10 +44,13 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
     fn start_task(&mut self, comm_prefix1: &[u8], comm_prefix2: Option<&[u8]>) {
         loop {
             std::thread::sleep(Duration::from_millis(2000));
+
             let pid = self.args.activity_utils.top_app_utils.get_pid();
             if unlikely(pid != self.args.pid) {
                 return;
             }
+            #[cfg(debug_assertions)]
+            let start = std::time::Instant::now();
 
             let (tid1, mut tid2) = self.update_tids(comm_prefix1);
 
@@ -59,6 +62,11 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
             #[cfg(debug_assertions)]
             debug!("负载第一高:{tid1}\n第二高:{tid2}");
             self.bind_tids(tid1, tid2);
+            #[cfg(debug_assertions)]
+            {
+                let end = start.elapsed();
+                debug!("top2一轮全部完成时间: {:?} ", end);
+            }
         }
     }
 }

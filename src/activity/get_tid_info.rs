@@ -13,8 +13,8 @@ use std::{
 pub struct TidInfo {
     pub task_map: HashMap<pid_t, Vec<u8>>,
     pub tid_list: Vec<pid_t>,
-    task_map_name: CompactString,
-    tid_list_name: CompactString,
+    task_map_pid: pid_t,
+    tid_list_pid: pid_t,
 }
 
 impl TidInfo {
@@ -44,12 +44,10 @@ impl TidUtils {
             return &self.set_task_map(pid).task_map;
         }
 
-        if let Ok(name) = get_process_name(pid) {
-            if self.tid_info.task_map_name == name {
-                return &self.tid_info.task_map;
-            }
-            self.tid_info.task_map_name = name;
+        if self.tid_info.task_map_pid == pid {
+            return &self.tid_info.task_map;
         }
+        self.tid_info.task_map_pid = pid;
 
         &self.set_task_map(pid).task_map
     }
@@ -59,13 +57,12 @@ impl TidUtils {
             self.last_refresh_tid_list = Instant::now();
             return &self.set_tid_list(pid).tid_list;
         }
-
-        if let Ok(name) = get_process_name(pid) {
-            if self.tid_info.tid_list_name == name {
-                return &self.tid_info.tid_list;
-            }
-            self.tid_info.tid_list_name = name;
+        if self.tid_info.tid_list_pid == pid {
+            #[cfg(debug_assertions)]
+            debug!("使用缓存tid_list");
+            return &self.tid_info.tid_list;
         }
+        self.tid_info.tid_list_pid = pid;
 
         &self.set_tid_list(pid).tid_list
     }
