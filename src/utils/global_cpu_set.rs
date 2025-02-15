@@ -6,7 +6,7 @@ use once_cell::sync::Lazy;
 // 定义静态变量的宏
 macro_rules! define_once_lazy {
     ($name:ident, $init:expr) => {
-        pub static $name: Lazy<cpu_set_t> = Lazy::new(|| unsafe { create_cpu_set($init) });
+        pub static $name: Lazy<cpu_set_t> = Lazy::new(|| create_cpu_set($init));
     };
 }
 
