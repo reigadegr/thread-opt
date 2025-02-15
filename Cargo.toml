@@ -11,7 +11,6 @@ repository = "https://github.com/reigadegr/thread-opt"
 [dependencies]
 anyhow = "1.0.95"
 atoi = "2.0.0"
-chrono = "0.4.39"
 compact_str = "0.8.1"
 dumpsys-rs = { git = "https://github.com/reigadegr/dumpsys-rs" }
 flexi_logger = "0.29.8"
