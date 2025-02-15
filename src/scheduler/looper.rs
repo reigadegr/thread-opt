@@ -70,7 +70,7 @@ impl Looper {
                 self.global_package = name;
             }
             for (package_list, start_task) in PACKAGE_CONFIGS.iter() {
-                if self.handle_package_list(package_list, *start_task) {
+                if self.handle_package_list(package_list, start_task) {
                     continue 'outer;
                 }
             }
