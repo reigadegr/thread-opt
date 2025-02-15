@@ -3,7 +3,7 @@ pub mod policies;
 use crate::cpu_common::process_monitor::get_high_usage_tids;
 use crate::policy::{pkg_cfg::StartArgs, usage::get_thread_tids};
 use libc::pid_t;
-use likely_stable::{likely, unlikely};
+use likely_stable::unlikely;
 #[cfg(debug_assertions)]
 use log::debug;
 use macro_common::{CmdType, Policy};
@@ -13,7 +13,6 @@ struct StartTask<'b, 'a: 'b> {
     policy: &'b Policy<'b>,
     args: &'b mut StartArgs<'a>,
     usage_top1: pid_t,
-    finish: bool,
 }
 
 impl<'b, 'a: 'b> StartTask<'b, 'a> {
@@ -22,7 +21,6 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
             policy,
             args: start_args,
             usage_top1: 0,
-            finish: false,
         }
     }
 
@@ -33,12 +31,10 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
             .tid_utils
             .get_task_map(self.args.pid);
         Policy::new(self.policy).execute_policy(task_map, self.usage_top1, cmd_type);
-        std::thread::sleep(Duration::from_millis(1000));
     }
 
     fn change_to_finish_state(&mut self, tid1: pid_t) {
         self.usage_top1 = tid1;
-        self.finish = true;
         #[cfg(debug_assertions)]
         debug!("计算后最终结果为:{0}\n", self.usage_top1);
     }
@@ -54,20 +50,21 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         tid1
     }
 
+    fn initialize_task(&mut self, comm_prefix: &[u8]) {
+        std::thread::sleep(Duration::from_millis(1000));
+        let tid1 = self.update_tids(comm_prefix);
+        self.change_to_finish_state(tid1);
+    }
+
     fn start_task(&mut self, comm_prefix: &[u8], cmd_type: &CmdType) {
+        self.initialize_task(comm_prefix);
         loop {
-            std::thread::sleep(Duration::from_millis(1000));
             let pid = self.args.activity_utils.top_app_utils.get_pid();
             if unlikely(pid != self.args.pid) {
                 return;
             }
-
-            if likely(self.finish) {
-                self.after_usage_task(cmd_type);
-            } else {
-                let tid1 = self.update_tids(comm_prefix);
-                self.change_to_finish_state(tid1);
-            }
+            self.after_usage_task(cmd_type);
+            std::thread::sleep(Duration::from_millis(2000));
         }
     }
 }

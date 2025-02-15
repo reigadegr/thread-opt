@@ -75,7 +75,7 @@ impl<'a> Policy<'a> {
 
         execute_task(cmd_type, first);
 
-        for (&tid, comm) in task_map.iter().filter(|(&tid, _)| tid != first) {
+        for (&tid, comm) in task_map.iter().filter(|&(&tid, _)| tid != first) {
             let cmd_type = self.get_cmd_type(comm);
             execute_task(&cmd_type, tid);
         }

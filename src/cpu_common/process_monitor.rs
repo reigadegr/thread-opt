@@ -6,8 +6,7 @@ use libc::pid_t;
 pub fn get_high_usage_tids(target_tids: &[pid_t]) -> (pid_t, pid_t) {
     let all_trackers: HashMap<pid_t, u64> = target_tids
         .iter()
-        .copied()
-        .map(|tid| (tid, UsageTracker::new(tid).try_calculate()))
+        .map(|&tid| (tid, UsageTracker::new(tid).try_calculate()))
         .collect();
 
     let (tid1, tid2) = calculate_top_tid(&all_trackers);

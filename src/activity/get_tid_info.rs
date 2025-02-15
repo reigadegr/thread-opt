@@ -71,12 +71,12 @@ impl TidUtils {
         };
 
         let mut task_map: HashMap<pid_t, Vec<u8>> = HashMap::new();
-        for tid in &tid_list {
+        for tid in tid_list {
             let comm_path = format!("/proc/{tid}/comm");
             let Ok(comm) = read_to_byte(Path::new(&comm_path)) else {
                 return &self.tid_info;
             };
-            task_map.insert(*tid, comm);
+            task_map.insert(tid, comm);
         }
         self.tid_info.task_map = task_map;
         &self.tid_info

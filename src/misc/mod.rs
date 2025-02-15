@@ -13,8 +13,8 @@ pub fn init_misc() {
     }
     let _ = init_log();
     log_metainfo();
-    print_group_core();
     print_misc();
+    print_group_core();
 }
 
 fn working_in_background() {

@@ -30,15 +30,28 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         execute_policy(task_map, tid1, tid2);
     }
 
-    fn update_tids(&mut self, comm_prefix: &[u8]) -> (pid_t, pid_t) {
+    fn retrieve_tids(&mut self, comm_prefix: &[u8]) -> (pid_t, pid_t) {
         let task_map = self
             .args
             .activity_utils
             .tid_utils
             .get_task_map(self.args.pid);
-        let unname_tids = get_thread_tids(task_map, comm_prefix);
-        let (tid1, tid2) = get_high_usage_tids(&unname_tids);
+        let prefix_tids = get_thread_tids(task_map, comm_prefix);
+        let (tid1, tid2) = get_high_usage_tids(&prefix_tids);
         (tid1, tid2)
+    }
+
+    fn audit_tids(&mut self, comm_prefix1: &[u8], comm_prefix2: Option<&[u8]>) {
+        let (tid1, mut tid2) = self.retrieve_tids(comm_prefix1);
+
+        if let Some(prefix2) = comm_prefix2 {
+            let (new_tid1, _) = self.retrieve_tids(prefix2);
+            tid2 = new_tid1;
+        }
+
+        #[cfg(debug_assertions)]
+        debug!("负载第一高:{tid1}\n第二高:{tid2}");
+        self.bind_tids(tid1, tid2);
     }
 
     fn start_task(&mut self, comm_prefix1: &[u8], comm_prefix2: Option<&[u8]>) {
@@ -49,24 +62,8 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
             if unlikely(pid != self.args.pid) {
                 return;
             }
-            #[cfg(debug_assertions)]
-            let start = std::time::Instant::now();
 
-            let (tid1, mut tid2) = self.update_tids(comm_prefix1);
-
-            if let Some(prefix2) = comm_prefix2 {
-                let (new_tid1, _) = self.update_tids(prefix2);
-                tid2 = new_tid1;
-            }
-
-            #[cfg(debug_assertions)]
-            debug!("负载第一高:{tid1}\n第二高:{tid2}");
-            self.bind_tids(tid1, tid2);
-            #[cfg(debug_assertions)]
-            {
-                let end = start.elapsed();
-                debug!("top2一轮全部完成时间: {:?} ", end);
-            }
+            self.audit_tids(comm_prefix1, comm_prefix2);
         }
     }
 }
