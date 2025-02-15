@@ -58,8 +58,6 @@ impl TidUtils {
             return &self.set_tid_list(pid).tid_list;
         }
         if self.tid_info.tid_list_pid == pid {
-            #[cfg(debug_assertions)]
-            debug!("使用缓存tid_list");
             return &self.tid_info.tid_list;
         }
         self.tid_info.tid_list_pid = pid;

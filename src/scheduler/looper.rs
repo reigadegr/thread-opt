@@ -17,7 +17,7 @@ pub struct Looper {
 impl Looper {
     pub fn new(activity_utils: ActivityUtils) -> Self {
         Self {
-            pid: 0,
+            pid: -1,
             global_package: CompactString::new(""),
             activity_utils,
         }
