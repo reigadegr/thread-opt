@@ -2,7 +2,7 @@ mod common;
 pub mod policy_party;
 pub mod policy_top2;
 use crate::{
-    cpu_common::process_monitor::get_high_usage_tids,
+    cpu_common::process_monitor::get_top2_tids,
     policy::{pkg_cfg::StartArgs, usage::get_thread_tids},
 };
 use common::execute_policy;
@@ -37,7 +37,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
             .tid_utils
             .get_task_map(self.args.pid);
         let prefix_tids = get_thread_tids(task_map, comm_prefix);
-        let (tid1, tid2) = get_high_usage_tids(&prefix_tids);
+        let (tid1, tid2) = get_top2_tids(&prefix_tids);
         (tid1, tid2)
     }
 
