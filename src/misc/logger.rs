@@ -1,5 +1,6 @@
 // From shadow3aaa fas-rs
-use tklog::{LEVEL, LOG, info};
+use log::info;
+use tklog::{LEVEL, LOG};
 
 pub fn init_log() {
     LOG.set_console(true)
