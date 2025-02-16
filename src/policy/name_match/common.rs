@@ -5,6 +5,8 @@ use crate::{
         bind_tid_to_top,
     },
 };
+extern crate alloc;
+use alloc::vec::Vec;
 use hashbrown::HashMap;
 use libc::pid_t;
 #[cfg(debug_assertions)]

@@ -5,6 +5,8 @@ use crate::{
         bind_tid_to_only7,
     },
 };
+extern crate alloc;
+use alloc::vec::Vec;
 
 use hashbrown::HashMap;
 use libc::pid_t;

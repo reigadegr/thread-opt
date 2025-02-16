@@ -11,6 +11,8 @@ use libc::pid_t;
 use log::debug;
 #[cfg(debug_assertions)]
 use minstant::Instant;
+extern crate alloc;
+use alloc::vec::Vec;
 
 // 动态生成 CmdType 枚举
 pub enum CmdType {

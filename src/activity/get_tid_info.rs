@@ -6,6 +6,8 @@ use hashbrown::HashMap;
 use libc::pid_t;
 use minstant::Instant;
 use std::{fs, path::Path};
+extern crate alloc;
+use alloc::vec::Vec;
 
 #[derive(Default)]
 pub struct TidInfo {
