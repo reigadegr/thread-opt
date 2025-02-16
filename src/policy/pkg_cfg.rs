@@ -1,9 +1,7 @@
 use super::{
     name_match::policies::{policy_ue, policy_unity},
-    usage::{
-        usage_top1::policies::{policy_cocos, policy_codm, policy_second, policy_top1, policy_ue5},
-        usage_top2::{policy_party, policy_top2},
-    },
+    usage_top1::policies::{policy_cocos, policy_codm, policy_second, policy_top1, policy_ue5},
+    usage_top2::{policy_party, policy_top2},
 };
 use crate::activity::ActivityUtils;
 use libc::pid_t;

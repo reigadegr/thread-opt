@@ -1,10 +1,9 @@
 mod common;
 pub mod policy_party;
 pub mod policy_top2;
-use crate::{
-    cpu_common::process_monitor::get_top2_tids,
-    policy::{pkg_cfg::StartArgs, usage::get_thread_tids},
-};
+use super::get_thread_tids;
+use crate::{cpu_common::process_monitor::get_top2_tids, policy::pkg_cfg::StartArgs};
+
 use common::execute_policy;
 use libc::pid_t;
 use likely_stable::unlikely;

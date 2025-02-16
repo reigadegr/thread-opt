@@ -1,9 +1,7 @@
 pub mod macro_common;
 pub mod policies;
-use crate::{
-    cpu_common::process_monitor::get_top1_tid,
-    policy::{pkg_cfg::StartArgs, usage::get_thread_tids},
-};
+use super::get_thread_tids;
+use crate::{cpu_common::process_monitor::get_top1_tid, policy::pkg_cfg::StartArgs};
 use libc::pid_t;
 use likely_stable::unlikely;
 #[cfg(debug_assertions)]
