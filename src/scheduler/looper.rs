@@ -7,7 +7,6 @@ use compact_str::CompactString;
 use core::time::Duration;
 use libc::pid_t;
 use log::info;
-use minstant::Instant;
 
 pub struct Looper {
     pid: pid_t,

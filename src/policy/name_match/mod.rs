@@ -3,10 +3,10 @@ pub mod policies;
 
 use crate::policy::pkg_cfg::StartArgs;
 use common::Policy;
-use core::time::Duration;
 use likely_stable::unlikely;
 #[cfg(debug_assertions)]
 use log::debug;
+#[cfg(debug_assertions)]
 use minstant::Instant;
 
 struct StartTask<'b, 'a: 'b> {

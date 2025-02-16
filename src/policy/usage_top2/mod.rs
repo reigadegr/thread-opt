@@ -10,7 +10,6 @@ use libc::pid_t;
 use likely_stable::unlikely;
 #[cfg(debug_assertions)]
 use log::debug;
-use minstant::Instant;
 
 struct StartTask<'b, 'a: 'b> {
     args: &'b mut StartArgs<'a>,

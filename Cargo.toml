@@ -12,10 +12,10 @@ repository = "https://github.com/reigadegr/thread-opt"
 name = "thread-opt"
 path = "src/main.rs"
 
-[lib]
-name = "thread_opt"
-path = "src/lib.rs"
-crate-type = ["staticlib", "cdylib"]
+# [lib]
+# name = "thread_opt"
+# path = "src/lib.rs"
+# crate-type = ["staticlib", "cdylib"]
 
 [dependencies]
 anyhow = "1.0.95"

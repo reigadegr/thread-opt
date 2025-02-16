@@ -5,11 +5,11 @@ use crate::{
         bind_tid_to_top,
     },
 };
-use core::time::Duration;
 use hashbrown::HashMap;
 use libc::pid_t;
 #[cfg(debug_assertions)]
 use log::debug;
+#[cfg(debug_assertions)]
 use minstant::Instant;
 
 // 定义线程类型
