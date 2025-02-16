@@ -1,7 +1,7 @@
 #![deny(clippy::pedantic)]
 #![warn(clippy::nursery)]
 #![allow(clippy::non_std_lazy_statics)]
-// #![feature(alloc)]
+
 mod activity;
 mod cgroup;
 mod cpu_common;

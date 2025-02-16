@@ -10,7 +10,7 @@ pub fn read_file(file: &Path) -> Result<CompactString> {
     Ok(CompactString::new(s.trim()))
 }
 
-pub fn read_to_byte(file: &Path) -> Result<Vec<u8>> {
+pub fn read_to_byte(file: &str) -> Result<Vec<u8>> {
     let s: Vec<u8> = std::fs::read(file)?;
     // s.pop();
     Ok(s)

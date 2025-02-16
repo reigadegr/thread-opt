@@ -4,6 +4,8 @@ use anyhow::Result;
 use likely_stable::unlikely;
 use log::info;
 use logger::{init_log, log_metainfo};
+extern crate alloc;
+use alloc::ffi::CString;
 
 pub fn init_misc() {
     working_in_background();
@@ -29,7 +31,7 @@ fn set_main_thread_name(name: &str) -> Result<()> {
         name
     };
 
-    let thread_name = std::ffi::CString::new(truncated_name)?;
+    let thread_name = CString::new(truncated_name)?;
     unsafe {
         libc::pthread_setname_np(libc::pthread_self(), thread_name.as_ptr());
     }

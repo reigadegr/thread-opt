@@ -3,10 +3,11 @@ use log::info;
 use tklog::{LEVEL, LOG};
 
 pub fn init_log() {
-    LOG.set_console(true)
-        .set_level(LEVEL::Debug)
-        .set_formatter("[{time}] {level}: {message}\n")
-        .uselog();
+    let logger = LOG;
+    logger.set_console(true);
+    logger.set_level(LEVEL::Debug);
+    logger.set_formatter("[{time}] {level}: {message}\n");
+    logger.uselog();
 }
 
 pub fn log_metainfo() {

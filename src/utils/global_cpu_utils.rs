@@ -2,8 +2,8 @@ use super::global_cpu_set::{
     get_background_cpu_set, get_middle_background_cpu_set, get_middle_cpu_set, get_only6_cpu_set,
     get_only7_cpu_set, get_top_cpu_set,
 };
+use core::mem::size_of;
 use libc::{cpu_set_t, pid_t, sched_setaffinity};
-use std::mem::size_of;
 
 // 宏：生成单个线程绑定函数
 macro_rules! bind_thread {
