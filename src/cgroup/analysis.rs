@@ -6,7 +6,7 @@ use likely_stable::unlikely;
 use log::info;
 use once_cell::sync::Lazy;
 extern crate alloc;
-use alloc::vec::Vec;
+use alloc::{boxed::Box, vec::Vec};
 
 pub static TOP_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| analysis_cgroup_new("7").unwrap());
 

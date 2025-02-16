@@ -55,7 +55,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
 
     fn start_task(&mut self, comm_prefix1: &[u8], comm_prefix2: Option<&[u8]>) {
         loop {
-            std::thread::sleep(Duration::from_millis(2000));
+            spin_sleep::sleep(Duration::from_millis(2000));
 
             let pid = self.args.activity_utils.top_app_utils.get_pid();
             if unlikely(pid != self.args.pid) {

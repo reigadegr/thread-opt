@@ -61,7 +61,7 @@ impl TopAppUtils {
                 Ok(dump) => break dump,
                 Err(e) => {
                     info!("Failed to dump windows: {}, retrying", e);
-                    std::thread::sleep(Duration::from_millis(100));
+                    spin_sleep::sleep(Duration::from_millis(500));
                 }
             }
         };

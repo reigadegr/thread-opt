@@ -59,7 +59,7 @@ impl Looper {
 
     pub fn enter_loop(&mut self) {
         'outer: loop {
-            std::thread::sleep(Duration::from_millis(1000));
+            spin_sleep::sleep(Duration::from_millis(1000));
             {
                 let pid = self.activity_utils.top_app_utils.get_pid();
                 if self.pid == pid {

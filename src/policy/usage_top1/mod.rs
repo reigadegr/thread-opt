@@ -50,7 +50,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
     }
 
     fn initialize_task(&mut self, comm_prefix: &[u8]) {
-        std::thread::sleep(Duration::from_millis(1000));
+        spin_sleep::sleep(Duration::from_millis(1000));
         let tid1 = self.update_tids(comm_prefix);
         self.change_to_finish_state(tid1);
     }
@@ -63,7 +63,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
                 return;
             }
             self.after_usage_task(cmd_type);
-            std::thread::sleep(Duration::from_millis(2000));
+            spin_sleep::sleep(Duration::from_millis(2000));
         }
     }
 }

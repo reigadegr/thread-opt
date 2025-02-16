@@ -1,7 +1,7 @@
 use atoi::atoi;
 use libc::pid_t;
 extern crate alloc;
-use alloc::vec::Vec;
+use alloc::{format, vec::Vec};
 
 #[derive(Debug, Clone)]
 pub struct UsageTracker {
