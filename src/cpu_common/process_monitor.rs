@@ -31,15 +31,13 @@ pub fn get_top2_tids(target_tids: &[pid_t]) -> (pid_t, pid_t) {
         .map(|&tid| (tid, UsageTracker::new(tid).try_calculate()))
         .collect();
 
-    let (tid1, tid2) = find_top2_tids(&all_trackers);
-    (tid1, tid2)
+    find_top2_tids(&all_trackers)
 }
 
 fn find_top2_tids(trackers: &HashMap<pid_t, u64>) -> (pid_t, pid_t) {
-    let mut tid1 = -1;
-    let mut tid2 = -1;
-    let mut usage1: u64 = 0;
-    let mut usage2: u64 = 0;
+    let (mut tid1, mut tid2) = (-1, -1);
+
+    let (mut usage1, mut usage2) = (0u64, 0u64);
 
     for (&tid, &cputime) in trackers {
         if cputime > usage1 {
