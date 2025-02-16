@@ -11,7 +11,7 @@ pub fn init_misc() {
     if unlikely(rs.is_err()) {
         info!("Cannot rename the main thread name.");
     }
-    let _ = init_log();
+    init_log();
     log_metainfo();
     print_misc();
     print_group_core();

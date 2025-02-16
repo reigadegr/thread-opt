@@ -1,31 +1,11 @@
 // From shadow3aaa fas-rs
-use anyhow::Result;
-use flexi_logger::{DeferredNow, LogSpecification, Logger, Record};
-use log::info;
-use std::io::Write;
+use tklog::{LEVEL, LOG, info};
 
-pub fn init_log() -> Result<()> {
-    let logger_spec = if cfg!(debug_assertions) {
-        LogSpecification::debug()
-    } else {
-        LogSpecification::info()
-    };
-
-    Logger::with(logger_spec)
-        .log_to_stdout()
-        .format(log_format)
-        .start()?;
-
-    Ok(())
-}
-
-fn log_format(
-    write: &mut dyn Write,
-    now: &mut DeferredNow,
-    record: &Record<'_>,
-) -> Result<(), std::io::Error> {
-    let time = now.format("%Y-%m-%d %H:%M:%S");
-    write!(write, "[{time}] {}: {}", record.level(), record.args())
+pub fn init_log() {
+    LOG.set_console(true)
+        .set_level(LEVEL::Trace)
+        .set_formatter("[{time}] {level}: {message}\n")
+        .uselog();
 }
 
 pub fn log_metainfo() {
