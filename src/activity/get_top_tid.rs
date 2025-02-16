@@ -38,7 +38,7 @@ impl TopAppUtils {
         let dumper = loop {
             match Dumpsys::new("activity") {
                 Some(d) => break d,
-                None => std::thread::sleep(Duration::from_millis(100)),
+                None => spin_sleep::sleep(Duration::from_millis(500)),
             }
         };
         Self {

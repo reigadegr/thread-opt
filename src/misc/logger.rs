@@ -2,7 +2,8 @@
 use anyhow::Result;
 use flexi_logger::{DeferredNow, LogSpecification, Logger, Record};
 use log::info;
-use std::io::{self, prelude::*};
+use std::io::Write;
+
 pub fn init_log() -> Result<()> {
     let logger_spec = if cfg!(debug_assertions) {
         LogSpecification::debug()
@@ -22,7 +23,7 @@ fn log_format(
     write: &mut dyn Write,
     now: &mut DeferredNow,
     record: &Record<'_>,
-) -> Result<(), io::Error> {
+) -> Result<(), std::io::Error> {
     let time = now.format("%Y-%m-%d %H:%M:%S");
     write!(write, "[{time}] {}: {}", record.level(), record.args())
 }
