@@ -1,8 +1,9 @@
+use core::time::Duration;
 use dumpsys_rs::Dumpsys;
 use libc::pid_t;
 use likely_stable::unlikely;
 use log::info;
-use std::time::{Duration, Instant};
+use minstant::Instant;
 
 #[derive(Default)]
 pub struct TopPidInfo {

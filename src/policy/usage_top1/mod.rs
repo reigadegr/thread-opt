@@ -2,12 +2,12 @@ pub mod macro_common;
 pub mod policies;
 use super::get_thread_tids;
 use crate::{cpu_common::process_monitor::get_top1_tid, policy::pkg_cfg::StartArgs};
+use core::time::Duration;
 use libc::pid_t;
 use likely_stable::unlikely;
 #[cfg(debug_assertions)]
 use log::debug;
 use macro_common::{CmdType, Policy};
-use std::time::Duration;
 
 struct StartTask<'b, 'a: 'b> {
     policy: &'b Policy<'b>,

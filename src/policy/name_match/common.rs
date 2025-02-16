@@ -5,10 +5,12 @@ use crate::{
         bind_tid_to_top,
     },
 };
+use core::time::Duration;
 use hashbrown::HashMap;
 use libc::pid_t;
 #[cfg(debug_assertions)]
 use log::debug;
+use minstant::Instant;
 
 // 定义线程类型
 enum CmdType {
@@ -64,7 +66,7 @@ impl<'a> Policy<'a> {
 
     pub fn execute_policy(&self, task_map: &HashMap<pid_t, Vec<u8>>) {
         #[cfg(debug_assertions)]
-        let start = std::time::Instant::now();
+        let start = Instant::now();
         for (&tid, comm) in task_map {
             let cmd_type = self.get_cmd_type(comm);
             execute_task(&cmd_type, tid);

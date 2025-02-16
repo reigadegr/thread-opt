@@ -3,9 +3,11 @@ pub mod policies;
 
 use crate::policy::pkg_cfg::StartArgs;
 use common::Policy;
+use core::time::Duration;
 use likely_stable::unlikely;
 #[cfg(debug_assertions)]
 use log::debug;
+use minstant::Instant;
 
 struct StartTask<'b, 'a: 'b> {
     policy: &'b Policy<'b>,
@@ -28,7 +30,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
                 return;
             }
             #[cfg(debug_assertions)]
-            let start = std::time::Instant::now();
+            let start = Instant::now();
             let task_map = self.args.activity_utils.tid_utils.get_task_map(pid);
             common::Policy::new(self.policy).execute_policy(task_map);
             #[cfg(debug_assertions)]

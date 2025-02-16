@@ -5,11 +5,12 @@ use super::get_thread_tids;
 use crate::{cpu_common::process_monitor::get_top2_tids, policy::pkg_cfg::StartArgs};
 
 use common::execute_policy;
+use core::time::Duration;
 use libc::pid_t;
 use likely_stable::unlikely;
 #[cfg(debug_assertions)]
 use log::debug;
-use std::time::Duration;
+use minstant::Instant;
 
 struct StartTask<'b, 'a: 'b> {
     args: &'b mut StartArgs<'a>,

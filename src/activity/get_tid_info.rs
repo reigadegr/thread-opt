@@ -1,13 +1,11 @@
 use crate::utils::node_reader::read_to_byte;
 use anyhow::Result;
 use compact_str::CompactString;
+use core::time::Duration;
 use hashbrown::HashMap;
 use libc::pid_t;
-use std::{
-    fs,
-    path::Path,
-    time::{Duration, Instant},
-};
+use minstant::Instant;
+use std::{fs, path::Path};
 
 #[derive(Default)]
 pub struct TidInfo {

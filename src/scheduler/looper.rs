@@ -4,9 +4,10 @@ use crate::{
     utils::global_cpu_utils::bind_list_to_background,
 };
 use compact_str::CompactString;
+use core::time::Duration;
 use libc::pid_t;
 use log::info;
-use std::time::Duration;
+use minstant::Instant;
 
 pub struct Looper {
     pid: pid_t,
