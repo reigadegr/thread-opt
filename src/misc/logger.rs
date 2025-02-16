@@ -4,7 +4,7 @@ use tklog::{LEVEL, LOG};
 
 pub fn init_log() {
     LOG.set_console(true)
-        .set_level(LEVEL::Trace)
+        .set_level(LEVEL::Debug)
         .set_formatter("[{time}] {level}: {message}\n")
         .uselog();
 }
