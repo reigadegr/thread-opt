@@ -8,6 +8,15 @@ license = "GPL-3.0"
 readme = "README.md"
 repository = "https://github.com/reigadegr/thread-opt"
 
+[[bin]]
+name = "thread-opt"
+path = "src/main.rs"
+
+[lib]
+name = "thread_opt"
+path = "src/lib.rs"
+crate-type = ["staticlib", "cdylib"]
+
 [dependencies]
 anyhow = "1.0.95"
 atoi = "2.0.0"
