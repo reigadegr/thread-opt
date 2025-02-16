@@ -4,7 +4,6 @@ use compact_str::CompactString;
 use core::time::Duration;
 use hashbrown::HashMap;
 use libc::pid_t;
-use minivec::MiniVec as Vec;
 use minstant::Instant;
 use std::{fs, path::Path};
 

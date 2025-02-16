@@ -9,7 +9,6 @@ use hashbrown::HashMap;
 use libc::pid_t;
 #[cfg(debug_assertions)]
 use log::debug;
-use minivec::MiniVec as Vec;
 #[cfg(debug_assertions)]
 use minstant::Instant;
 

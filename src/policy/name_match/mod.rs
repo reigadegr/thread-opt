@@ -6,7 +6,6 @@ use common::Policy;
 use likely_stable::unlikely;
 #[cfg(debug_assertions)]
 use log::debug;
-
 #[cfg(debug_assertions)]
 use minstant::Instant;
 
