@@ -1,5 +1,2 @@
-use crate::policy::pkg_cfg::StartArgs;
-
-pub fn start_task(args: &mut StartArgs<'_>) {
-    super::StartTask::new(args).start_task(b"Thread-", None);
-}
+use super::top2_macro_init;
+top2_macro_init!(b"Thread-", None);

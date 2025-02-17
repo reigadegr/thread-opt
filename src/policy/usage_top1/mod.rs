@@ -1,15 +1,15 @@
-pub mod macro_common;
+pub mod common;
 pub mod policies;
 use super::get_thread_tids;
 use crate::{
     cpu_common::process_monitor::get_top1_tid, policy::pkg_cfg::StartArgs,
     utils::sleep::sleep_millis,
 };
+use common::{CmdType, Policy};
 use libc::pid_t;
 use likely_stable::unlikely;
 #[cfg(debug_assertions)]
 use log::debug;
-use macro_common::{CmdType, Policy};
 
 struct StartTask<'b, 'a: 'b> {
     policy: &'b Policy<'b>,
@@ -67,7 +67,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
 
 macro_rules! top1_macro_init {
     ($CommPrefix:expr,$initial_cmd:ident) => {
-        use super::super::macro_common::{CmdType, Policy};
+        use super::super::common::{CmdType, Policy};
         use crate::policy::pkg_cfg::StartArgs;
         pub fn start_task(args: &mut StartArgs<'_>) {
             let policy = Policy {

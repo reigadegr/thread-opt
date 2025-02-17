@@ -68,3 +68,14 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         }
     }
 }
+
+macro_rules! top2_macro_init {
+    ($CommPrefix:expr,$CommPrefix2:expr) => {
+        use crate::policy::pkg_cfg::StartArgs;
+        pub fn start_task(args: &mut StartArgs<'_>) {
+            super::StartTask::new(args).start_task($CommPrefix, $CommPrefix2);
+        }
+    };
+}
+
+use top2_macro_init;
