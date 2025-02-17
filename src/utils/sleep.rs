@@ -1,4 +1,6 @@
 use core::time::Duration;
-pub fn sleep_millis(micro_seconds: u64) {
-    std::thread::sleep(Duration::from_millis(micro_seconds));
+use std::thread::sleep;
+
+pub fn sleep_millis(millis_second: u64) {
+    sleep(Duration::from_millis(millis_second));
 }

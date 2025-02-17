@@ -35,13 +35,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         Policy::new(self.policy).execute_policy(task_map, self.usage_top1, cmd_type);
     }
 
-    fn change_to_finish_state(&mut self, tid1: pid_t) {
-        self.usage_top1 = tid1;
-        #[cfg(debug_assertions)]
-        debug!("计算后最终结果为:{0}\n", self.usage_top1);
-    }
-
-    fn update_tids(&mut self, comm_prefix: &[u8]) -> pid_t {
+    fn get_new_tid(&mut self, comm_prefix: &[u8]) -> pid_t {
         let task_map = self
             .args
             .activity_utils
@@ -51,21 +45,22 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         get_top1_tid(&unname_tids)
     }
 
-    fn initialize_task(&mut self, comm_prefix: &[u8]) {
-        sleep_millis(1000);
-        let tid1 = self.update_tids(comm_prefix);
-        self.change_to_finish_state(tid1);
+    fn set_new_tid(&mut self, comm_prefix: &[u8]) {
+        let tid1 = self.get_new_tid(comm_prefix);
+        self.usage_top1 = tid1;
+        #[cfg(debug_assertions)]
+        debug!("计算后最终结果为:{0}\n", self.usage_top1);
     }
 
     fn start_task(&mut self, comm_prefix: &[u8], cmd_type: &CmdType) {
-        self.initialize_task(comm_prefix);
         loop {
+            sleep_millis(2000);
             let pid = self.args.activity_utils.top_app_utils.get_pid();
             if unlikely(pid != self.args.pid) {
                 return;
             }
+            self.set_new_tid(comm_prefix);
             self.after_usage_task(cmd_type);
-            sleep_millis(2000);
         }
     }
 }
