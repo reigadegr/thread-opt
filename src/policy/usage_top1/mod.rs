@@ -1,13 +1,15 @@
-pub mod macro_common;
+pub mod common;
 pub mod policies;
-use crate::cpu_common::process_monitor::get_high_usage_tids;
-use crate::policy::{pkg_cfg::StartArgs, usage::get_thread_tids};
+use super::get_thread_tids;
+use crate::{
+    cpu_common::process_monitor::get_top1_tid, policy::pkg_cfg::StartArgs,
+    utils::sleep::sleep_millis,
+};
+use common::{CmdType, Policy};
 use libc::pid_t;
 use likely_stable::unlikely;
 #[cfg(debug_assertions)]
 use log::debug;
-use macro_common::{CmdType, Policy};
-use std::time::Duration;
 
 struct StartTask<'b, 'a: 'b> {
     policy: &'b Policy<'b>,
@@ -33,45 +35,39 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         Policy::new(self.policy).execute_policy(task_map, self.usage_top1, cmd_type);
     }
 
-    fn change_to_finish_state(&mut self, tid1: pid_t) {
-        self.usage_top1 = tid1;
-        #[cfg(debug_assertions)]
-        debug!("计算后最终结果为:{0}\n", self.usage_top1);
-    }
-
-    fn update_tids(&mut self, comm_prefix: &[u8]) -> pid_t {
+    fn get_new_tid(&mut self, comm_prefix: &[u8]) -> pid_t {
         let task_map = self
             .args
             .activity_utils
             .tid_utils
             .get_task_map(self.args.pid);
         let unname_tids = get_thread_tids(task_map, comm_prefix);
-        let (tid1, _) = get_high_usage_tids(&unname_tids);
-        tid1
+        get_top1_tid(&unname_tids)
     }
 
-    fn initialize_task(&mut self, comm_prefix: &[u8]) {
-        std::thread::sleep(Duration::from_millis(1000));
-        let tid1 = self.update_tids(comm_prefix);
-        self.change_to_finish_state(tid1);
+    fn set_new_tid(&mut self, comm_prefix: &[u8]) {
+        let tid1 = self.get_new_tid(comm_prefix);
+        self.usage_top1 = tid1;
+        #[cfg(debug_assertions)]
+        debug!("计算后最终结果为:{0}\n", self.usage_top1);
     }
 
     fn start_task(&mut self, comm_prefix: &[u8], cmd_type: &CmdType) {
-        self.initialize_task(comm_prefix);
         loop {
-            let pid = self.args.activity_utils.top_app_utils.get_pid();
+            sleep_millis(2000);
+            let pid = self.args.activity_utils.top_app_utils.get_top_pid();
             if unlikely(pid != self.args.pid) {
                 return;
             }
+            self.set_new_tid(comm_prefix);
             self.after_usage_task(cmd_type);
-            std::thread::sleep(Duration::from_millis(2000));
         }
     }
 }
 
 macro_rules! top1_macro_init {
     ($CommPrefix:expr,$initial_cmd:ident) => {
-        use super::super::macro_common::{CmdType, Policy};
+        use super::super::common::{CmdType, Policy};
         use crate::policy::pkg_cfg::StartArgs;
         pub fn start_task(args: &mut StartArgs<'_>) {
             let policy = Policy {

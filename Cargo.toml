@@ -8,17 +8,33 @@ license = "GPL-3.0"
 readme = "README.md"
 repository = "https://github.com/reigadegr/thread-opt"
 
+[features]
+default = ["std"]
+std = []
+net = []
+
+[[bin]]
+name = "thread-opt"
+path = "src/main.rs"
+
+# [lib]
+# name = "thread_opt"
+# path = "src/lib.rs"
+# crate-type = ["staticlib", "cdylib"]
+
 [dependencies]
 anyhow = "1.0.95"
 atoi = "2.0.0"
 compact_str = "0.8.1"
 dumpsys-rs = { git = "https://github.com/reigadegr/dumpsys-rs" }
-flexi_logger = "0.29.8"
 hashbrown = "0.15.2"
+inotify = { version = "0.11.0", default-features = false }
 libc = "0.2.169"
 likely_stable = "0.1.3"
 log = "0.4.25"
+minstant = "0.1.7"
 once_cell = "1.20.2"
+tklog = "0.2.9"
 
 [build-dependencies]
 anyhow = "1.0.95"

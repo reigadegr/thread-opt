@@ -9,3 +9,4 @@ Cargo.lock
 src/*.sh
 **/*.txt
 .idea
+*patch

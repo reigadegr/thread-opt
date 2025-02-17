@@ -1,25 +1,24 @@
 use crate::{
     activity::{ActivityUtils, get_tid_info::get_process_name},
     policy::pkg_cfg::{PACKAGE_CONFIGS, StartArgs},
-    utils::global_cpu_utils::bind_list_to_background,
+    utils::{global_cpu_utils::bind_list_to_background, sleep::sleep_millis},
 };
 use compact_str::CompactString;
 use libc::pid_t;
 use log::info;
-use std::time::Duration;
 
 pub struct Looper {
-    pid: pid_t,
-    global_package: CompactString,
     activity_utils: ActivityUtils,
+    global_package: CompactString,
+    pid: pid_t,
 }
 
 impl Looper {
     pub fn new(activity_utils: ActivityUtils) -> Self {
         Self {
-            pid: -1,
-            global_package: CompactString::new(""),
             activity_utils,
+            global_package: CompactString::new(""),
+            pid: -1,
         }
     }
 
@@ -59,9 +58,9 @@ impl Looper {
 
     pub fn enter_loop(&mut self) {
         'outer: loop {
-            std::thread::sleep(Duration::from_millis(1000));
+            sleep_millis(1000);
             {
-                let pid = self.activity_utils.top_app_utils.get_pid();
+                let pid = self.activity_utils.top_app_utils.get_top_pid();
                 if self.pid == pid {
                     continue 'outer;
                 }

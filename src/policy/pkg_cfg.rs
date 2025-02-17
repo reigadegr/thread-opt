@@ -1,9 +1,7 @@
 use super::{
     name_match::policies::{policy_ue, policy_unity},
-    usage::{
-        usage_top1::policies::{policy_cocos, policy_second, policy_top1, policy_ue5},
-        usage_top2::{policy_party, policy_top2},
-    },
+    usage_top1::policies::{policy_cocos, policy_codm, policy_second, policy_top1, policy_ue5},
+    usage_top2::{policy_party, policy_top2},
 };
 use crate::activity::ActivityUtils;
 use libc::pid_t;
@@ -41,6 +39,9 @@ const COCOS: [&str; 1] = ["com.bf.sgs.hdexp"];
 // 需要取一个cputime第二大的线程，其线程前缀名为"Thread-"
 const LOLM: [&str; 1] = ["com.tencent.lolm"];
 
+// codm
+const CODM: [&str; 1] = ["com.tencent.tmgp.cod"];
+
 // 对于需要取两个重负载线程的游戏，其线程前缀名均为"Thread-"，目前策略是燕云十六声特调
 const USAGE_T2: [&str; 1] = ["com.netease.yyslscn"];
 
@@ -54,7 +55,7 @@ pub struct StartArgs<'a> {
 
 type ConfigTuple<'a> = (&'a [&'a str], fn(&mut StartArgs));
 
-pub static PACKAGE_CONFIGS: Lazy<[ConfigTuple; 8]> = Lazy::new(|| {
+pub static PACKAGE_CONFIGS: Lazy<[ConfigTuple; 9]> = Lazy::new(|| {
     [
         (&UE_USAGE_T1[..], policy_top1::start_task),
         (&USAGE_T2[..], policy_top2::start_task),
@@ -64,5 +65,6 @@ pub static PACKAGE_CONFIGS: Lazy<[ConfigTuple; 8]> = Lazy::new(|| {
         (&UE5[..], policy_ue5::start_task),
         (&COCOS[..], policy_cocos::start_task),
         (&LOLM[..], policy_second::start_task),
+        (&CODM[..], policy_codm::start_task),
     ]
 });

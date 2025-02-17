@@ -9,6 +9,10 @@ use hashbrown::HashMap;
 use libc::pid_t;
 #[cfg(debug_assertions)]
 use log::debug;
+#[cfg(debug_assertions)]
+use minstant::Instant;
+extern crate alloc;
+use alloc::vec::Vec;
 
 // 动态生成 CmdType 枚举
 pub enum CmdType {
@@ -71,7 +75,7 @@ impl<'a> Policy<'a> {
         cmd_type: &CmdType,
     ) {
         #[cfg(debug_assertions)]
-        let start = std::time::Instant::now();
+        let start = Instant::now();
 
         execute_task(cmd_type, first);
 

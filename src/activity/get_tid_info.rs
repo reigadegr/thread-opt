@@ -1,13 +1,14 @@
 use crate::utils::node_reader::read_to_byte;
 use anyhow::Result;
 use compact_str::CompactString;
+use core::time::Duration;
 use hashbrown::HashMap;
 use libc::pid_t;
-use std::{
-    fs,
-    path::Path,
-    time::{Duration, Instant},
-};
+use minstant::Instant;
+use std::{fs, path::Path};
+extern crate alloc;
+use alloc::{format, vec::Vec};
+// use heapless::Vec;
 
 #[derive(Default)]
 pub struct TidInfo {
@@ -73,7 +74,7 @@ impl TidUtils {
         let mut task_map: HashMap<pid_t, Vec<u8>> = HashMap::new();
         for tid in tid_list {
             let comm_path = format!("/proc/{tid}/comm");
-            let Ok(comm) = read_to_byte(Path::new(&comm_path)) else {
+            let Ok(comm) = read_to_byte(&comm_path) else {
                 return &self.tid_info;
             };
             task_map.insert(tid, comm);

@@ -1,16 +1,18 @@
 mod common;
 pub mod policy_party;
 pub mod policy_top2;
+use super::get_thread_tids;
 use crate::{
-    cpu_common::process_monitor::get_high_usage_tids,
-    policy::{pkg_cfg::StartArgs, usage::get_thread_tids},
+    cpu_common::process_monitor::{get_top1_tid, get_top2_tids},
+    policy::pkg_cfg::StartArgs,
+    utils::sleep::sleep_millis,
 };
+
 use common::execute_policy;
 use libc::pid_t;
 use likely_stable::unlikely;
 #[cfg(debug_assertions)]
 use log::debug;
-use std::time::Duration;
 
 struct StartTask<'b, 'a: 'b> {
     args: &'b mut StartArgs<'a>,
@@ -30,25 +32,28 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         execute_policy(task_map, tid1, tid2);
     }
 
-    fn retrieve_tids(&mut self, comm_prefix: &[u8]) -> (pid_t, pid_t) {
+    fn audit_tids(&mut self, comm_prefix1: &[u8], comm_prefix2: Option<&[u8]>) {
         let task_map = self
             .args
             .activity_utils
             .tid_utils
             .get_task_map(self.args.pid);
-        let prefix_tids = get_thread_tids(task_map, comm_prefix);
-        let (tid1, tid2) = get_high_usage_tids(&prefix_tids);
-        (tid1, tid2)
-    }
 
-    fn audit_tids(&mut self, comm_prefix1: &[u8], comm_prefix2: Option<&[u8]>) {
-        let (tid1, mut tid2) = self.retrieve_tids(comm_prefix1);
+        let prefix_tids = get_thread_tids(task_map, comm_prefix1);
 
         if let Some(prefix2) = comm_prefix2 {
-            let (new_tid1, _) = self.retrieve_tids(prefix2);
-            tid2 = new_tid1;
+            let tid1 = get_top1_tid(&prefix_tids);
+
+            let prefix_tids = get_thread_tids(task_map, prefix2);
+            let tid2 = get_top1_tid(&prefix_tids);
+
+            #[cfg(debug_assertions)]
+            debug!("负载第一高:{tid1}\n第二高:{tid2}");
+            self.bind_tids(tid1, tid2);
+            return;
         }
 
+        let (tid1, tid2) = get_top2_tids(&prefix_tids);
         #[cfg(debug_assertions)]
         debug!("负载第一高:{tid1}\n第二高:{tid2}");
         self.bind_tids(tid1, tid2);
@@ -56,9 +61,9 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
 
     fn start_task(&mut self, comm_prefix1: &[u8], comm_prefix2: Option<&[u8]>) {
         loop {
-            std::thread::sleep(Duration::from_millis(2000));
+            sleep_millis(2000);
 
-            let pid = self.args.activity_utils.top_app_utils.get_pid();
+            let pid = self.args.activity_utils.top_app_utils.get_top_pid();
             if unlikely(pid != self.args.pid) {
                 return;
             }
@@ -67,3 +72,14 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         }
     }
 }
+
+macro_rules! top2_macro_init {
+    ($CommPrefix:expr,$CommPrefix2:expr) => {
+        use crate::policy::pkg_cfg::StartArgs;
+        pub fn start_task(args: &mut StartArgs<'_>) {
+            super::StartTask::new(args).start_task($CommPrefix, $CommPrefix2);
+        }
+    };
+}
+
+use top2_macro_init;

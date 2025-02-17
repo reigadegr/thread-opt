@@ -5,11 +5,15 @@ use crate::{
         bind_tid_to_only7,
     },
 };
+extern crate alloc;
+use alloc::vec::Vec;
 
 use hashbrown::HashMap;
 use libc::pid_t;
 #[cfg(debug_assertions)]
 use log::debug;
+#[cfg(debug_assertions)]
+use minstant::Instant;
 
 // 定义线程类型
 enum CmdType {
@@ -32,7 +36,7 @@ pub fn execute_policy(task_map: &HashMap<pid_t, Vec<u8>>, first: pid_t, second: 
     let middle_group = get_middle_group();
 
     #[cfg(debug_assertions)]
-    let start = std::time::Instant::now();
+    let start = Instant::now();
     if background_group == middle_group {
         bind_list_to_middle(&filtered_keys);
     } else {

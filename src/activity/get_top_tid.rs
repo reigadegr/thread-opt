@@ -1,8 +1,8 @@
+use crate::utils::sleep::sleep_millis;
 use dumpsys_rs::Dumpsys;
+use inotify::{Inotify, WatchMask};
 use libc::pid_t;
-use likely_stable::unlikely;
 use log::info;
-use std::time::{Duration, Instant};
 
 #[derive(Default)]
 pub struct TopPidInfo {
@@ -11,10 +11,6 @@ pub struct TopPidInfo {
 
 impl TopPidInfo {
     pub fn new(dump: &str) -> Self {
-        if unlikely(!dump.contains(" TOP")) {
-            return Self::default();
-        }
-
         let dump: pid_t = dump
             .lines()
             .find(|l| l.contains(" TOP"))
@@ -28,44 +24,42 @@ impl TopPidInfo {
 
 pub struct TopAppUtils {
     dumper: Dumpsys,
-    activity_info: TopPidInfo,
-    last_refresh: Instant,
+    inotify: Inotify,
 }
 
 impl TopAppUtils {
     pub fn new() -> Self {
+        let inotify = Inotify::init().unwrap();
+        inotify
+            .watches()
+            .add("/dev/input", WatchMask::ACCESS)
+            .unwrap();
+
         let dumper = loop {
             match Dumpsys::new("activity") {
                 Some(d) => break d,
-                None => std::thread::sleep(Duration::from_millis(100)),
+                None => sleep_millis(500),
             }
         };
-        Self {
-            dumper,
-            activity_info: TopPidInfo::default(),
-            last_refresh: Instant::now(),
-        }
+        Self { dumper, inotify }
     }
 
-    pub fn get_pid(&mut self) -> pid_t {
-        self.set_top_app_pid_name().pid
+    pub fn get_top_pid(&mut self) -> pid_t {
+        self.set_top_pid().pid
     }
 
-    pub fn set_top_app_pid_name(&mut self) -> &TopPidInfo {
-        if self.last_refresh.elapsed() < Duration::from_millis(1000) {
-            return &self.activity_info;
-        }
+    pub fn set_top_pid(&mut self) -> TopPidInfo {
+        let mut buffer = [0; 1024];
+        self.inotify.read_events_blocking(&mut buffer).unwrap();
         let dump = loop {
             match self.dumper.dump(&["lru"]) {
                 Ok(dump) => break dump,
                 Err(e) => {
                     info!("Failed to dump windows: {}, retrying", e);
-                    std::thread::sleep(Duration::from_millis(100));
+                    sleep_millis(500);
                 }
             }
         };
-        self.activity_info = TopPidInfo::new(&dump);
-        self.last_refresh = Instant::now();
-        &self.activity_info
+        TopPidInfo::new(&dump)
     }
 }

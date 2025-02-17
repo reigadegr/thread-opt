@@ -1,11 +1,13 @@
 mod common;
 pub mod policies;
 
-use crate::policy::pkg_cfg::StartArgs;
+use crate::{policy::pkg_cfg::StartArgs, utils::sleep::sleep_millis};
 use common::Policy;
 use likely_stable::unlikely;
 #[cfg(debug_assertions)]
 use log::debug;
+#[cfg(debug_assertions)]
+use minstant::Instant;
 
 struct StartTask<'b, 'a: 'b> {
     policy: &'b Policy<'b>,
@@ -22,13 +24,13 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
 
     fn start_task(&mut self) {
         loop {
-            std::thread::sleep(std::time::Duration::from_millis(2000));
-            let pid = self.args.activity_utils.top_app_utils.get_pid();
+            sleep_millis(2000);
+            let pid = self.args.activity_utils.top_app_utils.get_top_pid();
             if unlikely(pid != self.args.pid) {
                 return;
             }
             #[cfg(debug_assertions)]
-            let start = std::time::Instant::now();
+            let start = Instant::now();
             let task_map = self.args.activity_utils.tid_utils.get_task_map(pid);
             common::Policy::new(self.policy).execute_policy(task_map);
             #[cfg(debug_assertions)]
