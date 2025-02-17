@@ -4,7 +4,6 @@ use tklog::{LEVEL, LOG};
 
 pub fn init_log() {
     let logger = LOG;
-    logger.set_console(true);
     logger.set_level(LEVEL::Debug);
     logger.set_formatter("[{time}] {level}: {message}\n");
     logger.uselog();

@@ -3,9 +3,8 @@ pub mod policies;
 use super::get_thread_tids;
 use crate::{
     cpu_common::process_monitor::get_top1_tid, policy::pkg_cfg::StartArgs,
-    utils::sleep::sleep_micro,
+    utils::sleep::sleep_millis,
 };
-use core::time::Duration;
 use libc::pid_t;
 use likely_stable::unlikely;
 #[cfg(debug_assertions)]
@@ -53,7 +52,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
     }
 
     fn initialize_task(&mut self, comm_prefix: &[u8]) {
-        sleep_micro(1_000_000);
+        sleep_millis(1000);
         let tid1 = self.update_tids(comm_prefix);
         self.change_to_finish_state(tid1);
     }
@@ -66,7 +65,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
                 return;
             }
             self.after_usage_task(cmd_type);
-            sleep_micro(2_000_000);
+            sleep_millis(2000);
         }
     }
 }
