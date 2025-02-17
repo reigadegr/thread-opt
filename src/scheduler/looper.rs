@@ -4,29 +4,20 @@ use crate::{
     utils::{global_cpu_utils::bind_list_to_background, sleep::sleep_millis},
 };
 use compact_str::CompactString;
-use inotify::{Inotify, WatchMask};
 use libc::pid_t;
 use log::info;
 
 pub struct Looper {
     activity_utils: ActivityUtils,
     global_package: CompactString,
-    inotify: Inotify,
     pid: pid_t,
 }
 
 impl Looper {
     pub fn new(activity_utils: ActivityUtils) -> Self {
-        let inotify = Inotify::init().unwrap();
-        inotify
-            .watches()
-            .add("/dev/input", WatchMask::ACCESS)
-            .unwrap();
-
         Self {
             activity_utils,
             global_package: CompactString::new(""),
-            inotify,
             pid: -1,
         }
     }
@@ -68,10 +59,8 @@ impl Looper {
     pub fn enter_loop(&mut self) {
         'outer: loop {
             sleep_millis(1000);
-            let mut buffer = [0; 1024];
-            self.inotify.read_events_blocking(&mut buffer).unwrap();
             {
-                let pid = self.activity_utils.top_app_utils.get_pid();
+                let pid = self.activity_utils.top_app_utils.get_top_pid();
                 if self.pid == pid {
                     continue 'outer;
                 }

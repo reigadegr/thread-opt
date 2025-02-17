@@ -63,7 +63,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         loop {
             sleep_millis(2000);
 
-            let pid = self.args.activity_utils.top_app_utils.get_pid();
+            let pid = self.args.activity_utils.top_app_utils.get_top_pid();
             if unlikely(pid != self.args.pid) {
                 return;
             }
