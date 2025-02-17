@@ -1,3 +1,4 @@
+use crate::utils::sleep::sleep_micro;
 use core::time::Duration;
 use dumpsys_rs::Dumpsys;
 use libc::pid_t;
@@ -38,7 +39,7 @@ impl TopAppUtils {
         let dumper = loop {
             match Dumpsys::new("activity") {
                 Some(d) => break d,
-                None => spin_sleep::sleep(Duration::from_millis(500)),
+                None => sleep_micro(500_000),
             }
         };
         Self {
@@ -61,7 +62,7 @@ impl TopAppUtils {
                 Ok(dump) => break dump,
                 Err(e) => {
                     info!("Failed to dump windows: {}, retrying", e);
-                    spin_sleep::sleep(Duration::from_millis(500));
+                    sleep_micro(500_000);
                 }
             }
         };

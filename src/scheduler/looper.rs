@@ -1,7 +1,7 @@
 use crate::{
     activity::{ActivityUtils, get_tid_info::get_process_name},
     policy::pkg_cfg::{PACKAGE_CONFIGS, StartArgs},
-    utils::global_cpu_utils::bind_list_to_background,
+    utils::{global_cpu_utils::bind_list_to_background, sleep::sleep_micro},
 };
 use compact_str::CompactString;
 use core::time::Duration;
@@ -59,7 +59,7 @@ impl Looper {
 
     pub fn enter_loop(&mut self) {
         'outer: loop {
-            spin_sleep::sleep(Duration::from_millis(1000));
+            sleep_micro(1_000_000);
             {
                 let pid = self.activity_utils.top_app_utils.get_pid();
                 if self.pid == pid {

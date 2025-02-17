@@ -1,7 +1,10 @@
 pub mod macro_common;
 pub mod policies;
 use super::get_thread_tids;
-use crate::{cpu_common::process_monitor::get_top1_tid, policy::pkg_cfg::StartArgs};
+use crate::{
+    cpu_common::process_monitor::get_top1_tid, policy::pkg_cfg::StartArgs,
+    utils::sleep::sleep_micro,
+};
 use core::time::Duration;
 use libc::pid_t;
 use likely_stable::unlikely;
@@ -50,7 +53,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
     }
 
     fn initialize_task(&mut self, comm_prefix: &[u8]) {
-        spin_sleep::sleep(Duration::from_millis(1000));
+        sleep_micro(1_000_000);
         let tid1 = self.update_tids(comm_prefix);
         self.change_to_finish_state(tid1);
     }
@@ -63,7 +66,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
                 return;
             }
             self.after_usage_task(cmd_type);
-            spin_sleep::sleep(Duration::from_millis(2000));
+            sleep_micro(2_000_000);
         }
     }
 }
