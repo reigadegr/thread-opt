@@ -61,7 +61,7 @@ impl Looper {
             sleep_millis(1000);
             {
                 let pid = self.activity_utils.top_app_utils.get_pid();
-                if self.pid == pid {
+                if pid == 0 || self.pid == pid {
                     continue 'outer;
                 }
                 self.pid = pid;

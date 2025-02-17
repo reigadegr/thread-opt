@@ -2,7 +2,6 @@ use crate::utils::sleep::sleep_millis;
 use core::time::Duration;
 use dumpsys_rs::Dumpsys;
 use libc::pid_t;
-use likely_stable::unlikely;
 use log::info;
 use minstant::Instant;
 
@@ -13,10 +12,6 @@ pub struct TopPidInfo {
 
 impl TopPidInfo {
     pub fn new(dump: &str) -> Self {
-        if unlikely(!dump.contains(" TOP")) {
-            return Self::default();
-        }
-
         let dump: pid_t = dump
             .lines()
             .find(|l| l.contains(" TOP"))
