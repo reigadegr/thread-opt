@@ -28,6 +28,7 @@ atoi = "2.0.0"
 compact_str = "0.8.1"
 dumpsys-rs = { git = "https://github.com/reigadegr/dumpsys-rs" }
 hashbrown = "0.15.2"
+inotify = { version = "0.11.0", default-features = false }
 libc = "0.2.169"
 likely_stable = "0.1.3"
 log = "0.4.25"
