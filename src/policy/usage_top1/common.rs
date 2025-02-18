@@ -11,8 +11,6 @@ use libc::pid_t;
 use log::debug;
 #[cfg(debug_assertions)]
 use minstant::Instant;
-extern crate alloc;
-use alloc::vec::Vec;
 
 // 动态生成 CmdType 枚举
 pub enum CmdType {
@@ -70,7 +68,7 @@ impl<'a> Policy<'a> {
     // 执行策略
     pub fn execute_policy(
         &self,
-        task_map: &HashMap<pid_t, Vec<u8>>,
+        task_map: &HashMap<pid_t, heapless::Vec<u8, 16>>,
         first: pid_t,
         cmd_type: &CmdType,
     ) {
