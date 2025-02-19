@@ -1,6 +1,6 @@
 use crate::{
     cgroup::group_info::{get_background_group, get_middle_group, get_top_group},
-    utils::global_cpu_utils::{
+    utils::affinity_utils::global_cpu_utils::{
         bind_list_to_middle, bind_list_to_middle_background, bind_tid_to_middle, bind_tid_to_only6,
         bind_tid_to_only7,
     },

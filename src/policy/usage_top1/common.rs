@@ -1,6 +1,6 @@
 use crate::{
     cgroup::group_info::get_top_group,
-    utils::global_cpu_utils::{
+    utils::affinity_utils::global_cpu_utils::{
         bind_tid_to_background, bind_tid_to_middle, bind_tid_to_only6, bind_tid_to_only7,
         bind_tid_to_top,
     },
