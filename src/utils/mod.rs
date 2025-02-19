@@ -1,5 +1,5 @@
-pub mod affinity_utils;
+pub mod affinity_setter;
+pub mod global_cpu_set;
+pub mod global_cpu_utils;
 pub mod node_reader;
-
-pub mod priority_utils;
 pub mod sleep;

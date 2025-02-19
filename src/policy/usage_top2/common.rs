@@ -1,14 +1,8 @@
 use crate::{
     cgroup::group_info::{get_background_group, get_middle_group, get_top_group},
-    utils::{
-        affinity_utils::global_cpu_utils::{
-            bind_list_to_middle, bind_list_to_middle_background, bind_tid_to_middle,
-            bind_tid_to_only6, bind_tid_to_only7,
-        },
-        priority_utils::global_priority_utils::{
-            set_list_to_middle_background_priority, set_list_to_middle_priority,
-            set_tid_to_middle_priority, set_tid_to_only6_priority, set_tid_to_only7_priority,
-        },
+    utils::global_cpu_utils::{
+        bind_list_to_middle, bind_list_to_middle_background, bind_tid_to_middle, bind_tid_to_only6,
+        bind_tid_to_only7,
     },
 };
 extern crate alloc;
@@ -49,15 +43,14 @@ pub fn execute_policy(
     let start = Instant::now();
     if background_group == middle_group {
         bind_list_to_middle(&filtered_keys);
-        set_list_to_middle_priority(&filtered_keys);
     } else {
         bind_list_to_middle_background(&filtered_keys);
-        set_list_to_middle_background_priority(&filtered_keys);
     }
 
     #[cfg(debug_assertions)]
     {
         let end = start.elapsed();
+
         debug!("一轮绑定核心完成时间: {:?} 数组长度{}", end, task_map.len());
     }
 }
@@ -68,16 +61,11 @@ fn execute_task(cmd_type: &CmdType, tid: pid_t) {
         CmdType::Only6 => {
             let top_group = get_top_group();
             if top_group == [6, 7] {
-                set_tid_to_only6_priority(tid);
                 bind_tid_to_only6(tid);
                 return;
             }
-            set_tid_to_middle_priority(tid);
             bind_tid_to_middle(tid);
         }
-        CmdType::Only7 => {
-            set_tid_to_only7_priority(tid);
-            bind_tid_to_only7(tid);
-        }
+        CmdType::Only7 => bind_tid_to_only7(tid),
     }
 }
