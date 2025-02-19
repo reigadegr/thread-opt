@@ -1,8 +1,14 @@
 use crate::{
     cgroup::group_info::get_top_group,
-    utils::global_cpu_utils::{
-        bind_tid_to_background, bind_tid_to_middle, bind_tid_to_only6, bind_tid_to_only7,
-        bind_tid_to_top,
+    utils::{
+        affinity_utils::global_cpu_utils::{
+            bind_tid_to_background, bind_tid_to_middle, bind_tid_to_only6, bind_tid_to_only7,
+            bind_tid_to_top,
+        },
+        priority_utils::global_priority_utils::{
+            set_tid_to_background_priority, set_tid_to_middle_priority, set_tid_to_only6_priority,
+            set_tid_to_only7_priority, set_tid_to_top_priority,
+        },
     },
 };
 use hashbrown::HashMap;
@@ -97,17 +103,31 @@ impl<'a> Policy<'a> {
 // 执行线程绑定任务
 fn execute_task(cmd_type: &CmdType, tid: pid_t) {
     match cmd_type {
-        CmdType::Top => bind_tid_to_top(tid),
+        CmdType::Top => {
+            set_tid_to_top_priority(tid);
+            bind_tid_to_top(tid);
+        }
         CmdType::Only6 => {
             let top_group = get_top_group();
             if top_group == [6, 7] {
+                set_tid_to_only6_priority(tid);
                 bind_tid_to_only6(tid);
                 return;
             }
+            set_tid_to_middle_priority(tid);
             bind_tid_to_middle(tid);
         }
-        CmdType::Only7 => bind_tid_to_only7(tid),
-        CmdType::Middle => bind_tid_to_middle(tid),
-        CmdType::Background => bind_tid_to_background(tid),
+        CmdType::Only7 => {
+            set_tid_to_only7_priority(tid);
+            bind_tid_to_only7(tid);
+        }
+        CmdType::Middle => {
+            set_tid_to_middle_priority(tid);
+            bind_tid_to_middle(tid);
+        }
+        CmdType::Background => {
+            set_tid_to_background_priority(tid);
+            bind_tid_to_background(tid);
+        }
     }
 }
