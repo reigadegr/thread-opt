@@ -1,8 +1,8 @@
 pub mod get_tid_info;
-pub mod get_top_tid;
+pub mod get_top_pid;
 
 use get_tid_info::TidUtils;
-use get_top_tid::TopAppUtils;
+use get_top_pid::TopAppUtils;
 
 pub struct ActivityUtils {
     pub top_app_utils: TopAppUtils,
