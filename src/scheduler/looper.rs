@@ -1,7 +1,7 @@
 use crate::{
     activity::{ActivityUtils, get_tid_info::get_process_name},
     policy::pkg_cfg::{PACKAGE_CONFIGS, StartArgs},
-    utils::{global_cpu_utils::bind_list_to_background, sleep::sleep_millis},
+    utils::{affinity_utils::global_cpu_utils::bind_list_to_background, sleep::sleep_millis},
 };
 use compact_str::CompactString;
 use libc::pid_t;
@@ -68,7 +68,7 @@ impl Looper {
                 let name = get_process_name(pid).unwrap_or_default();
                 self.global_package = name;
             }
-            for (package_list, start_task) in PACKAGE_CONFIGS.iter() {
+            for (package_list, start_task) in &PACKAGE_CONFIGS {
                 if self.handle_package_list(package_list, start_task) {
                     continue 'outer;
                 }

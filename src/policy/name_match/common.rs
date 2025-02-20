@@ -1,12 +1,10 @@
 use crate::{
-    cgroup::group_info::get_top_group,
-    utils::global_cpu_utils::{
+    cgroup::group_info::{get_background_group, get_middle_group, get_top_group},
+    utils::affinity_utils::global_cpu_utils::{
         bind_tid_to_background, bind_tid_to_middle, bind_tid_to_only6, bind_tid_to_only7,
         bind_tid_to_top,
     },
 };
-extern crate alloc;
-use alloc::vec::Vec;
 use hashbrown::HashMap;
 use libc::pid_t;
 #[cfg(debug_assertions)]
@@ -66,7 +64,7 @@ impl<'a> Policy<'a> {
         CmdType::Middle
     }
 
-    pub fn execute_policy(&self, task_map: &HashMap<pid_t, Vec<u8>>) {
+    pub fn execute_policy(&self, task_map: &HashMap<pid_t, heapless::Vec<u8, 16>>) {
         #[cfg(debug_assertions)]
         let start = Instant::now();
         for (&tid, comm) in task_map {
@@ -91,15 +89,20 @@ fn execute_task(cmd_type: &CmdType, tid: pid_t) {
     match cmd_type {
         CmdType::Top => bind_tid_to_top(tid),
         CmdType::Only6 => {
-            let top_group = get_top_group();
-            if top_group == [6, 7] {
+            if get_middle_group() == get_background_group() {
                 bind_tid_to_only6(tid);
                 return;
             }
             bind_tid_to_middle(tid);
         }
         CmdType::Only7 => bind_tid_to_only7(tid),
-        CmdType::Middle => bind_tid_to_middle(tid),
+        CmdType::Middle => {
+            if get_top_group().len() == 4 {
+                bind_tid_to_top(tid);
+                return;
+            }
+            bind_tid_to_middle(tid);
+        }
         CmdType::Background => bind_tid_to_background(tid),
     }
 }

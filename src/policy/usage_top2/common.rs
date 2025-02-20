@@ -1,8 +1,8 @@
 use crate::{
     cgroup::group_info::{get_background_group, get_middle_group, get_top_group},
-    utils::global_cpu_utils::{
-        bind_list_to_middle, bind_list_to_middle_background, bind_tid_to_middle, bind_tid_to_only6,
-        bind_tid_to_only7,
+    utils::affinity_utils::global_cpu_utils::{
+        bind_list_to_middle, bind_list_to_middle_background, bind_list_to_zero_five,
+        bind_tid_to_middle, bind_tid_to_only6, bind_tid_to_only7,
     },
 };
 extern crate alloc;
@@ -22,7 +22,11 @@ enum CmdType {
 }
 
 // 执行策略
-pub fn execute_policy(task_map: &HashMap<pid_t, Vec<u8>>, first: pid_t, second: pid_t) {
+pub fn execute_policy(
+    task_map: &HashMap<pid_t, heapless::Vec<u8, 16>>,
+    first: pid_t,
+    second: pid_t,
+) {
     execute_task(&CmdType::Only7, first);
     execute_task(&CmdType::Only6, second);
 
@@ -34,11 +38,16 @@ pub fn execute_policy(task_map: &HashMap<pid_t, Vec<u8>>, first: pid_t, second: 
 
     let background_group = get_background_group();
     let middle_group = get_middle_group();
+    let top_group = get_top_group();
 
     #[cfg(debug_assertions)]
     let start = Instant::now();
     if background_group == middle_group {
-        bind_list_to_middle(&filtered_keys);
+        if top_group.len() == 4 {
+            bind_list_to_zero_five(&filtered_keys);
+        } else {
+            bind_list_to_middle(&filtered_keys);
+        }
     } else {
         bind_list_to_middle_background(&filtered_keys);
     }
@@ -55,8 +64,7 @@ pub fn execute_policy(task_map: &HashMap<pid_t, Vec<u8>>, first: pid_t, second: 
 fn execute_task(cmd_type: &CmdType, tid: pid_t) {
     match cmd_type {
         CmdType::Only6 => {
-            let top_group = get_top_group();
-            if top_group == [6, 7] {
+            if get_middle_group() == get_background_group() {
                 bind_tid_to_only6(tid);
                 return;
             }

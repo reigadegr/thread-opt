@@ -7,12 +7,12 @@ use libc::pid_t;
 use minstant::Instant;
 use std::{fs, path::Path};
 extern crate alloc;
-use alloc::{format, vec::Vec};
+use alloc::format;
 // use heapless::Vec;
 
 #[derive(Default)]
 pub struct TidInfo {
-    pub task_map: HashMap<pid_t, Vec<u8>>,
+    pub task_map: HashMap<pid_t, heapless::Vec<u8, 16>>,
     pub tid_list: Vec<pid_t>,
     task_map_pid: pid_t,
     tid_list_pid: pid_t,
@@ -39,7 +39,7 @@ impl TidUtils {
         }
     }
 
-    pub fn get_task_map(&mut self, pid: pid_t) -> &HashMap<pid_t, Vec<u8>> {
+    pub fn get_task_map(&mut self, pid: pid_t) -> &HashMap<pid_t, heapless::Vec<u8, 16>> {
         if self.last_refresh_task_map.elapsed() > Duration::from_millis(5000) {
             self.last_refresh_task_map = Instant::now();
             return &self.set_task_map(pid).task_map;
@@ -71,7 +71,7 @@ impl TidUtils {
             return &self.tid_info;
         };
 
-        let mut task_map: HashMap<pid_t, Vec<u8>> = HashMap::new();
+        let mut task_map: HashMap<pid_t, heapless::Vec<u8, 16>> = HashMap::new();
         for tid in tid_list {
             let comm_path = format!("/proc/{tid}/comm");
             let Ok(comm) = read_to_byte(&comm_path) else {

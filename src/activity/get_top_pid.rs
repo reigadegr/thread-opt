@@ -49,8 +49,7 @@ impl TopAppUtils {
     }
 
     pub fn set_top_pid(&mut self) -> TopPidInfo {
-        let mut buffer = [0; 1024];
-        self.inotify.read_events_blocking(&mut buffer).unwrap();
+        self.inotify.read_events_blocking(&mut [0; 1024]).unwrap();
         let dump = loop {
             match self.dumper.dump(&["lru"]) {
                 Ok(dump) => break dump,

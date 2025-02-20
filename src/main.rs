@@ -13,6 +13,9 @@ mod utils;
 use misc::init_misc;
 use scheduler::Scheduler;
 
+#[global_allocator]
+static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
+
 fn main() {
     init_misc();
     Scheduler::new().start_run();

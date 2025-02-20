@@ -1,7 +1,7 @@
 [package]
 name = "thread-opt"
-version = "1.8.0"
-edition = "2024"
+version = "1.9.0"
+edition = "2021"
 description = "The Hard Affinity policy binds threads to target cores in gaming."
 authors = ["reigadegr"]
 license = "GPL-3.0"
@@ -28,12 +28,14 @@ atoi = "2.0.0"
 compact_str = "0.8.1"
 dumpsys-rs = { git = "https://github.com/reigadegr/dumpsys-rs" }
 hashbrown = "0.15.2"
+heapless = "0.8.0"
 inotify = { version = "0.11.0", default-features = false }
 libc = "0.2.169"
 likely_stable = "0.1.3"
 log = "0.4.25"
+mimalloc = { version = "0.1.43", features = ["local_dynamic_tls", "no_thp", "override"] }
 minstant = "0.1.7"
-once_cell = "1.20.2"
+once_cell = { version = "1.20.3", default-features = false }
 tklog = "0.2.9"
 
 [build-dependencies]
