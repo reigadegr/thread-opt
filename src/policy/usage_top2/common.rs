@@ -43,7 +43,7 @@ pub fn execute_policy(
     #[cfg(debug_assertions)]
     let start = Instant::now();
     if background_group == middle_group {
-        if top_group == background_group {
+        if top_group.len() == 4 {
             bind_list_to_zero_five(&filtered_keys);
         } else {
             bind_list_to_middle(&filtered_keys);
