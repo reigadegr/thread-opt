@@ -25,6 +25,7 @@ cpuset_once_lazy!(ONLY7_CPU_SET, &[7]);
 cpuset_once_lazy!(ONLY6_CPU_SET, &[6]);
 cpuset_once_lazy!(MIDDLE_CPU_SET, get_middle_group());
 cpuset_once_lazy!(BACKGROUND_CPU_SET, get_background_group());
+cpuset_once_lazy!(ZERO_TO_FIVE, &[0, 1, 2, 3, 4, 5]);
 cpuset_once_lazy!(
     BACKGROUND_MIDDLE_CPU_SET,
     &[get_background_group(), get_middle_group()].concat()
@@ -36,4 +37,5 @@ cpuset_getter!(get_only7_cpu_set, ONLY7_CPU_SET);
 cpuset_getter!(get_only6_cpu_set, ONLY6_CPU_SET);
 cpuset_getter!(get_middle_cpu_set, MIDDLE_CPU_SET);
 cpuset_getter!(get_background_cpu_set, BACKGROUND_CPU_SET);
+cpuset_getter!(get_zero_to_five_cpu_set, ZERO_TO_FIVE);
 cpuset_getter!(get_middle_background_cpu_set, BACKGROUND_MIDDLE_CPU_SET);

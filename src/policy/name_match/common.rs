@@ -1,5 +1,5 @@
 use crate::{
-    cgroup::group_info::{get_background_group, get_middle_group},
+    cgroup::group_info::{get_background_group, get_middle_group, get_top_group},
     utils::affinity_utils::global_cpu_utils::{
         bind_tid_to_background, bind_tid_to_middle, bind_tid_to_only6, bind_tid_to_only7,
         bind_tid_to_top,
@@ -96,7 +96,13 @@ fn execute_task(cmd_type: &CmdType, tid: pid_t) {
             bind_tid_to_middle(tid);
         }
         CmdType::Only7 => bind_tid_to_only7(tid),
-        CmdType::Middle => bind_tid_to_middle(tid),
+        CmdType::Middle => {
+            if get_top_group().len() == 4 {
+                bind_tid_to_top(tid);
+                return;
+            }
+            bind_tid_to_middle(tid);
+        }
         CmdType::Background => bind_tid_to_background(tid),
     }
 }
