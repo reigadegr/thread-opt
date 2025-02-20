@@ -1,5 +1,5 @@
 use crate::{
-    cgroup::group_info::{get_background_group, get_middle_group, get_top_group},
+    cgroup::group_info::{get_background_group, get_middle_group},
     utils::affinity_utils::global_cpu_utils::{
         bind_list_to_middle, bind_list_to_middle_background, bind_tid_to_middle, bind_tid_to_only6,
         bind_tid_to_only7,
@@ -59,8 +59,7 @@ pub fn execute_policy(
 fn execute_task(cmd_type: &CmdType, tid: pid_t) {
     match cmd_type {
         CmdType::Only6 => {
-            let top_group = get_top_group();
-            if top_group == [6, 7] {
+            if get_middle_group() == get_background_group() {
                 bind_tid_to_only6(tid);
                 return;
             }
