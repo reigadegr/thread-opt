@@ -68,7 +68,7 @@ impl Looper {
                 let name = get_process_name(pid).unwrap_or_default();
                 self.global_package = name;
             }
-            for (package_list, start_task) in PACKAGE_CONFIGS.iter() {
+            for (package_list, start_task) in &PACKAGE_CONFIGS {
                 if self.handle_package_list(package_list, start_task) {
                     continue 'outer;
                 }

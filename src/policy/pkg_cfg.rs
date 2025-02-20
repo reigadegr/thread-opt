@@ -5,7 +5,6 @@ use super::{
 };
 use crate::activity::ActivityUtils;
 use libc::pid_t;
-use once_cell::sync::Lazy;
 
 // 对于普通的Unity游戏
 const UNITY: [&str; 13] = [
@@ -56,19 +55,17 @@ pub struct StartArgs<'a> {
     pub pid: pid_t,
 }
 
-type ConfigTuple<'a> = (&'a [&'a str], fn(&mut StartArgs));
+type ConfigTuple = (&'static [&'static str], fn(&mut StartArgs));
 
-pub static PACKAGE_CONFIGS: Lazy<[ConfigTuple; 10]> = Lazy::new(|| {
-    [
-        (&UE_USAGE_T1[..], policy_top1::start_task),
-        (&USAGE_T2[..], policy_top2::start_task),
-        (&PARTY_T2[..], policy_party::start_task),
-        (&UNITY[..], policy_unity::start_task),
-        (&UE[..], policy_ue::start_task),
-        (&SKY[..], policy_sky::start_task),
-        (&UE5[..], policy_ue5::start_task),
-        (&COCOS[..], policy_cocos::start_task),
-        (&LOLM[..], policy_second::start_task),
-        (&CODM[..], policy_codm::start_task),
-    ]
-});
+pub static PACKAGE_CONFIGS: [ConfigTuple; 10] = [
+    (&UE_USAGE_T1, policy_top1::start_task),
+    (&USAGE_T2, policy_top2::start_task),
+    (&PARTY_T2, policy_party::start_task),
+    (&UNITY, policy_unity::start_task),
+    (&UE, policy_ue::start_task),
+    (&SKY, policy_sky::start_task),
+    (&UE5, policy_ue5::start_task),
+    (&COCOS, policy_cocos::start_task),
+    (&LOLM, policy_second::start_task),
+    (&CODM, policy_codm::start_task),
+];
