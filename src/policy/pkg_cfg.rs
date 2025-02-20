@@ -57,7 +57,7 @@ pub struct StartArgs<'a> {
 
 type ConfigTuple = (&'static [&'static str], fn(&mut StartArgs));
 
-pub static PACKAGE_CONFIGS: [ConfigTuple; 10] = [
+pub const PACKAGE_CONFIGS: [ConfigTuple; 10] = [
     (&UE_USAGE_T1, policy_top1::start_task),
     (&USAGE_T2, policy_top2::start_task),
     (&PARTY_T2, policy_party::start_task),
