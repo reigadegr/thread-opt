@@ -24,11 +24,11 @@ fn get_thread_cpu_time(tid: pid_t) -> u64 {
     let Ok(mut file) = File::open(&stat_path) else {
         return 0;
     };
-    let mut temp_buffer = [0; 32];
-    let Ok(_) = file.read(&mut temp_buffer) else {
+    let mut buffer = [0u8; 32];
+    let Ok(_) = file.read(&mut buffer) else {
         return 0;
     };
-    let mut parts = temp_buffer.split(|&b| b == b' ');
+    let mut parts = buffer.split(|&b| b == b' ');
     let first_part = parts.next().unwrap_or_default();
     atoi::<u64>(first_part).unwrap_or(0)
 }
