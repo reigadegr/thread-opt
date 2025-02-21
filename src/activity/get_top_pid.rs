@@ -1,4 +1,5 @@
 use crate::utils::sleep::sleep_millis;
+use atoi::atoi;
 use dumpsys_rs::Dumpsys;
 use inotify::{Inotify, WatchMask};
 use libc::pid_t;
@@ -10,15 +11,21 @@ pub struct TopPidInfo {
 }
 
 impl TopPidInfo {
-    pub fn new(dump: &str) -> Self {
-        let dump: pid_t = dump
-            .lines()
-            .find(|l| l.contains(" TOP"))
-            .and_then(|line| line.split_whitespace().nth(4))
-            .and_then(|pid_part| pid_part.split(':').next())
-            .and_then(|pid_str| pid_str.parse::<pid_t>().ok())
+    pub fn new(dump: &[u8]) -> Self {
+        let pid = dump
+            .split(|&b| b == b'\n')
+            .find(|line| line.windows(4).any(|w| w == b" TOP"))
+            .and_then(|line| {
+                // 修正为字节切片的处理方式
+                line.split(|&b| b.is_ascii_whitespace())
+                    .filter_map(|s| (!s.is_empty()).then_some(s))
+                    .nth(4)
+            })
+            .and_then(atoi::<pid_t>)
             .unwrap_or_default();
-        Self { pid: dump }
+        #[cfg(debug_assertions)]
+        println!("pid为-{pid:?}-");
+        Self { pid }
     }
 }
 
@@ -50,8 +57,10 @@ impl TopAppUtils {
 
     pub fn set_top_pid(&mut self) -> TopPidInfo {
         self.inotify.read_events_blocking(&mut [0; 1024]).unwrap();
+        // #[cfg(debug_assertions)]
+        // let start = std::time::Instant::now();
         let dump = loop {
-            match self.dumper.dump(&["lru"]) {
+            match self.dumper.dump_to_byte(&["lru"]) {
                 Ok(dump) => break dump,
                 Err(e) => {
                     info!("Failed to dump windows: {}, retrying", e);
@@ -59,6 +68,11 @@ impl TopAppUtils {
                 }
             }
         };
+        // #[cfg(debug_assertions)]
+        // {
+        // let end = start.elapsed();
+        // log::debug!("读toppid成时间: {:?}", end);
+        // }
         TopPidInfo::new(&dump)
     }
 }
