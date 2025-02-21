@@ -9,7 +9,7 @@ pub fn read_file(file: &Path) -> Result<CompactString> {
 
 pub fn read_to_byte(file: &str) -> Result<[u8; 16]> {
     let mut file = File::open(file)?;
-    let mut buffer = [0; 16];
+    let mut buffer = [0u8; 16];
     let _ = file.read(&mut buffer)?;
     Ok(buffer)
 }
