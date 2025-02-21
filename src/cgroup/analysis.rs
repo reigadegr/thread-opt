@@ -74,7 +74,7 @@ fn init_group(core: &str, nums: &Vec<&str>) -> Result<Box<[u8]>> {
     }
     let mut need_init: Vec<u8> = Vec::new();
     for i in nums {
-        let i = i.parse::<u8>().unwrap();
+        let Ok(i) = i.parse::<u8>() else { continue };
         need_init.push(i);
     }
     Ok(need_init.into_boxed_slice())
