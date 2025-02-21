@@ -1,10 +1,4 @@
-use super::super::affinity_policy::{only6_policy, only7_policy};
-use crate::{
-    cgroup::group_info::{get_background_group, get_middle_group, get_top_group},
-    utils::affinity_utils::global_cpu_utils::{
-        bind_list_to_middle, bind_list_to_middle_background, bind_list_to_zero_five,
-    },
-};
+use super::super::affinity_policy::{only6_policy, only7_policy, tid_list_t2_policy};
 
 extern crate alloc;
 use alloc::vec::Vec;
@@ -37,21 +31,9 @@ pub fn execute_policy(
         .copied()
         .collect();
 
-    let background_group = get_background_group();
-    let middle_group = get_middle_group();
-    let top_group = get_top_group();
-
     #[cfg(debug_assertions)]
     let start = Instant::now();
-    if background_group == middle_group {
-        if top_group.len() == 4 {
-            bind_list_to_zero_five(&filtered_keys);
-        } else {
-            bind_list_to_middle(&filtered_keys);
-        }
-    } else {
-        bind_list_to_middle_background(&filtered_keys);
-    }
+    tid_list_t2_policy(&filtered_keys);
 
     #[cfg(debug_assertions)]
     {

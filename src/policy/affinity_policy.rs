@@ -1,6 +1,7 @@
 use crate::{
     cgroup::group_info::{get_background_group, get_middle_group, get_top_group},
     utils::affinity_utils::global_cpu_utils::{
+        bind_list_to_middle, bind_list_to_middle_background, bind_list_to_zero_five,
         bind_tid_to_background, bind_tid_to_middle, bind_tid_to_only6, bind_tid_to_only7,
         bind_tid_to_top,
     },
@@ -22,6 +23,21 @@ static MODDLE_POLICY_FN: Lazy<fn(pid_t)> = Lazy::new(|| {
     bind_tid_to_middle
 });
 
+static TID_LIST_T2_FN: Lazy<fn(&[pid_t])> = Lazy::new(|| {
+    let background_group = get_background_group();
+    let middle_group = get_middle_group();
+    let top_group = get_top_group();
+    if background_group == middle_group {
+        if top_group.len() == 4 {
+            bind_list_to_zero_five
+        } else {
+            bind_list_to_middle
+        }
+    } else {
+        bind_list_to_middle_background
+    }
+});
+
 pub fn top_policy(tid: pid_t) {
     bind_tid_to_top(tid);
 }
@@ -40,4 +56,8 @@ pub fn middle_policy(tid: pid_t) {
 
 pub fn background_policy(tid: pid_t) {
     bind_tid_to_background(tid);
+}
+
+pub fn tid_list_t2_policy(tids: &[pid_t]) {
+    TID_LIST_T2_FN(tids);
 }
