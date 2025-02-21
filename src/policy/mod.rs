@@ -1,7 +1,9 @@
+pub mod affinity_policy;
 pub mod name_match;
 pub mod pkg_cfg;
 pub mod usage_top1;
 pub mod usage_top2;
+
 extern crate alloc;
 use alloc::vec::Vec;
 use hashbrown::HashMap;

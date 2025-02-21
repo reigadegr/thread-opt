@@ -1,10 +1,11 @@
+use super::super::affinity_policy::{only6_policy, only7_policy};
 use crate::{
     cgroup::group_info::{get_background_group, get_middle_group, get_top_group},
     utils::affinity_utils::global_cpu_utils::{
         bind_list_to_middle, bind_list_to_middle_background, bind_list_to_zero_five,
-        bind_tid_to_middle, bind_tid_to_only6, bind_tid_to_only7,
     },
 };
+
 extern crate alloc;
 use alloc::vec::Vec;
 
@@ -63,13 +64,7 @@ pub fn execute_policy(
 // 执行线程绑定任务
 fn execute_task(cmd_type: &CmdType, tid: pid_t) {
     match cmd_type {
-        CmdType::Only6 => {
-            if get_middle_group() == get_background_group() {
-                bind_tid_to_only6(tid);
-                return;
-            }
-            bind_tid_to_middle(tid);
-        }
-        CmdType::Only7 => bind_tid_to_only7(tid),
+        CmdType::Only6 => only6_policy(tid),
+        CmdType::Only7 => only7_policy(tid),
     }
 }

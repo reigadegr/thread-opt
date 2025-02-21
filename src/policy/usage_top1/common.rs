@@ -1,10 +1,7 @@
-use crate::{
-    cgroup::group_info::{get_background_group, get_middle_group, get_top_group},
-    utils::affinity_utils::global_cpu_utils::{
-        bind_tid_to_background, bind_tid_to_middle, bind_tid_to_only6, bind_tid_to_only7,
-        bind_tid_to_top,
-    },
+use super::super::affinity_policy::{
+    background_policy, middle_policy, only6_policy, only7_policy, top_policy,
 };
+
 use hashbrown::HashMap;
 use libc::pid_t;
 #[cfg(debug_assertions)]
@@ -97,22 +94,10 @@ impl<'a> Policy<'a> {
 // 执行线程绑定任务
 fn execute_task(cmd_type: &CmdType, tid: pid_t) {
     match cmd_type {
-        CmdType::Top => bind_tid_to_top(tid),
-        CmdType::Only6 => {
-            if get_middle_group() == get_background_group() {
-                bind_tid_to_only6(tid);
-                return;
-            }
-            bind_tid_to_middle(tid);
-        }
-        CmdType::Only7 => bind_tid_to_only7(tid),
-        CmdType::Middle => {
-            if get_top_group().len() == 4 {
-                bind_tid_to_top(tid);
-                return;
-            }
-            bind_tid_to_middle(tid);
-        }
-        CmdType::Background => bind_tid_to_background(tid),
+        CmdType::Top => top_policy(tid),
+        CmdType::Only6 => only6_policy(tid),
+        CmdType::Only7 => only7_policy(tid),
+        CmdType::Middle => middle_policy(tid),
+        CmdType::Background => background_policy(tid),
     }
 }
