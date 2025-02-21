@@ -1,6 +1,8 @@
 use super::{
     name_match::policies::{policy_sky, policy_ue, policy_unity},
-    usage_top1::policies::{policy_cocos, policy_second, policy_top1, policy_ue5, policy_unity_t1},
+    usage_top1::policies::{
+        policy_cocos, policy_top1, policy_ue5, policy_unity_t1, policy_unity_t1_u2,
+    },
     usage_top2::{policy_party, policy_top2, policy_unity_t2},
 };
 use crate::activity::ActivityUtils;
@@ -38,11 +40,11 @@ const UE5_T1: [&str; 1] = ["com.papegames.infinitynikki"];
 // 对于三国杀，跟暖暖策略一样，只是线程名不同
 const COCOS_T1: [&str; 1] = ["com.bf.sgs.hdexp"];
 
-// 需要取一个cputime第二大的线程，其线程前缀名为"Thread-"
-const LOLM: [&str; 1] = ["com.tencent.lolm"];
+// 需要取一个cputime第二大的线程，其线程前缀名为"Thread-"，且为unity游戏
+const UNITY_T1_U2: [&str; 1] = ["com.tencent.lolm"];
 
-// codm
-const UNITY_T1: [&str; 1] = ["com.tencent.tmgp.cod"];
+// 需要单独把负载最重的unitymain绑定到cpu7
+const UNITY_T1: [&str; 2] = ["com.tencent.tmgp.cod", "com.tencent.tmgp.cf"];
 
 // 对于需要取两个重负载线程的游戏，其线程前缀名均为"Thread-"，目前策略是燕云十六声特调
 const USAGE_T2: [&str; 1] = ["com.netease.yyslscn"];
@@ -70,6 +72,6 @@ pub const PACKAGE_CONFIGS: [ConfigTuple; 11] = [
     (&SKY_T2, policy_sky::start_task),
     (&UE5_T1, policy_ue5::start_task),
     (&COCOS_T1, policy_cocos::start_task),
-    (&LOLM, policy_second::start_task),
+    (&UNITY_T1_U2, policy_unity_t1_u2::start_task),
     (&UNITY_T1, policy_unity_t1::start_task),
 ];
