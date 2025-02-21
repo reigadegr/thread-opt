@@ -24,11 +24,8 @@ static MODDLE_POLICY_FN: Lazy<fn(pid_t)> = Lazy::new(|| {
 });
 
 static TID_LIST_T2_FN: Lazy<fn(&[pid_t])> = Lazy::new(|| {
-    let background_group = get_background_group();
-    let middle_group = get_middle_group();
-    let top_group = get_top_group();
-    if background_group == middle_group {
-        if top_group.len() == 4 {
+    if get_background_group() == get_middle_group() {
+        if get_top_group().len() == 4 {
             bind_list_to_zero_five
         } else {
             bind_list_to_middle
