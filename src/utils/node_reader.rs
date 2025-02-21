@@ -1,6 +1,5 @@
 use anyhow::Result;
 use compact_str::CompactString;
-use heapless::Vec;
 use std::{fs::File, io::Read, path::Path};
 
 pub fn read_file(file: &Path) -> Result<CompactString> {
@@ -8,10 +7,9 @@ pub fn read_file(file: &Path) -> Result<CompactString> {
     Ok(CompactString::new(s.trim()))
 }
 
-pub fn read_to_byte(file: &str) -> Result<Vec<u8, 16>> {
+pub fn read_to_byte(file: &str) -> Result<[u8; 16]> {
     let mut file = File::open(file)?;
-    let mut temp_buffer = [0; 16];
-    let _ = file.read(&mut temp_buffer)?;
-    let buffer: Vec<u8, 16> = Vec::from_slice(&temp_buffer).unwrap();
+    let mut buffer = [0; 16];
+    let _ = file.read(&mut buffer)?;
     Ok(buffer)
 }

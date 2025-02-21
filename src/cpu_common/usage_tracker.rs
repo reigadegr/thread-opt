@@ -24,7 +24,7 @@ fn get_thread_cpu_time(tid: pid_t) -> u64 {
     let Ok(mut file) = File::open(&stat_path) else {
         return 0;
     };
-    let mut temp_buffer = [0; 16];
+    let mut temp_buffer = [0; 32];
     let Ok(_) = file.read(&mut temp_buffer) else {
         return 0;
     };

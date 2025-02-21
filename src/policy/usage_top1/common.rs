@@ -65,7 +65,7 @@ impl<'a> Policy<'a> {
     // 执行策略
     pub fn execute_policy(
         &self,
-        task_map: &HashMap<pid_t, heapless::Vec<u8, 16>>,
+        task_map: &HashMap<pid_t, [u8; 16]>,
         first: pid_t,
         cmd_type: &CmdType,
     ) {

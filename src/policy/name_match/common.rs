@@ -61,7 +61,7 @@ impl<'a> Policy<'a> {
         CmdType::Middle
     }
 
-    pub fn execute_policy(&self, task_map: &HashMap<pid_t, heapless::Vec<u8, 16>>) {
+    pub fn execute_policy(&self, task_map: &HashMap<pid_t, [u8; 16]>) {
         #[cfg(debug_assertions)]
         let start = Instant::now();
         for (&tid, comm) in task_map {

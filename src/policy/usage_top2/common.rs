@@ -17,11 +17,7 @@ enum CmdType {
 }
 
 // 执行策略
-pub fn execute_policy(
-    task_map: &HashMap<pid_t, heapless::Vec<u8, 16>>,
-    first: pid_t,
-    second: pid_t,
-) {
+pub fn execute_policy(task_map: &HashMap<pid_t, [u8; 16]>, first: pid_t, second: pid_t) {
     execute_task(&CmdType::Only7, first);
     execute_task(&CmdType::Only6, second);
 
