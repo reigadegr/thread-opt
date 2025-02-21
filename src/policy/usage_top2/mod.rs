@@ -1,6 +1,7 @@
 mod common;
 pub mod policy_party;
 pub mod policy_top2;
+pub mod policy_unity_t2;
 use super::get_thread_tids;
 use crate::{
     cpu_common::process_monitor::{get_top1_tid, get_top2_tids},

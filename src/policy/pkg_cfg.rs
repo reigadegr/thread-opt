@@ -1,7 +1,7 @@
 use super::{
     name_match::policies::{policy_sky, policy_ue, policy_unity},
     usage_top1::policies::{policy_cocos, policy_codm, policy_second, policy_top1, policy_ue5},
-    usage_top2::{policy_party, policy_top2},
+    usage_top2::{policy_party, policy_top2, policy_unity_t2},
 };
 use crate::activity::ActivityUtils;
 use libc::pid_t;
@@ -50,6 +50,9 @@ const USAGE_T2: [&str; 1] = ["com.netease.yyslscn"];
 // 对于需要取两个重负载线程的游戏，其线程前缀名分别为"Thread-"，"MainThread"，目前策略是蛋仔派对特调
 const PARTY_T2: [&str; 1] = ["com.netease.party"];
 
+// 对于需要取两个重负载线程的游戏，其线程前缀名分别为"Thread-"，"UnityMain"，目前策略是NBA巅峰对决特调
+const UNITY_T2: [&str; 1] = ["com.galasports.operablebasketball.mi"];
+
 pub struct StartArgs<'a> {
     pub activity_utils: &'a mut ActivityUtils,
     pub pid: pid_t,
@@ -57,9 +60,10 @@ pub struct StartArgs<'a> {
 
 type ConfigTuple = (&'static [&'static str], fn(&mut StartArgs));
 
-pub const PACKAGE_CONFIGS: [ConfigTuple; 10] = [
+pub const PACKAGE_CONFIGS: [ConfigTuple; 11] = [
     (&UE_USAGE_T1, policy_top1::start_task),
     (&USAGE_T2, policy_top2::start_task),
+    (&UNITY_T2, policy_unity_t2::start_task),
     (&PARTY_T2, policy_party::start_task),
     (&UNITY, policy_unity::start_task),
     (&UE, policy_ue::start_task),
