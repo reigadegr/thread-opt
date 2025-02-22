@@ -54,10 +54,11 @@ const SKY_T2: [&str; 1] = ["com.netease.sky"];
 // 对于需要取两个重负载线程的游戏，其线程前缀名分别为"Thread-"，"MainThread"，目前策略是蛋仔派对特调
 const PARTY_T2: [&str; 1] = ["com.netease.party"];
 
-// 对于需要取两个重负载线程的游戏，其线程前缀名分别为"Thread-"，"UnityMain"
-const UNITY_T2: [&str; 2] = [
+// 对于需要取两个重负载线程的游戏，其线程前缀名分别为"UnityMain","Thread-"
+const UNITY_T2: [&str; 3] = [
     "com.galasports.operablebasketball.mi",
     "com.sofunny.Sausage",
+    "com.tencent.jkchess",
 ];
 
 // 对于需要取两个重负载线程的游戏，其线程前缀名分别为"GameThread","RenderThread"，目前策略只有三角洲
