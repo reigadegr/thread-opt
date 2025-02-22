@@ -98,14 +98,12 @@ fn read_task_dir(pid: pid_t) -> Result<Vec<pid_t>> {
     let task_dir = format!("/proc/{pid}/task");
     let c_path = CString::new(task_dir)?;
 
-    // Open the directory
     let dir = unsafe { opendir(c_path.as_ptr()) };
 
     if unlikely(dir.is_null()) {
         return Err(anyhow!("Cannot read task_dir."));
     }
 
-    // Read directory entries and filter out entries starting with '.'
     let entries: Vec<_> = unsafe {
         let dir_ptr = dir;
         std::iter::from_fn(move || {
@@ -115,13 +113,10 @@ fn read_task_dir(pid: pid_t) -> Result<Vec<pid_t>> {
             }
 
             let d_name_ptr = (*entry).d_name.as_ptr();
+            // 这里，d_name_ptr长度不可能超过7
             let bytes = std::slice::from_raw_parts(d_name_ptr, 7);
-
-            if unlikely(bytes.starts_with(b".")) {
-                Some(0)
-            } else {
-                Some(atoi::<i32>(bytes).unwrap_or(0))
-            }
+            // 如果以'.'开头，会被fallback为0，最后被过滤
+            Some(atoi::<pid_t>(bytes).unwrap_or(0))
         })
         .filter(|&s| s != 0)
         .collect()
