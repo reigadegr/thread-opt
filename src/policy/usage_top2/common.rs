@@ -1,10 +1,5 @@
-use crate::{
-    cgroup::group_info::{get_background_group, get_middle_group, get_top_group},
-    utils::affinity_utils::global_cpu_utils::{
-        bind_list_to_middle, bind_list_to_middle_background, bind_list_to_zero_five,
-        bind_tid_to_middle, bind_tid_to_only6, bind_tid_to_only7,
-    },
-};
+use super::super::affinity_policy::{only6_policy, only7_policy, tid_list_t2_policy};
+
 extern crate alloc;
 use alloc::vec::Vec;
 
@@ -22,11 +17,7 @@ enum CmdType {
 }
 
 // 执行策略
-pub fn execute_policy(
-    task_map: &HashMap<pid_t, heapless::Vec<u8, 16>>,
-    first: pid_t,
-    second: pid_t,
-) {
+pub fn execute_policy(task_map: &HashMap<pid_t, [u8; 16]>, first: pid_t, second: pid_t) {
     execute_task(&CmdType::Only7, first);
     execute_task(&CmdType::Only6, second);
 
@@ -36,21 +27,9 @@ pub fn execute_policy(
         .copied()
         .collect();
 
-    let background_group = get_background_group();
-    let middle_group = get_middle_group();
-    let top_group = get_top_group();
-
     #[cfg(debug_assertions)]
     let start = Instant::now();
-    if background_group == middle_group {
-        if top_group.len() == 4 {
-            bind_list_to_zero_five(&filtered_keys);
-        } else {
-            bind_list_to_middle(&filtered_keys);
-        }
-    } else {
-        bind_list_to_middle_background(&filtered_keys);
-    }
+    tid_list_t2_policy(&filtered_keys);
 
     #[cfg(debug_assertions)]
     {
@@ -63,13 +42,7 @@ pub fn execute_policy(
 // 执行线程绑定任务
 fn execute_task(cmd_type: &CmdType, tid: pid_t) {
     match cmd_type {
-        CmdType::Only6 => {
-            if get_middle_group() == get_background_group() {
-                bind_tid_to_only6(tid);
-                return;
-            }
-            bind_tid_to_middle(tid);
-        }
-        CmdType::Only7 => bind_tid_to_only7(tid),
+        CmdType::Only6 => only6_policy(tid),
+        CmdType::Only7 => only7_policy(tid),
     }
 }

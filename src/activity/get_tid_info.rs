@@ -1,18 +1,19 @@
 use crate::utils::node_reader::read_to_byte;
-use anyhow::Result;
+use anyhow::{Result, anyhow};
+use atoi::atoi;
 use compact_str::CompactString;
 use core::time::Duration;
 use hashbrown::HashMap;
-use libc::pid_t;
+use libc::{closedir, opendir, pid_t, readdir};
+use likely_stable::unlikely;
 use minstant::Instant;
-use std::{fs, path::Path};
+use std::{ffi::CString, fs, path::Path};
 extern crate alloc;
 use alloc::format;
-// use heapless::Vec;
 
 #[derive(Default)]
 pub struct TidInfo {
-    pub task_map: HashMap<pid_t, heapless::Vec<u8, 16>>,
+    pub task_map: HashMap<pid_t, [u8; 16]>,
     pub tid_list: Vec<pid_t>,
     task_map_pid: pid_t,
     tid_list_pid: pid_t,
@@ -39,7 +40,7 @@ impl TidUtils {
         }
     }
 
-    pub fn get_task_map(&mut self, pid: pid_t) -> &HashMap<pid_t, heapless::Vec<u8, 16>> {
+    pub fn get_task_map(&mut self, pid: pid_t) -> &HashMap<pid_t, [u8; 16]> {
         if self.last_refresh_task_map.elapsed() > Duration::from_millis(5000) {
             self.last_refresh_task_map = Instant::now();
             return &self.set_task_map(pid).task_map;
@@ -71,7 +72,7 @@ impl TidUtils {
             return &self.tid_info;
         };
 
-        let mut task_map: HashMap<pid_t, heapless::Vec<u8, 16>> = HashMap::new();
+        let mut task_map: HashMap<pid_t, [u8; 16]> = HashMap::new();
         for tid in tid_list {
             let comm_path = format!("/proc/{tid}/comm");
             let Ok(comm) = read_to_byte(&comm_path) else {
@@ -95,14 +96,37 @@ impl TidUtils {
 
 fn read_task_dir(pid: pid_t) -> Result<Vec<pid_t>> {
     let task_dir = format!("/proc/{pid}/task");
-    let tid_list = fs::read_dir(task_dir)?
-        .filter_map(|entry| {
-            entry
-                .ok()
-                .and_then(|e| e.file_name().to_string_lossy().parse::<pid_t>().ok())
+    let c_path = CString::new(task_dir)?;
+
+    let dir = unsafe { opendir(c_path.as_ptr()) };
+
+    if unlikely(dir.is_null()) {
+        return Err(anyhow!("Cannot read task_dir."));
+    }
+
+    let entries: Vec<_> = unsafe {
+        let dir_ptr = dir;
+        std::iter::from_fn(move || {
+            let entry = readdir(dir_ptr);
+            if unlikely(entry.is_null()) {
+                return None;
+            }
+
+            let d_name_ptr = (*entry).d_name.as_ptr();
+            // 这里，d_name_ptr长度不可能超过7
+            let bytes = std::slice::from_raw_parts(d_name_ptr, 7);
+            // 如果以'.'开头，会被fallback为0，最后被过滤
+            Some(atoi::<pid_t>(bytes).unwrap_or(0))
         })
-        .collect();
-    Ok(tid_list)
+        .filter(|&s| s != 0)
+        .collect()
+    };
+
+    // Close the directory
+    unsafe {
+        closedir(dir);
+    }
+    Ok(entries)
 }
 
 pub fn get_process_name(pid: pid_t) -> Result<CompactString> {

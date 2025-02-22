@@ -1,6 +1,6 @@
 id=thread_opt
 name=Thread-opt
-version=v1.9.0
+version=v1.9.1
 versionCode=19
 author=Nigger
 description=The Hard Affinity policy binds threads to target cores in gaming.
