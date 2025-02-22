@@ -14,11 +14,11 @@ impl TopPidInfo {
     pub fn new(dump: &[u8]) -> Self {
         let pid = dump
             .split(|&b| b == b'\n')
-            .find(|line| line.windows(4).any(|w| w == b" TOP"))
+            .find(|line| has_top(line))
             .and_then(|line| {
                 // 修正为字节切片的处理方式
                 line.split(|&b| b.is_ascii_whitespace())
-                    .filter_map(|s| (!s.is_empty()).then_some(s))
+                    .filter(|&s| !s.is_empty())
                     .nth(4)
             })
             .and_then(atoi::<pid_t>)
@@ -27,6 +27,25 @@ impl TopPidInfo {
         println!("pid为-{pid:?}-");
         Self { pid }
     }
+}
+
+// 使用memchr加速行匹配检查
+fn has_top(line: &[u8]) -> bool {
+    let mut pos = 0;
+    while pos + 3 < line.len() {
+        // 使用memchr查找下一个空格
+        if let Some(offset) = memchr::memchr(b' ', &line[pos..]) {
+            let space_pos = pos + offset;
+            // 检查后续三个字节是否符合要求
+            if &line[space_pos..space_pos + 4] == b" TOP" {
+                return true;
+            }
+            pos = space_pos + 1; // 跳过当前空格继续查找
+        } else {
+            break;
+        }
+    }
+    false
 }
 
 pub struct TopAppUtils {
@@ -57,8 +76,8 @@ impl TopAppUtils {
 
     pub fn set_top_pid(&mut self) -> TopPidInfo {
         self.inotify.read_events_blocking(&mut [0; 1024]).unwrap();
-        // #[cfg(debug_assertions)]
-        // let start = std::time::Instant::now();
+        #[cfg(debug_assertions)]
+        let start = std::time::Instant::now();
         let dump = loop {
             match self.dumper.dump_to_byte(&["lru"]) {
                 Ok(dump) => break dump,
@@ -68,11 +87,11 @@ impl TopAppUtils {
                 }
             }
         };
-        // #[cfg(debug_assertions)]
-        // {
-        // let end = start.elapsed();
-        // log::debug!("读toppid成时间: {:?}", end);
-        // }
+        #[cfg(debug_assertions)]
+        {
+            let end = start.elapsed();
+            log::debug!("读toppid成时间: {:?}", end);
+        }
         TopPidInfo::new(&dump)
     }
 }

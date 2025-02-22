@@ -1,4 +1,4 @@
-use libc::{CPU_SET, CPU_ZERO, cpu_set_t, pid_t, sched_setaffinity};
+use libc::{cpu_set_t, pid_t, sched_setaffinity, CPU_SET, CPU_ZERO};
 
 // 辅助通用函数：初始化 CPU 集
 pub fn create_cpu_set(cpu_indices: &[u8]) -> cpu_set_t {
