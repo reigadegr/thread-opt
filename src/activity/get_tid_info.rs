@@ -5,6 +5,7 @@ use compact_str::CompactString;
 use core::time::Duration;
 use hashbrown::HashMap;
 use libc::{closedir, opendir, pid_t, readdir};
+use likely_stable::unlikely;
 use minstant::Instant;
 use std::{ffi::CString, fs, path::Path};
 extern crate alloc;
@@ -95,12 +96,12 @@ impl TidUtils {
 
 fn read_task_dir(pid: pid_t) -> Result<Vec<pid_t>> {
     let task_dir = format!("/proc/{pid}/task");
-    let c_path = CString::new(task_dir).expect("Invalid path");
+    let c_path = CString::new(task_dir)?;
 
     // Open the directory
     let dir = unsafe { opendir(c_path.as_ptr()) };
 
-    if dir.is_null() {
+    if unlikely(dir.is_null()) {
         return Err(anyhow!("Cannot read task_dir."));
     }
 
@@ -109,17 +110,17 @@ fn read_task_dir(pid: pid_t) -> Result<Vec<pid_t>> {
         let dir_ptr = dir;
         std::iter::from_fn(move || {
             let entry = readdir(dir_ptr);
-            if entry.is_null() {
+            if unlikely(entry.is_null()) {
                 return None;
             }
 
             let d_name_ptr = (*entry).d_name.as_ptr();
             let bytes = std::slice::from_raw_parts(d_name_ptr, 7);
 
-            if bytes.starts_with(b".") {
+            if unlikely(bytes.starts_with(b".")) {
                 Some(0)
             } else {
-                Some(atoi::<i32>(bytes).expect("无法转换"))
+                Some(atoi::<i32>(bytes).unwrap_or(0))
             }
         })
         .filter(|&s| s != 0)
@@ -130,7 +131,6 @@ fn read_task_dir(pid: pid_t) -> Result<Vec<pid_t>> {
     unsafe {
         closedir(dir);
     }
-
     Ok(entries)
 }
 
