@@ -1,6 +1,6 @@
 use super::group_info::{get_background_group, get_top_group};
 use crate::utils::node_reader::read_file;
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use compact_str::CompactString;
 use likely_stable::unlikely;
 use log::info;

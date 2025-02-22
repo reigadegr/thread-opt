@@ -36,6 +36,7 @@ memchr = "2.7.4"
 mimalloc = { version = "0.1.43", features = ["local_dynamic_tls", "no_thp", "override"] }
 minstant = "0.1.7"
 once_cell = { version = "1.20.3", default-features = false }
+stringzilla = "3.11.3"
 tklog = "0.2.9"
 
 [build-dependencies]

@@ -4,6 +4,7 @@ use dumpsys_rs::Dumpsys;
 use inotify::{Inotify, WatchMask};
 use libc::pid_t;
 use log::info;
+use stringzilla::sz;
 
 #[derive(Default)]
 pub struct TopPidInfo {
@@ -14,7 +15,7 @@ impl TopPidInfo {
     pub fn new(dump: &[u8]) -> Self {
         let pid = dump
             .split(|&b| b == b'\n')
-            .find(|line| has_top(line))
+            .find(|line| sz::find(line, b" TOP").is_some())
             .and_then(|line| {
                 // 修正为字节切片的处理方式
                 line.split(|&b| b.is_ascii_whitespace())
@@ -27,25 +28,6 @@ impl TopPidInfo {
         println!("pid为-{pid:?}-");
         Self { pid }
     }
-}
-
-// 使用memchr加速行匹配检查
-fn has_top(line: &[u8]) -> bool {
-    let mut pos = 0;
-    while pos + 3 < line.len() {
-        // 使用memchr查找下一个空格
-        if let Some(offset) = memchr::memchr(b' ', &line[pos..]) {
-            let space_pos = pos + offset;
-            // 检查后续三个字节是否符合要求
-            if &line[space_pos..space_pos + 4] == b" TOP" {
-                return true;
-            }
-            pos = space_pos + 1; // 跳过当前空格继续查找
-        } else {
-            break;
-        }
-    }
-    false
 }
 
 pub struct TopAppUtils {

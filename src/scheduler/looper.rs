@@ -1,6 +1,6 @@
 use crate::{
-    activity::{get_tid_info::get_process_name, ActivityUtils},
-    policy::pkg_cfg::{StartArgs, PACKAGE_CONFIGS},
+    activity::{ActivityUtils, get_tid_info::get_process_name},
+    policy::pkg_cfg::{PACKAGE_CONFIGS, StartArgs},
     utils::{affinity_utils::global_cpu_utils::bind_list_to_background, sleep::sleep_millis},
 };
 use compact_str::CompactString;
