@@ -1,5 +1,6 @@
 use crate::utils::node_reader::read_to_byte;
 use anyhow::Result;
+use atoi::atoi;
 use compact_str::CompactString;
 use core::time::Duration;
 use hashbrown::HashMap;
@@ -98,7 +99,7 @@ fn read_task_dir(pid: pid_t) -> Result<Vec<pid_t>> {
         .filter_map(|entry| {
             entry
                 .ok()
-                .and_then(|e| e.file_name().to_string_lossy().parse::<pid_t>().ok())
+                .and_then(|e| atoi(e.file_name().as_encoded_bytes()))
         })
         .collect();
     Ok(tid_list)
