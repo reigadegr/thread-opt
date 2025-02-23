@@ -110,7 +110,7 @@ fn read_task_dir(pid: pid_t) -> Result<Vec<pid_t>> {
         std::iter::from_fn(move || {
             let entry = readdir(dir_ptr);
             if unlikely(entry.is_null()) {
-                return Some(0);
+                return None;
             }
 
             let d_name_ptr = (*entry).d_name.as_ptr();
