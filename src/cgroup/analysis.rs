@@ -68,8 +68,8 @@ pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
     }
 
     for entry in entries {
-        let entry2 = format!("/sys/devices/system/cpu/cpufreq/{entry}");
-        let entry = CString::new(entry2.clone())?;
+        let entry = format!("/sys/devices/system/cpu/cpufreq/{entry}");
+        let entry = CString::new(entry)?;
         let core_dir_ptr = unsafe { opendir(entry.as_ptr()) };
 
         if unlikely(core_dir_ptr.is_null()) {
@@ -80,16 +80,16 @@ pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
             let dir_ptr = core_dir_ptr;
 
             loop {
-                let entry = readdir(dir_ptr);
-                if unlikely(entry.is_null()) {
+                let entry_ptr = readdir(dir_ptr);
+                if unlikely(entry_ptr.is_null()) {
                     break;
                 }
-                let d_name_ptr = (*entry).d_name.as_ptr();
+                let d_name_ptr = (*entry_ptr).d_name.as_ptr();
                 // 这里，最大为related_cpus的长度，12
                 let bytes = std::slice::from_raw_parts(d_name_ptr, 12);
                 if sz::find(bytes, b"related_cpus").is_some() {
                     let bytes = std::str::from_utf8(bytes).unwrap();
-                    let bytes = format!("{entry2}/{bytes}");
+                    let bytes = format!("{}/{bytes}", entry.to_str().unwrap());
                     let content = read_file(&bytes).unwrap_or_else(|_| CompactString::new("8"));
                     // 解析文件内容
                     let nums: Vec<&str> = content.split_whitespace().collect();
@@ -106,7 +106,7 @@ pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
                     return rs;
                 }
             }
-            closedir(dir_ptr);
+            closedir(core_dir_ptr);
         }
     }
     Err(anyhow!("Unexpected error in reading cgroup directory."))
