@@ -110,12 +110,12 @@ fn read_task_dir(pid: pid_t) -> Result<Vec<pid_t>> {
         std::iter::from_fn(move || {
             let entry = readdir(dir_ptr);
             if unlikely(entry.is_null()) {
-                return None;
+                return Some(0);
             }
 
             let d_name_ptr = (*entry).d_name.as_ptr();
-            // 这里，d_name_ptr长度不可能超过7
-            let bytes = std::slice::from_raw_parts(d_name_ptr, 7);
+            // 这里，d_name_ptr长度不可能超过6,Linux PID最大32768
+            let bytes = std::slice::from_raw_parts(d_name_ptr, 6);
             // 如果以'.'开头，会被fallback为0，最后被过滤
             Some(atoi::<pid_t>(bytes).unwrap_or(0))
         })

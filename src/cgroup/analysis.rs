@@ -5,6 +5,7 @@ use compact_str::CompactString;
 use likely_stable::unlikely;
 use log::info;
 use once_cell::sync::Lazy;
+use stringzilla::sz;
 extern crate alloc;
 use alloc::{boxed::Box, vec::Vec};
 
@@ -31,7 +32,9 @@ pub static MIDDLE_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| {
 });
 
 pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
-    let cgroup = "/sys/devices/system/cpu/cpufreq";
+    let cgroup = "/sys/devices/system/cpu/cpufreq";    
+    #[cfg(debug_assertions)]
+    let start = std::time::Instant::now();
     let entries = std::fs::read_dir(cgroup)?;
     for entry in entries {
         let entry = entry?;
@@ -49,8 +52,7 @@ pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
             // 检查文件名是否包含 "related_cpus"
             if path
                 .file_name()
-                .and_then(|f| f.to_str())
-                .is_some_and(|f| f.contains("related_cpus"))
+                .is_some_and(|f| sz::find(f.as_encoded_bytes(), b"related_cpus").is_some())
             {
                 let content = read_file(&path).unwrap_or_else(|_| CompactString::new("8"));
 
@@ -60,6 +62,11 @@ pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
                 let rs = init_group(target_core, &nums);
                 if rs.is_err() {
                     continue;
+                }
+                #[cfg(debug_assertions)]
+                {
+                    let end = start.elapsed();
+                    log::debug!("读t目录时间: {:?}", end);
                 }
                 return rs;
             }
