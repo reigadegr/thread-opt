@@ -41,4 +41,5 @@ fn set_main_thread_name(name: &str) -> Result<()> {
 fn print_misc() {
     info!("免费软件，禁止商用");
     info!("Free software, not for commercial use.");
+    info!("开源地址: https://github.com/reigadegr/thread-opt");
 }

@@ -1,8 +1,7 @@
 use atoi::atoi;
 use libc::pid_t;
-extern crate alloc;
-use alloc::format;
-use std::{fs::File, io::Read};
+use std::{fs::File, io::Read, path::Path};
+use stringzilla::sz;
 
 #[derive(Debug, Clone)]
 pub struct UsageTracker {
@@ -20,7 +19,7 @@ impl UsageTracker {
 }
 
 fn get_thread_cpu_time(tid: pid_t) -> u64 {
-    let stat_path = format!("/proc/{tid}/schedstat");
+    let stat_path = Path::new("/proc").join(tid.to_string()).join("schedstat");
     let Ok(mut file) = File::open(&stat_path) else {
         return 0;
     };
@@ -28,7 +27,9 @@ fn get_thread_cpu_time(tid: pid_t) -> u64 {
     let Ok(_) = file.read(&mut buffer) else {
         return 0;
     };
-    let mut parts = buffer.split(|&b| b == b' ');
-    let first_part = parts.next().unwrap_or_default();
-    atoi::<u64>(first_part).unwrap_or(0)
+
+    let pos = sz::find(buffer, b" ");
+    let buffer = pos.map_or(&buffer[..], |pos| &buffer[..pos]);
+
+    atoi::<u64>(buffer).unwrap_or(0)
 }

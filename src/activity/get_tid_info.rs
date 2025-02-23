@@ -7,7 +7,8 @@ use hashbrown::HashMap;
 use libc::{closedir, opendir, pid_t, readdir};
 use likely_stable::unlikely;
 use minstant::Instant;
-use std::{ffi::CString, fs, path::Path};
+use std::{ffi::CString, fs, io::Read, path::Path};
+use stringzilla::sz;
 extern crate alloc;
 use alloc::format;
 
@@ -131,7 +132,20 @@ fn read_task_dir(pid: pid_t) -> Result<Vec<pid_t>> {
 
 pub fn get_process_name(pid: pid_t) -> Result<CompactString> {
     let cmdline = Path::new("/proc").join(pid.to_string()).join("cmdline");
-    let cmdline = fs::read_to_string(cmdline)?;
-    let cmdline = cmdline.split(':').next().unwrap_or_default();
-    Ok(CompactString::new(cmdline.trim_matches(['\0']).trim()))
+    let mut cmdline = fs::File::open(cmdline)?;
+    let mut buffer = [0u8; 128];
+    let _ = cmdline.read(&mut buffer)?;
+
+    let pos = sz::find(buffer, b":");
+    if let Some(sub) = pos {
+        let buffer = &buffer[..sub];
+        let buffer = CompactString::from_utf8(buffer)?;
+        return Ok(buffer);
+    }
+
+    let pos = sz::find(buffer, b"\0");
+    let buffer = pos.map_or(&buffer[..], |pos| &buffer[..pos]);
+
+    let buffer = CompactString::from_utf8(buffer)?;
+    Ok(buffer)
 }
