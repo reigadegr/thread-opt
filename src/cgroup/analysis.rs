@@ -2,9 +2,12 @@ use super::group_info::{get_background_group, get_top_group};
 use crate::utils::node_reader::read_file;
 use anyhow::{Result, anyhow};
 use compact_str::CompactString;
+use libc::{DT_DIR, closedir, opendir, readdir};
 use likely_stable::unlikely;
 use log::info;
 use once_cell::sync::Lazy;
+use std::ffi::CStr;
+use std::ffi::CString;
 use stringzilla::sz;
 extern crate alloc;
 use alloc::{boxed::Box, vec::Vec};
@@ -32,44 +35,79 @@ pub static MIDDLE_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| {
 });
 
 pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
-    let cgroup = "/sys/devices/system/cpu/cpufreq";    
+    let cgroup = "/sys/devices/system/cpu/cpufreq";
     #[cfg(debug_assertions)]
     let start = std::time::Instant::now();
-    let entries = std::fs::read_dir(cgroup)?;
-    for entry in entries {
-        let entry = entry?;
-        let path = entry.path();
-        if unlikely(!path.is_dir()) {
-            continue;
+    let cgroup = CString::new(cgroup)?;
+    let dir = unsafe { opendir(cgroup.as_ptr()) };
+
+    if unlikely(dir.is_null()) {
+        return Err(anyhow!("Cannot read task_dir."));
+    }
+
+    let mut entries = Vec::new();
+    unsafe {
+        let dir_ptr = dir;
+        loop {
+            let entry = readdir(dir_ptr);
+            if unlikely(entry.is_null()) {
+                break;
+            }
+
+            // 获取目录项的名称
+            let d_name_ptr = (*entry).d_name.as_ptr();
+            let c_str = CStr::from_ptr(d_name_ptr);
+            let entry_name = c_str.to_str()?;
+            let file_type = (*entry).d_type;
+            if file_type == DT_DIR && !entry_name.starts_with('.') {
+                entries.push(entry_name.to_owned());
+            }
         }
 
-        let core_dir = std::fs::read_dir(path)?;
+        // 关闭目录
+        closedir(dir_ptr);
+    }
 
-        for file in core_dir {
-            let file = file?;
-            let path = file.path();
+    for entry in entries {
+        let entry2 = format!("/sys/devices/system/cpu/cpufreq/{entry}");
+        let entry = CString::new(entry2.clone())?;
+        let core_dir_ptr = unsafe { opendir(entry.as_ptr()) };
 
-            // 检查文件名是否包含 "related_cpus"
-            if path
-                .file_name()
-                .is_some_and(|f| sz::find(f.as_encoded_bytes(), b"related_cpus").is_some())
-            {
-                let content = read_file(&path).unwrap_or_else(|_| CompactString::new("8"));
+        if unlikely(core_dir_ptr.is_null()) {
+            return Err(anyhow!("Cannot read cgroup dir."));
+        }
 
-                // 解析文件内容
-                let nums: Vec<&str> = content.split_whitespace().collect();
+        unsafe {
+            let dir_ptr = core_dir_ptr;
 
-                let rs = init_group(target_core, &nums);
-                if rs.is_err() {
-                    continue;
+            loop {
+                let entry = readdir(dir_ptr);
+                if unlikely(entry.is_null()) {
+                    break;
                 }
-                #[cfg(debug_assertions)]
-                {
-                    let end = start.elapsed();
-                    log::debug!("读t目录时间: {:?}", end);
+                let d_name_ptr = (*entry).d_name.as_ptr();
+                // 这里，最大为related_cpus的长度，12
+                let bytes = std::slice::from_raw_parts(d_name_ptr, 12);
+                if sz::find(bytes, b"related_cpus").is_some() {
+                    let bytes = std::str::from_utf8(bytes).unwrap();
+                    let bytes = format!("{entry2}/{bytes}");
+                    let content = read_file(&bytes).unwrap_or_else(|_| CompactString::new("8"));
+                    // 解析文件内容
+                    let nums: Vec<&str> = content.split_whitespace().collect();
+                    let rs = init_group(target_core, &nums);
+                    if rs.is_err() {
+                        continue;
+                    }
+                    #[cfg(debug_assertions)]
+                    {
+                        let end = start.elapsed();
+                        log::debug!("读目录时间: {:?}", end);
+                    }
+                    return rs;
                 }
-                return rs;
             }
+
+            closedir(dir_ptr);
         }
     }
     Err(anyhow!("Unexpected error in reading cgroup directory."))

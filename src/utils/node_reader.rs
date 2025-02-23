@@ -1,15 +1,16 @@
 use anyhow::Result;
 use compact_str::CompactString;
-use std::{fs::File, io::Read, path::Path};
+use std::{fs::File, io::Read};
 use stringzilla::sz;
 
-pub fn read_file(file: &Path) -> Result<CompactString> {
+pub fn read_file(file: &str) -> Result<CompactString> {
+    // let mut file = File::open(file)?;
     let mut file = File::open(file)?;
     let mut buffer = [0u8; 32];
     let _ = file.read(&mut buffer)?;
     let pos = sz::find(buffer, b"\n");
     let buffer = pos.map_or(&buffer[..], |pos| &buffer[..pos]);
-    let buffer = CompactString::from_utf8(buffer)?;
+    let buffer = CompactString::from_utf8(buffer).unwrap();
     Ok(buffer)
 }
 
