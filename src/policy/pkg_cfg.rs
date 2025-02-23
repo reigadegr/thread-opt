@@ -36,8 +36,8 @@ const UE5_T1: [&str; 1] = ["com.papegames.infinitynikki"];
 // cod战区，负载最重线程为WZM_Main
 const WZM_T1: [&str; 1] = ["com.activision.callofduty.warzone"];
 
-// 对于三国杀，跟暖暖策略一样，只是线程名不同
-const COCOS_T1: [&str; 1] = ["com.bf.sgs.hdexp"];
+// 对于三国杀和时空猎人，跟暖暖策略一样，只是线程名不同
+const COCOS_T1: [&str; 2] = ["com.bf.sgs.hdexp", "com.yinhan.hunter.tx"];
 
 // 需要单独把负载最重的unitymain绑定到cpu7
 const UNITY_T1: [&str; 2] = ["com.tencent.tmgp.cod", "com.tencent.tmgp.cf"];
