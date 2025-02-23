@@ -3,11 +3,10 @@ use crate::utils::node_reader::read_file;
 use anyhow::{Result, anyhow};
 use compact_str::CompactString;
 use libc::{DT_DIR, closedir, opendir, readdir};
-use likely_stable::unlikely;
+use likely_stable::{likely, unlikely};
 use log::info;
 use once_cell::sync::Lazy;
-use std::ffi::CStr;
-use std::ffi::CString;
+use std::ffi::{CStr, CString};
 use stringzilla::sz;
 extern crate alloc;
 use alloc::{boxed::Box, vec::Vec};
@@ -34,10 +33,8 @@ pub static MIDDLE_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| {
     }
 });
 
-pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
+fn read_cgroup_dir() -> Result<Vec<String>> {
     let cgroup = "/sys/devices/system/cpu/cpufreq";
-    #[cfg(debug_assertions)]
-    let start = std::time::Instant::now();
     let cgroup = CString::new(cgroup)?;
     let dir = unsafe { opendir(cgroup.as_ptr()) };
 
@@ -60,13 +57,17 @@ pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
             let entry_name = c_str.to_str()?;
             let file_type = (*entry).d_type;
             if file_type == DT_DIR && !entry_name.starts_with('.') {
-                entries.push(entry_name.to_owned());
+                entries.push(entry_name.to_string());
             }
         }
         // 关闭目录
         closedir(dir_ptr);
     }
+    Ok(entries)
+}
 
+pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
+    let entries = read_cgroup_dir()?;
     for entry in entries {
         let entry = format!("/sys/devices/system/cpu/cpufreq/{entry}");
         let entry = CString::new(entry)?;
@@ -87,24 +88,22 @@ pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
                 let d_name_ptr = (*entry_ptr).d_name.as_ptr();
                 // 这里，最大为related_cpus的长度，12
                 let bytes = std::slice::from_raw_parts(d_name_ptr, 12);
-                if sz::find(bytes, b"related_cpus").is_some() {
-                    let bytes = std::str::from_utf8(bytes).unwrap();
-                    let bytes = format!("{}/{bytes}", entry.to_str().unwrap());
-                    let content = read_file(&bytes).unwrap_or_else(|_| CompactString::new("8"));
-                    // 解析文件内容
-                    let nums: Vec<&str> = content.split_whitespace().collect();
-                    let rs = init_group(target_core, &nums);
-                    if rs.is_err() {
-                        continue;
-                    }
-                    #[cfg(debug_assertions)]
-                    {
-                        let end = start.elapsed();
-                        log::debug!("读目录时间: {:?}", end);
-                    }
-                    closedir(dir_ptr);
-                    return rs;
+
+                if likely(sz::find(bytes, b"related_cpus").is_none()) {
+                    continue;
                 }
+
+                let bytes = std::str::from_utf8(bytes)?;
+                let bytes = format!("{}/{bytes}", entry.to_str()?);
+                let content = read_file(&bytes).unwrap_or_else(|_| CompactString::new("8"));
+                // 解析文件内容
+                let nums: Vec<&str> = content.split_whitespace().collect();
+                let rs = init_group(target_core, &nums);
+                if rs.is_err() {
+                    continue;
+                }
+                closedir(dir_ptr);
+                return rs;
             }
             closedir(core_dir_ptr);
         }
