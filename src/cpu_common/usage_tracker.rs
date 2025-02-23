@@ -1,6 +1,6 @@
 use atoi::atoi;
 use libc::pid_t;
-use std::{fs::File, io::Read, path::Path};
+use std::{fs::File, io::Read};
 use stringzilla::sz;
 
 #[derive(Debug, Clone)]
@@ -19,7 +19,7 @@ impl UsageTracker {
 }
 
 fn get_thread_cpu_time(tid: pid_t) -> u64 {
-    let stat_path = Path::new("/proc").join(tid.to_string()).join("schedstat");
+    let stat_path = format!("/proc/{tid}/schedstat");
     let Ok(mut file) = File::open(&stat_path) else {
         return 0;
     };
