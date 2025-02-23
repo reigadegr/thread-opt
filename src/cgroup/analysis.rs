@@ -63,7 +63,6 @@ pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
                 entries.push(entry_name.to_owned());
             }
         }
-
         // 关闭目录
         closedir(dir_ptr);
     }
@@ -103,10 +102,10 @@ pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
                         let end = start.elapsed();
                         log::debug!("读目录时间: {:?}", end);
                     }
+                    closedir(dir_ptr);
                     return rs;
                 }
             }
-
             closedir(dir_ptr);
         }
     }
