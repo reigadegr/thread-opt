@@ -8,11 +8,17 @@ use once_cell::sync::Lazy;
 extern crate alloc;
 use alloc::{boxed::Box, vec::Vec};
 
-pub static TOP_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| analysis_cgroup_new("7").unwrap());
+pub static TOP_GROUP: Lazy<&'static [u8]> = Lazy::new(|| {
+    let data = analysis_cgroup_new("7").unwrap();
+    Box::leak(data)
+});
 
-pub static BACKEND_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| analysis_cgroup_new("0").unwrap());
+pub static BACKEND_GROUP: Lazy<&'static [u8]> = Lazy::new(|| {
+    let data = analysis_cgroup_new("0").unwrap();
+    Box::leak(data)
+});
 
-pub static MIDDLE_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| {
+pub static MIDDLE_GROUP: Lazy<&'static [u8]> = Lazy::new(|| {
     let mut all_core: Vec<u8> = [0, 1, 2, 3, 4, 5, 6, 7].to_vec();
     let background_values = get_background_group();
     let top_values = get_top_group();
@@ -21,13 +27,14 @@ pub static MIDDLE_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| {
         all_core.retain(|&x| x != value);
     }
 
-    if all_core.is_empty() {
+    let data = if all_core.is_empty() {
         info!("MIDDLE_GROUP initializing with BACKEND_GROUP.");
         background_values.into()
     } else {
         // 否则，使用处理后的 all_core 初始化 MIDDLE_GROUP
         all_core.into_boxed_slice()
-    }
+    };
+    Box::leak(data)
 });
 
 pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {

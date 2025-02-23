@@ -7,7 +7,7 @@ pub fn read_file(file: &Path) -> Result<CompactString> {
     let mut file = File::open(file)?;
     let mut buffer = [0u8; 32];
     let _ = file.read(&mut buffer)?;
-    let pos = sz::find(buffer, b"\0");
+    let pos = sz::find(buffer, b"\n");
     let buffer = pos.map_or(&buffer[..], |pos| &buffer[..pos]);
     let buffer = CompactString::from_utf8(buffer)?;
     Ok(buffer)
