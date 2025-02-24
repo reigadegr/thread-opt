@@ -61,8 +61,6 @@ fn read_cgroup_dir() -> Result<Vec<String>> {
                 entries.push(entry_name.to_string());
             }
         }
-        // 关闭目录
-        // closedir(dir_ptr);
     }
     Ok(entries)
 }

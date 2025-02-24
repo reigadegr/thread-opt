@@ -1,15 +1,13 @@
 use core::ptr::NonNull;
-use libc::closedir;
+use libc::{DIR, closedir};
 
-pub struct DirGuard(Option<NonNull<libc::DIR>>);
+pub struct DirGuard(Option<NonNull<DIR>>);
 
 impl DirGuard {
     /// 创建一个新的 `DirGuard`，包装一个 `DIR*` 指针。
-    pub fn new(dir: *mut libc::DIR) -> Option<Self> {
-        let ptr = NonNull::new(dir);
-        ptr.map(|p| Self(Some(p)))
+    pub const fn new(dir: *mut DIR) -> Self {
+        Self(NonNull::new(dir))
     }
-
     /// 关闭目录并释放资源。
     pub fn close(&mut self) {
         if let Some(dir) = self.0.take() {
