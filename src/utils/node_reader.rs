@@ -20,11 +20,10 @@ pub fn read_to_byte(file: &str) -> Result<[u8; 16]> {
     let mut buffer = [0u8; 16];
     unsafe {
         let fd = open(c_file.as_ptr(), O_RDONLY);
-        let _fd_guard = FileGuard::new(fd);
         if unlikely(fd == -1) {
             return Err(anyhow!("Cannot open file."));
         }
-
+        let _fd_guard = FileGuard::new(fd);
         let bytes_read = read(fd, buffer.as_mut_ptr().cast::<c_void>(), 16);
 
         if unlikely(bytes_read == -1) {

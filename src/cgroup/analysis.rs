@@ -36,12 +36,11 @@ fn read_cgroup_dir() -> Result<Vec<CString>> {
     let cgroup = "/sys/devices/system/cpu/cpufreq";
     let cgroup = CString::new(cgroup)?;
     let dir = unsafe { opendir(cgroup.as_ptr()) };
-    let _dir_ptr_guard = DirGuard::new(dir);
 
     if unlikely(dir.is_null()) {
         return Err(anyhow!("Cannot read task_dir."));
     }
-
+    let _dir_ptr_guard = DirGuard::new(dir);
     let mut entries = Vec::new();
     unsafe {
         let dir_ptr = dir;
@@ -78,11 +77,12 @@ pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
     let entries = read_cgroup_dir()?;
     for entry in entries {
         let core_dir_ptr = unsafe { opendir(entry.as_ptr()) };
-        let _dir_ptr_guard = DirGuard::new(core_dir_ptr);
 
         if unlikely(core_dir_ptr.is_null()) {
             return Err(anyhow!("Cannot read cgroup dir."));
         }
+
+        let _dir_ptr_guard = DirGuard::new(core_dir_ptr);
 
         unsafe {
             let dir_ptr = core_dir_ptr;

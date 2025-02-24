@@ -100,11 +100,10 @@ fn read_task_dir(pid: pid_t) -> Result<Vec<pid_t>> {
     let c_path = CString::new(task_dir)?;
 
     let dir = unsafe { opendir(c_path.as_ptr()) };
-    let _dir_ptr_guard = DirGuard::new(dir);
     if unlikely(dir.is_null()) {
         return Err(anyhow!("Cannot read task_dir."));
     }
-
+    let _dir_ptr_guard = DirGuard::new(dir);
     let entries: Vec<_> = unsafe {
         let dir_ptr = dir;
 

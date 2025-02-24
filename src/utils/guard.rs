@@ -1,4 +1,3 @@
-use anyhow::{Result, anyhow};
 use core::ptr::NonNull;
 use libc::{DIR, c_int, close, closedir};
 
@@ -23,19 +22,13 @@ impl Drop for DirGuard {
 pub struct FileGuard(c_int);
 
 impl FileGuard {
-    pub fn new(fd: c_int) -> Result<Self> {
-        if fd == -1 {
-            Err(anyhow!("Cannot open file."))
-        } else {
-            Ok(Self(fd))
-        }
+    pub const fn new(fd: c_int) -> Self {
+        Self(fd)
     }
 }
 
 impl Drop for FileGuard {
     fn drop(&mut self) {
-        if self.0 != -1 {
-            unsafe { close(self.0) };
-        }
+        unsafe { close(self.0) };
     }
 }
