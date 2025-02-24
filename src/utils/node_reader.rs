@@ -8,16 +8,16 @@ extern crate alloc;
 use alloc::ffi::CString;
 
 pub fn read_file(file: &str) -> Result<CompactString> {
-    let buffer = read_to_byte(file)?;
+    let buffer = read_to_byte::<16>(file)?;
     let pos = sz::find(buffer, b"\n");
     let buffer = pos.map_or(&buffer[..], |pos| &buffer[..pos]);
     let buffer = CompactString::from_utf8(buffer)?;
     Ok(buffer)
 }
 
-pub fn read_to_byte(file: &str) -> Result<[u8; 16]> {
+pub fn read_to_byte<const N: usize>(file: &str) -> Result<[u8; N]> {
     let c_file = CString::new(file)?;
-    let mut buffer = [0u8; 16];
+    let mut buffer = [0u8; N];
     unsafe {
         let fd = open(c_file.as_ptr(), O_RDONLY);
         if unlikely(fd == -1) {
@@ -30,6 +30,5 @@ pub fn read_to_byte(file: &str) -> Result<[u8; 16]> {
             return Err(anyhow!("Cannot read file."));
         }
     }
-
     Ok(buffer)
 }
