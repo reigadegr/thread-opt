@@ -1,4 +1,4 @@
-use crate::utils::sleep::sleep_millis;
+use crate::utils::sleep::sleep_secs;
 use atoi::atoi;
 use dumpsys_rs::Dumpsys;
 use inotify::{Inotify, WatchMask};
@@ -46,7 +46,7 @@ impl TopAppUtils {
         let dumper = loop {
             match Dumpsys::new("activity") {
                 Some(d) => break d,
-                None => sleep_millis(500),
+                None => sleep_secs(1),
             }
         };
         Self { dumper, inotify }
@@ -65,7 +65,7 @@ impl TopAppUtils {
                 Ok(dump) => break dump,
                 Err(e) => {
                     info!("Failed to dump windows: {}, retrying", e);
-                    sleep_millis(500);
+                    sleep_secs(1);
                 }
             }
         };

@@ -2,8 +2,7 @@ pub mod common;
 pub mod policies;
 use super::get_thread_tids;
 use crate::{
-    cpu_common::process_monitor::get_top1_tid, policy::pkg_cfg::StartArgs,
-    utils::sleep::sleep_millis,
+    cpu_common::process_monitor::get_top1_tid, policy::pkg_cfg::StartArgs, utils::sleep::sleep_secs,
 };
 use common::{CmdType, Policy};
 use libc::pid_t;
@@ -54,7 +53,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
 
     fn start_task(&mut self, comm_prefix: &[u8], cmd_type: &CmdType) {
         loop {
-            sleep_millis(2000);
+            sleep_secs(2);
             let pid = self.args.activity_utils.top_app_utils.get_top_pid();
             if unlikely(pid != self.args.pid) {
                 return;

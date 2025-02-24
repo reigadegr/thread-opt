@@ -7,10 +7,9 @@ use hashbrown::HashMap;
 use libc::{opendir, pid_t, readdir};
 use likely_stable::unlikely;
 use minstant::Instant;
-use std::ffi::CString;
 use stringzilla::sz;
 extern crate alloc;
-use alloc::format;
+use alloc::{ffi::CString, format};
 
 #[derive(Default)]
 pub struct TidInfo {
