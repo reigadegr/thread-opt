@@ -8,7 +8,7 @@ use log::info;
 use once_cell::sync::Lazy;
 use stringzilla::sz;
 extern crate alloc;
-use alloc::{boxed::Box, ffi::CString, vec::Vec};
+use alloc::{boxed::Box, ffi::CString, format, vec::Vec};
 
 pub static TOP_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| analysis_cgroup_new("7").unwrap());
 

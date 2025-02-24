@@ -9,7 +9,7 @@ use likely_stable::unlikely;
 use minstant::Instant;
 use stringzilla::sz;
 extern crate alloc;
-use alloc::{ffi::CString, format};
+use alloc::{ffi::CString, format, vec::Vec};
 
 #[derive(Default)]
 pub struct TidInfo {
@@ -138,6 +138,5 @@ pub fn get_process_name(pid: pid_t) -> Result<CompactString> {
     let buffer = pos.map_or(&buffer[..], |pos| &buffer[..pos]);
 
     let buffer = CompactString::from_utf8(buffer)?;
-    println!("经计算后的包名:{buffer}");
     Ok(buffer)
 }

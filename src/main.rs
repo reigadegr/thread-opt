@@ -1,3 +1,4 @@
+#![no_std]
 #![deny(clippy::pedantic)]
 #![warn(clippy::nursery)]
 #![allow(clippy::non_std_lazy_statics)]

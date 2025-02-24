@@ -24,8 +24,6 @@ impl TopPidInfo {
             })
             .and_then(atoi::<pid_t>)
             .unwrap_or_default();
-        #[cfg(debug_assertions)]
-        println!("pid为-{pid:?}-");
         Self { pid }
     }
 }

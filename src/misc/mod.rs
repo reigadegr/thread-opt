@@ -6,7 +6,7 @@ use likely_stable::unlikely;
 use log::info;
 use logger::{init_log, log_metainfo};
 extern crate alloc;
-use alloc::ffi::CString;
+use alloc::{ffi::CString, string::ToString};
 
 pub fn init_misc() {
     working_in_background();

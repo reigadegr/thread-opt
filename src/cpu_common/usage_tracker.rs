@@ -2,6 +2,8 @@ use crate::utils::node_reader::read_to_byte;
 use atoi::atoi;
 use libc::pid_t;
 use stringzilla::sz;
+extern crate alloc;
+use alloc::format;
 
 #[derive(Debug, Clone)]
 pub struct UsageTracker {
