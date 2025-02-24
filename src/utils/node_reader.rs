@@ -24,7 +24,7 @@ pub fn read_to_byte<const N: usize>(file: &str) -> Result<[u8; N]> {
             return Err(anyhow!("Cannot open file."));
         }
         let _fd_guard = FileGuard::new(fd);
-        let bytes_read = read(fd, buffer.as_mut_ptr().cast::<c_void>(), 16);
+        let bytes_read = read(fd, buffer.as_mut_ptr().cast::<c_void>(), N);
 
         if unlikely(bytes_read == -1) {
             return Err(anyhow!("Cannot read file."));

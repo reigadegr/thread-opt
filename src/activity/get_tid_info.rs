@@ -7,7 +7,7 @@ use hashbrown::HashMap;
 use libc::{opendir, pid_t, readdir};
 use likely_stable::unlikely;
 use minstant::Instant;
-use std::{ffi::CString, fs, io::Read};
+use std::ffi::CString;
 use stringzilla::sz;
 extern crate alloc;
 use alloc::format;
@@ -127,10 +127,7 @@ fn read_task_dir(pid: pid_t) -> Result<Vec<pid_t>> {
 
 pub fn get_process_name(pid: pid_t) -> Result<CompactString> {
     let cmdline = format!("/proc/{pid}/cmdline");
-    let mut cmdline = fs::File::open(cmdline)?;
-    let mut buffer = [0u8; 128];
-    let _ = cmdline.read(&mut buffer)?;
-
+    let buffer = read_to_byte::<128>(&cmdline)?;
     let pos = sz::find(buffer, b":");
     if let Some(sub) = pos {
         let buffer = &buffer[..sub];
@@ -142,5 +139,6 @@ pub fn get_process_name(pid: pid_t) -> Result<CompactString> {
     let buffer = pos.map_or(&buffer[..], |pos| &buffer[..pos]);
 
     let buffer = CompactString::from_utf8(buffer)?;
+    println!("经计算后的包名:{buffer}");
     Ok(buffer)
 }
