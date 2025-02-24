@@ -3,15 +3,12 @@ use anyhow::{Result, anyhow};
 use compact_str::CompactString;
 use libc::{O_RDONLY, c_void, open, read};
 use likely_stable::unlikely;
-use std::{fs::File, io::Read};
 use stringzilla::sz;
 extern crate alloc;
 use alloc::ffi::CString;
 
 pub fn read_file(file: &str) -> Result<CompactString> {
-    let mut file = File::open(file)?;
-    let mut buffer = [0u8; 16];
-    let _ = file.read(&mut buffer)?;
+    let buffer = read_to_byte(file)?;
     let pos = sz::find(buffer, b"\n");
     let buffer = pos.map_or(&buffer[..], |pos| &buffer[..pos]);
     let buffer = CompactString::from_utf8(buffer)?;
