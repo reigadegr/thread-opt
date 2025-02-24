@@ -6,7 +6,7 @@ use libc::{DT_DIR, opendir, readdir};
 use likely_stable::{likely, unlikely};
 use log::info;
 use once_cell::sync::Lazy;
-use std::ffi::{CStr, CString};
+use std::ffi::CString;
 use stringzilla::sz;
 extern crate alloc;
 use alloc::{boxed::Box, vec::Vec};
@@ -33,7 +33,7 @@ pub static MIDDLE_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| {
     }
 });
 
-fn read_cgroup_dir() -> Result<Vec<String>> {
+fn read_cgroup_dir() -> Result<Vec<CString>> {
     let cgroup = "/sys/devices/system/cpu/cpufreq";
     let cgroup = CString::new(cgroup)?;
     let dir = unsafe { opendir(cgroup.as_ptr()) };
@@ -52,14 +52,24 @@ fn read_cgroup_dir() -> Result<Vec<String>> {
                 break;
             }
 
+            if unlikely((*entry).d_type != DT_DIR) {
+                continue;
+            }
+
             // 获取目录项的名称
             let d_name_ptr = (*entry).d_name.as_ptr();
-            let c_str = CStr::from_ptr(d_name_ptr);
-            let entry_name = c_str.to_str()?;
-            let file_type = (*entry).d_type;
-            if file_type == DT_DIR && !entry_name.starts_with('.') {
-                entries.push(entry_name.to_string());
+
+            let d_bytes = core::slice::from_raw_parts(d_name_ptr, 7);
+
+            if d_bytes.first() == Some(&b'.') {
+                continue;
             }
+
+            let mut real_path = Vec::with_capacity(39);
+            real_path.extend_from_slice(cgroup.as_bytes());
+            real_path.push(b'/');
+            real_path.extend_from_slice(d_bytes);
+            entries.push(CString::new(real_path)?);
         }
     }
     Ok(entries)
@@ -68,8 +78,6 @@ fn read_cgroup_dir() -> Result<Vec<String>> {
 pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
     let entries = read_cgroup_dir()?;
     for entry in entries {
-        let entry = format!("/sys/devices/system/cpu/cpufreq/{entry}");
-        let entry = CString::new(entry)?;
         let core_dir_ptr = unsafe { opendir(entry.as_ptr()) };
         let _dir_ptr_guard = DirGuard::new(core_dir_ptr);
 
