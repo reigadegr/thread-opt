@@ -87,13 +87,13 @@ pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
                 }
                 let d_name_ptr = (*entry_ptr).d_name.as_ptr();
                 // 这里，最大为related_cpus的长度，12
-                let bytes = std::slice::from_raw_parts(d_name_ptr, 12);
+                let bytes = core::slice::from_raw_parts(d_name_ptr, 12);
 
                 if likely(sz::find(bytes, b"related_cpus").is_none()) {
                     continue;
                 }
 
-                let bytes = std::str::from_utf8(bytes)?;
+                let bytes = core::str::from_utf8(bytes)?;
                 let bytes = format!("{}/{bytes}", entry.to_str()?);
                 let content = read_file(&bytes).unwrap_or_else(|_| CompactString::new("8"));
                 // 解析文件内容
