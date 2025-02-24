@@ -1,8 +1,8 @@
 use super::group_info::{get_background_group, get_top_group};
-use crate::utils::node_reader::read_file;
+use crate::utils::{guard::DirGuard, node_reader::read_file};
 use anyhow::{Result, anyhow};
 use compact_str::CompactString;
-use libc::{DT_DIR, closedir, opendir, readdir};
+use libc::{DT_DIR, opendir, readdir};
 use likely_stable::{likely, unlikely};
 use log::info;
 use once_cell::sync::Lazy;
@@ -37,6 +37,7 @@ fn read_cgroup_dir() -> Result<Vec<String>> {
     let cgroup = "/sys/devices/system/cpu/cpufreq";
     let cgroup = CString::new(cgroup)?;
     let dir = unsafe { opendir(cgroup.as_ptr()) };
+    let _dir_ptr_guard = DirGuard::new(dir);
 
     if unlikely(dir.is_null()) {
         return Err(anyhow!("Cannot read task_dir."));
@@ -61,7 +62,7 @@ fn read_cgroup_dir() -> Result<Vec<String>> {
             }
         }
         // 关闭目录
-        closedir(dir_ptr);
+        // closedir(dir_ptr);
     }
     Ok(entries)
 }
@@ -72,6 +73,7 @@ pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
         let entry = format!("/sys/devices/system/cpu/cpufreq/{entry}");
         let entry = CString::new(entry)?;
         let core_dir_ptr = unsafe { opendir(entry.as_ptr()) };
+        let _dir_ptr_guard = DirGuard::new(core_dir_ptr);
 
         if unlikely(core_dir_ptr.is_null()) {
             return Err(anyhow!("Cannot read cgroup dir."));
@@ -102,10 +104,8 @@ pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
                 if rs.is_err() {
                     continue;
                 }
-                closedir(dir_ptr);
                 return rs;
             }
-            closedir(core_dir_ptr);
         }
     }
     Err(anyhow!("Unexpected error in reading cgroup directory."))

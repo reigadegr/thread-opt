@@ -1,10 +1,10 @@
-use crate::utils::node_reader::read_to_byte;
+use crate::utils::{guard::DirGuard, node_reader::read_to_byte};
 use anyhow::{Result, anyhow};
 use atoi::atoi;
 use compact_str::CompactString;
 use core::time::Duration;
 use hashbrown::HashMap;
-use libc::{closedir, opendir, pid_t, readdir};
+use libc::{opendir, pid_t, readdir};
 use likely_stable::unlikely;
 use minstant::Instant;
 use std::{ffi::CString, fs, io::Read};
@@ -100,13 +100,14 @@ fn read_task_dir(pid: pid_t) -> Result<Vec<pid_t>> {
     let c_path = CString::new(task_dir)?;
 
     let dir = unsafe { opendir(c_path.as_ptr()) };
-
+    let _dir_ptr_guard = DirGuard::new(dir);
     if unlikely(dir.is_null()) {
         return Err(anyhow!("Cannot read task_dir."));
     }
 
     let entries: Vec<_> = unsafe {
         let dir_ptr = dir;
+
         core::iter::from_fn(move || {
             let entry = readdir(dir_ptr);
             if unlikely(entry.is_null()) {
@@ -122,11 +123,6 @@ fn read_task_dir(pid: pid_t) -> Result<Vec<pid_t>> {
         .filter(|&s| s != 0)
         .collect()
     };
-
-    // Close the directory
-    unsafe {
-        closedir(dir);
-    }
     Ok(entries)
 }
 
