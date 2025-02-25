@@ -38,7 +38,7 @@ pub static MIDDLE_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| {
     }
 });
 
-fn read_cgroup_dir() -> Result<Vec<CString>> {
+fn read_cgroup_dir() -> Result<Vec<[u8; 40]>> {
     let cgroup = b"/sys/devices/system/cpu/cpufreq";
     let cgroup = CString::new(cgroup)?;
     let dir = unsafe { opendir(cgroup.as_ptr()) };
@@ -69,11 +69,12 @@ fn read_cgroup_dir() -> Result<Vec<CString>> {
                 continue;
             }
 
-            let mut real_path = [0u8; 39];
+            let mut real_path = [0u8; 40];
             real_path[..=30].copy_from_slice(cgroup.as_bytes());
             real_path[31] = b'/';
             real_path[32..=38].copy_from_slice(d_bytes);
-            entries.push(CString::new(real_path)?);
+            real_path[39] = b'\0';
+            entries.push(real_path);
         }
     }
     Ok(entries)
@@ -106,9 +107,10 @@ pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
                     continue;
                 }
                 let mut real_path = [0u8; 53];
-                real_path[..=38].copy_from_slice(entry.as_bytes());
+                real_path[..=38].copy_from_slice(&entry[..=38]);
                 real_path[39] = b'/';
                 real_path[40..52].copy_from_slice(&b"related_cpus"[..]);
+                real_path[52] = b'\0';
                 let content =
                     read_file::<16>(&real_path).unwrap_or_else(|_| CompactString::new("8"));
                 // 解析文件内容
