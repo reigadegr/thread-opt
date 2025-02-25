@@ -20,7 +20,7 @@ path = "src/main.rs"
 [dependencies]
 anyhow = { version = "1.0.95", default-features = false }
 atoi = { version = "2.0.0", default-features = false }
-compact_str = { version = "0.8.1", default-features = false }
+compact_str = { version = "0.9.0", default-features = false }
 dumpsys-rs = { git = "https://github.com/reigadegr/dumpsys-rs" }
 hashbrown = "0.15.2" 
 inotify = { version = "0.11.0", default-features = false }
