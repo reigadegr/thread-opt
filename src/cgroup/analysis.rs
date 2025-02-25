@@ -39,7 +39,7 @@ pub static MIDDLE_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| {
 });
 
 fn read_cgroup_dir() -> Result<Vec<CString>> {
-    let cgroup = "/sys/devices/system/cpu/cpufreq";
+    let cgroup = b"/sys/devices/system/cpu/cpufreq";
     let cgroup = CString::new(cgroup)?;
     let dir = unsafe { opendir(cgroup.as_ptr()) };
 
@@ -85,7 +85,7 @@ pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
         let core_dir_ptr = unsafe { opendir(entry.as_ptr()) };
 
         if unlikely(core_dir_ptr.is_null()) {
-            return Err(anyhow!("Cannot read cgroup dir."));
+            continue;
         }
 
         let _dir_ptr_guard = DirGuard::new(core_dir_ptr);
@@ -108,7 +108,7 @@ pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
 
                 let bytes = core::str::from_utf8(bytes)?;
                 let bytes = format!("{}/{bytes}", entry.to_str()?);
-                let content = read_file(&bytes).unwrap_or_else(|_| CompactString::new("8"));
+                let content = read_file::<16>(&bytes).unwrap_or_else(|_| CompactString::new("8"));
                 // 解析文件内容
                 let nums: Vec<&str> = content.split_whitespace().collect();
                 let rs = init_group(target_core, &nums);

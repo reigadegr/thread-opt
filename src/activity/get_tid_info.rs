@@ -1,4 +1,7 @@
-use crate::utils::{guard::DirGuard, node_reader::read_to_byte};
+use crate::utils::{
+    guard::DirGuard,
+    node_reader::{read_to_byte, read_to_byte_sp},
+};
 use anyhow::{Result, anyhow};
 use atoi::atoi;
 use compact_str::CompactString;
@@ -7,6 +10,7 @@ use hashbrown::HashMap;
 use libc::{opendir, pid_t, readdir};
 use likely_stable::unlikely;
 use minstant::Instant;
+use std::io::Write;
 use stringzilla::sz;
 extern crate alloc;
 use alloc::{ffi::CString, format, vec::Vec};
@@ -125,8 +129,12 @@ fn read_task_dir(pid: pid_t) -> Result<Vec<pid_t>> {
 }
 
 pub fn get_process_name(pid: pid_t) -> Result<CompactString> {
-    let cmdline = format!("/proc/{pid}/cmdline");
-    let buffer = read_to_byte::<128>(&cmdline)?;
+    let mut cmdline = [0u8; 32];
+    cmdline[0..6].copy_from_slice(&b"/proc/"[..]);
+    write!(&mut cmdline[6..], "{pid}/cmdline")?;
+
+    let buffer = read_to_byte_sp::<128>(&cmdline)?;
+
     let pos = sz::find(buffer, b":");
     if let Some(sub) = pos {
         let buffer = &buffer[..sub];

@@ -23,7 +23,7 @@ pub fn init_misc() {
 fn working_in_background() {
     unsafe {
         let self_pid = getpid().to_string();
-        let _ = write_to_byte::<6>("/dev/cpuset/background/tasks", &self_pid);
+        let _ = write_to_byte::<6>(c"/dev/cpuset/background/tasks", &self_pid);
     }
 }
 
