@@ -1,7 +1,8 @@
 use super::{
     name_match::policies::{policy_sky, policy_ue, policy_unity},
     usage_top1::policies::{
-        policy_cocos, policy_top1, policy_ue5, policy_unity_t1, policy_unity_t1_u2, policy_wzm,
+        policy_cocos, policy_ru, policy_top1, policy_ue5, policy_unity_t1, policy_unity_t1_u2,
+        policy_wzm,
     },
     usage_top2::{policy_party, policy_top2, policy_ue_t2, policy_unity_t2},
 };
@@ -32,6 +33,9 @@ const UE_T1: [&str; 2] = ["com.tencent.lzhx", "com.tencent.tmgp.pubgmhd"];
 
 // 需要取一个cputime最大的线程，其线程前缀名为"GameThread"，只有无限暖暖
 const UE5_T1: [&str; 1] = ["com.papegames.infinitynikki"];
+
+//拉力竞速3
+const RU_T1: [&str; 1] = ["brownmonster.app.game.rushrally3"];
 
 // cod战区，负载最重线程为WZM_Main
 const WZM_T1: [&str; 1] = ["com.activision.callofduty.warzone"];
@@ -71,12 +75,13 @@ pub struct StartArgs<'a> {
 
 type ConfigTuple = (&'static [&'static str], fn(&mut StartArgs));
 
-pub const PACKAGE_CONFIGS: [ConfigTuple; 13] = [
+pub const PACKAGE_CONFIGS: [ConfigTuple; 14] = [
     (&UE, policy_ue::start_task),
     (&UNITY, policy_unity::start_task),
     (&UE_T1, policy_top1::start_task),
     (&UE5_T1, policy_ue5::start_task),
     (&WZM_T1, policy_wzm::start_task),
+    (&RU_T1, policy_ru::start_task),
     (&COCOS_T1, policy_cocos::start_task),
     (&UNITY_T1, policy_unity_t1::start_task),
     (&UNITY_T1_U2, policy_unity_t1_u2::start_task),

@@ -59,7 +59,7 @@ impl TopAppUtils {
         #[cfg(debug_assertions)]
         let start = minstant::Instant::now();
         let dump = loop {
-            match self.dumper.dump_to_byte(&["lru"]) {
+            match self.dumper.dump_to_byte::<1024>(&["lru"]) {
                 Ok(dump) => break dump,
                 Err(e) => {
                     info!("Failed to dump windows: {}, retrying", e);

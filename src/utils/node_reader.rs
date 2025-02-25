@@ -36,7 +36,6 @@ pub fn read_to_byte<const N: usize>(file: &str) -> Result<[u8; N]> {
 pub fn write_to_byte<const N: usize>(file: &str, msg: &str) -> Result<()> {
     let c_file = CString::new(file)?;
     let msg = CString::new(msg)?;
-    // let buffer = [0u8; N];
     unsafe {
         let fd = open(c_file.as_ptr(), O_WRONLY);
         if unlikely(fd == -1) {
