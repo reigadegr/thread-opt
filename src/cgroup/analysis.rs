@@ -69,10 +69,10 @@ fn read_cgroup_dir() -> Result<Vec<CString>> {
                 continue;
             }
 
-            let mut real_path = Vec::with_capacity(39);
-            real_path.extend_from_slice(cgroup.as_bytes());
-            real_path.push(b'/');
-            real_path.extend_from_slice(d_bytes);
+            let mut real_path = [0u8; 39];
+            real_path[..=30].copy_from_slice(cgroup.as_bytes());
+            real_path[31] = b'/';
+            real_path[32..=38].copy_from_slice(d_bytes);
             entries.push(CString::new(real_path)?);
         }
     }
