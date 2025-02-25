@@ -1,7 +1,7 @@
 mod common;
 pub mod policies;
 
-use crate::{policy::pkg_cfg::StartArgs, utils::sleep::sleep_millis};
+use crate::{policy::pkg_cfg::StartArgs, utils::sleep::sleep_secs};
 use common::Policy;
 use likely_stable::unlikely;
 #[cfg(debug_assertions)]
@@ -24,7 +24,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
 
     fn start_task(&mut self) {
         loop {
-            sleep_millis(2000);
+            sleep_secs(2);
             let pid = self.args.activity_utils.top_app_utils.get_top_pid();
             if unlikely(pid != self.args.pid) {
                 return;

@@ -1,12 +1,14 @@
 use super::group_info::{get_background_group, get_top_group};
-use crate::utils::node_reader::read_file;
+use crate::utils::{guard::DirGuard, node_reader::read_file};
 use anyhow::{Result, anyhow};
 use compact_str::CompactString;
-use likely_stable::unlikely;
+use libc::{DT_DIR, opendir, readdir};
+use likely_stable::{likely, unlikely};
 use log::info;
 use once_cell::sync::Lazy;
+use stringzilla::sz;
 extern crate alloc;
-use alloc::{boxed::Box, vec::Vec};
+use alloc::{boxed::Box, ffi::CString, format, vec::Vec};
 
 pub static TOP_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| analysis_cgroup_new("7").unwrap());
 
@@ -30,33 +32,79 @@ pub static MIDDLE_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| {
     }
 });
 
-pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
+fn read_cgroup_dir() -> Result<Vec<CString>> {
     let cgroup = "/sys/devices/system/cpu/cpufreq";
-    let entries = std::fs::read_dir(cgroup)?;
+    let cgroup = CString::new(cgroup)?;
+    let dir = unsafe { opendir(cgroup.as_ptr()) };
+
+    if unlikely(dir.is_null()) {
+        return Err(anyhow!("Cannot read task_dir."));
+    }
+    let _dir_ptr_guard = DirGuard::new(dir);
+    let mut entries = Vec::new();
+    unsafe {
+        let dir_ptr = dir;
+        loop {
+            let entry = readdir(dir_ptr);
+            if unlikely(entry.is_null()) {
+                break;
+            }
+
+            if unlikely((*entry).d_type != DT_DIR) {
+                continue;
+            }
+
+            // 获取目录项的名称
+            let d_name_ptr = (*entry).d_name.as_ptr();
+
+            let d_bytes = core::slice::from_raw_parts(d_name_ptr, 7);
+
+            if d_bytes.first() == Some(&b'.') {
+                continue;
+            }
+
+            let mut real_path = Vec::with_capacity(39);
+            real_path.extend_from_slice(cgroup.as_bytes());
+            real_path.push(b'/');
+            real_path.extend_from_slice(d_bytes);
+            entries.push(CString::new(real_path)?);
+        }
+    }
+    Ok(entries)
+}
+
+pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
+    let entries = read_cgroup_dir()?;
     for entry in entries {
-        let entry = entry?;
-        let path = entry.path();
-        if unlikely(!path.is_dir()) {
-            continue;
+        let core_dir_ptr = unsafe { opendir(entry.as_ptr()) };
+
+        if unlikely(core_dir_ptr.is_null()) {
+            return Err(anyhow!("Cannot read cgroup dir."));
         }
 
-        let core_dir = std::fs::read_dir(path)?;
+        let _dir_ptr_guard = DirGuard::new(core_dir_ptr);
 
-        for file in core_dir {
-            let file = file?;
-            let path = file.path();
+        unsafe {
+            let dir_ptr = core_dir_ptr;
 
-            // 检查文件名是否包含 "related_cpus"
-            if path
-                .file_name()
-                .and_then(|f| f.to_str())
-                .is_some_and(|f| f.contains("related_cpus"))
-            {
-                let content = read_file(&path).unwrap_or_else(|_| CompactString::new("8"));
+            loop {
+                let entry_ptr = readdir(dir_ptr);
+                if unlikely(entry_ptr.is_null()) {
+                    break;
+                }
+                let d_name_ptr = (*entry_ptr).d_name.as_ptr();
+                // 这里，最大为related_cpus的长度，12
+                let bytes = core::slice::from_raw_parts(d_name_ptr, 12);
 
+                if likely(sz::find(bytes, b"related_cpus").is_none()) {
+                    continue;
+                }
+
+                let bytes = core::str::from_utf8(bytes)?;
+                let bytes = format!("{}/{bytes}", entry.to_str()?);
+                let content = read_file(&bytes).unwrap_or_else(|_| CompactString::new("8"));
                 // 解析文件内容
                 let nums: Vec<&str> = content.split_whitespace().collect();
-
                 let rs = init_group(target_core, &nums);
                 if rs.is_err() {
                     continue;

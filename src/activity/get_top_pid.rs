@@ -1,4 +1,4 @@
-use crate::utils::sleep::sleep_millis;
+use crate::utils::sleep::sleep_secs;
 use atoi::atoi;
 use dumpsys_rs::Dumpsys;
 use inotify::{Inotify, WatchMask};
@@ -24,8 +24,6 @@ impl TopPidInfo {
             })
             .and_then(atoi::<pid_t>)
             .unwrap_or_default();
-        #[cfg(debug_assertions)]
-        println!("pid为-{pid:?}-");
         Self { pid }
     }
 }
@@ -46,7 +44,7 @@ impl TopAppUtils {
         let dumper = loop {
             match Dumpsys::new("activity") {
                 Some(d) => break d,
-                None => sleep_millis(500),
+                None => sleep_secs(1),
             }
         };
         Self { dumper, inotify }
@@ -59,13 +57,13 @@ impl TopAppUtils {
     pub fn set_top_pid(&mut self) -> TopPidInfo {
         self.inotify.read_events_blocking(&mut [0; 1024]).unwrap();
         #[cfg(debug_assertions)]
-        let start = std::time::Instant::now();
+        let start = minstant::Instant::now();
         let dump = loop {
-            match self.dumper.dump_to_byte(&["lru"]) {
+            match self.dumper.dump_to_byte::<1024>(&["lru"]) {
                 Ok(dump) => break dump,
                 Err(e) => {
                     info!("Failed to dump windows: {}, retrying", e);
-                    sleep_millis(500);
+                    sleep_secs(1);
                 }
             }
         };

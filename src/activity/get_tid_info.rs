@@ -1,15 +1,15 @@
-use crate::utils::node_reader::read_to_byte;
+use crate::utils::{guard::DirGuard, node_reader::read_to_byte};
 use anyhow::{Result, anyhow};
 use atoi::atoi;
 use compact_str::CompactString;
 use core::time::Duration;
 use hashbrown::HashMap;
-use libc::{closedir, opendir, pid_t, readdir};
+use libc::{opendir, pid_t, readdir};
 use likely_stable::unlikely;
 use minstant::Instant;
-use std::{ffi::CString, fs, path::Path};
+use stringzilla::sz;
 extern crate alloc;
-use alloc::format;
+use alloc::{ffi::CString, format, vec::Vec};
 
 #[derive(Default)]
 pub struct TidInfo {
@@ -75,7 +75,7 @@ impl TidUtils {
         let mut task_map: HashMap<pid_t, [u8; 16]> = HashMap::new();
         for tid in tid_list {
             let comm_path = format!("/proc/{tid}/comm");
-            let Ok(comm) = read_to_byte(&comm_path) else {
+            let Ok(comm) = read_to_byte::<16>(&comm_path) else {
                 return &self.tid_info;
             };
             task_map.insert(tid, comm);
@@ -99,39 +99,44 @@ fn read_task_dir(pid: pid_t) -> Result<Vec<pid_t>> {
     let c_path = CString::new(task_dir)?;
 
     let dir = unsafe { opendir(c_path.as_ptr()) };
-
     if unlikely(dir.is_null()) {
         return Err(anyhow!("Cannot read task_dir."));
     }
-
+    let _dir_ptr_guard = DirGuard::new(dir);
     let entries: Vec<_> = unsafe {
         let dir_ptr = dir;
-        std::iter::from_fn(move || {
+
+        core::iter::from_fn(move || {
             let entry = readdir(dir_ptr);
             if unlikely(entry.is_null()) {
                 return None;
             }
 
             let d_name_ptr = (*entry).d_name.as_ptr();
-            // 这里，d_name_ptr长度不可能超过7
-            let bytes = std::slice::from_raw_parts(d_name_ptr, 7);
+            // 这里，d_name_ptr长度不可能超过6,Linux PID最大32768
+            let bytes = core::slice::from_raw_parts(d_name_ptr, 6);
             // 如果以'.'开头，会被fallback为0，最后被过滤
             Some(atoi::<pid_t>(bytes).unwrap_or(0))
         })
         .filter(|&s| s != 0)
         .collect()
     };
-
-    // Close the directory
-    unsafe {
-        closedir(dir);
-    }
     Ok(entries)
 }
 
 pub fn get_process_name(pid: pid_t) -> Result<CompactString> {
-    let cmdline = Path::new("/proc").join(pid.to_string()).join("cmdline");
-    let cmdline = fs::read_to_string(cmdline)?;
-    let cmdline = cmdline.split(':').next().unwrap_or_default();
-    Ok(CompactString::new(cmdline.trim_matches(['\0']).trim()))
+    let cmdline = format!("/proc/{pid}/cmdline");
+    let buffer = read_to_byte::<128>(&cmdline)?;
+    let pos = sz::find(buffer, b":");
+    if let Some(sub) = pos {
+        let buffer = &buffer[..sub];
+        let buffer = CompactString::from_utf8(buffer)?;
+        return Ok(buffer);
+    }
+
+    let pos = sz::find(buffer, b"\0");
+    let buffer = pos.map_or(&buffer[..], |pos| &buffer[..pos]);
+
+    let buffer = CompactString::from_utf8(buffer)?;
+    Ok(buffer)
 }

@@ -9,7 +9,15 @@ wait_until_login() {
     until [ -d /sdcard/Android ]; do sleep 1; done
 }
 
-wait_until_login
+if [ "$(getprop sys.boot_completed)" != "1" ]; then
+    wait_until_login
+    stop oiface
+    stop gameopt_hal_service-1-0
+    stop vendor.urcc-hal-aidl
+    stop horae
+    killall -9 vendor.oplus.hardware.urcc-service vendor.oplus.hardware.gameopt-service oiface horae
+fi
+
 killall -15 thread-opt; rm $LOG
 chmod +x ${0%/*}/thread-opt
 RUST_BACKTRACE=1 nohup $MODDIR/thread-opt >$LOG 2>&1 &
