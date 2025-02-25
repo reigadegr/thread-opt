@@ -1,4 +1,4 @@
-use crate::utils::{guard::DirGuard, node_reader::read_to_byte_sp};
+use crate::utils::{guard::DirGuard, node_reader::read_to_byte};
 use anyhow::{Result, anyhow};
 use atoi::atoi;
 use compact_str::CompactString;
@@ -82,7 +82,7 @@ impl TidUtils {
                 continue;
             }
 
-            let Ok(comm) = read_to_byte_sp::<16>(&comm_path) else {
+            let Ok(comm) = read_to_byte::<16>(&comm_path) else {
                 return &self.tid_info;
             };
             task_map.insert(tid, comm);
@@ -137,7 +137,7 @@ pub fn get_process_name(pid: pid_t) -> Result<CompactString> {
     cmdline[0..6].copy_from_slice(&b"/proc/"[..]);
     write!(&mut cmdline[6..], "{pid}/cmdline")?;
 
-    let buffer = read_to_byte_sp::<128>(&cmdline)?;
+    let buffer = read_to_byte::<128>(&cmdline)?;
 
     let pos = sz::find(buffer, b":");
     if let Some(sub) = pos {

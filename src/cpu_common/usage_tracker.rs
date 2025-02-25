@@ -1,4 +1,4 @@
-use crate::utils::node_reader::read_to_byte_sp;
+use crate::utils::node_reader::read_to_byte;
 use atoi::atoi;
 use libc::pid_t;
 use stringzilla::sz;
@@ -27,7 +27,7 @@ fn get_thread_cpu_time(tid: pid_t) -> u64 {
         return 0;
     }
 
-    let buffer = read_to_byte_sp::<32>(&stat_path).unwrap_or([0u8; 32]);
+    let buffer = read_to_byte::<32>(&stat_path).unwrap_or([0u8; 32]);
 
     let pos = sz::find(buffer, b" ");
     let buffer = pos.map_or(&buffer[..], |pos| &buffer[..pos]);

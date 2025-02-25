@@ -8,7 +8,7 @@ use log::info;
 use once_cell::sync::Lazy;
 use stringzilla::sz;
 extern crate alloc;
-use alloc::{boxed::Box, ffi::CString, format, vec::Vec};
+use alloc::{boxed::Box, ffi::CString, vec::Vec};
 
 pub static TOP_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| {
     let cores = analysis_cgroup_new("7").unwrap();
@@ -105,10 +105,12 @@ pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
                 if likely(sz::find(bytes, b"related_cpus").is_none()) {
                     continue;
                 }
-
-                let bytes = core::str::from_utf8(bytes)?;
-                let bytes = format!("{}/{bytes}", entry.to_str()?);
-                let content = read_file::<16>(&bytes).unwrap_or_else(|_| CompactString::new("8"));
+                let mut real_path = [0u8; 53];
+                real_path[..=38].copy_from_slice(entry.as_bytes());
+                real_path[39] = b'/';
+                real_path[40..52].copy_from_slice(&b"related_cpus"[..]);
+                let content =
+                    read_file::<16>(&real_path).unwrap_or_else(|_| CompactString::new("8"));
                 // 解析文件内容
                 let nums: Vec<&str> = content.split_whitespace().collect();
                 let rs = init_group(target_core, &nums);
