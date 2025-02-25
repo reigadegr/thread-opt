@@ -16,6 +16,14 @@ pub fn read_file<const N: usize>(file: &str) -> Result<CompactString> {
     Ok(buffer)
 }
 
+pub fn read_file_sp<const N: usize>(file: &[u8]) -> Result<CompactString> {
+    let buffer = read_to_byte_sp::<N>(file)?;
+    let pos = sz::find(buffer, b"\n");
+    let buffer = pos.map_or(&buffer[..], |pos| &buffer[..pos]);
+    let buffer = CompactString::from_utf8(buffer)?;
+    Ok(buffer)
+}
+
 pub fn read_to_byte<const N: usize>(file: &str) -> Result<[u8; N]> {
     let c_file = CString::new(file)?;
     let mut buffer = [0u8; N];
@@ -51,7 +59,7 @@ pub fn read_to_byte_sp<const N: usize>(file: &[u8]) -> Result<[u8; N]> {
     Ok(buffer)
 }
 
-pub fn write_to_byte<const N: usize>(file: &CStr, msg: &str) -> Result<()> {
+pub fn write_to_byte<const N: usize>(file: &[u8], msg: &str) -> Result<()> {
     let msg = CString::new(msg)?;
     unsafe {
         let fd = open(file.as_ptr(), O_WRONLY);
