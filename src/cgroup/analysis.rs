@@ -10,7 +10,13 @@ use stringzilla::sz;
 extern crate alloc;
 use alloc::{boxed::Box, ffi::CString, format, vec::Vec};
 
-pub static TOP_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| analysis_cgroup_new("7").unwrap());
+pub static TOP_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| {
+    let cores = analysis_cgroup_new("7").unwrap();
+    if *cores == [4, 5, 6, 7] {
+        return Box::new([7]);
+    }
+    cores
+});
 
 pub static BACKEND_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| analysis_cgroup_new("0").unwrap());
 
