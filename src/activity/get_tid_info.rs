@@ -1,7 +1,4 @@
-use crate::utils::{
-    guard::DirGuard,
-    node_reader::{read_to_byte, read_to_byte_sp},
-};
+use crate::utils::{guard::DirGuard, node_reader::read_to_byte_sp};
 use anyhow::{Result, anyhow};
 use atoi::atoi;
 use compact_str::CompactString;
@@ -13,7 +10,7 @@ use minstant::Instant;
 use std::io::Write;
 use stringzilla::sz;
 extern crate alloc;
-use alloc::{ffi::CString, format, vec::Vec};
+use alloc::vec::Vec;
 
 #[derive(Default)]
 pub struct TidInfo {
@@ -78,8 +75,14 @@ impl TidUtils {
 
         let mut task_map: HashMap<pid_t, [u8; 16]> = HashMap::new();
         for tid in tid_list {
-            let comm_path = format!("/proc/{tid}/comm");
-            let Ok(comm) = read_to_byte::<16>(&comm_path) else {
+            let mut comm_path = [0u8; 32];
+            comm_path[0..6].copy_from_slice(&b"/proc/"[..]);
+
+            if write!(&mut comm_path[6..], "{tid}/comm").is_err() {
+                continue;
+            }
+
+            let Ok(comm) = read_to_byte_sp::<16>(&comm_path) else {
                 return &self.tid_info;
             };
             task_map.insert(tid, comm);
@@ -99,10 +102,11 @@ impl TidUtils {
 }
 
 fn read_task_dir(pid: pid_t) -> Result<Vec<pid_t>> {
-    let task_dir = format!("/proc/{pid}/task");
-    let c_path = CString::new(task_dir)?;
+    let mut task_dir = [0u8; 32];
+    task_dir[0..6].copy_from_slice(&b"/proc/"[..]);
+    write!(&mut task_dir[6..], "{pid}/task")?;
 
-    let dir = unsafe { opendir(c_path.as_ptr()) };
+    let dir = unsafe { opendir(task_dir.as_ptr()) };
     if unlikely(dir.is_null()) {
         return Err(anyhow!("Cannot read task_dir."));
     }
