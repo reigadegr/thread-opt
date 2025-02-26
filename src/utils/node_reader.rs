@@ -6,7 +6,6 @@ use libc::{O_RDONLY, O_WRONLY, c_void, open, pid_t, read, write};
 use likely_stable::unlikely;
 use stringzilla::sz;
 extern crate alloc;
-use alloc::ffi::CString;
 
 pub fn read_file<const N: usize>(file: &[u8]) -> Result<CompactString> {
     let buffer = read_to_byte::<N>(file)?;
@@ -33,8 +32,7 @@ pub fn read_to_byte<const N: usize>(file: &[u8]) -> Result<[u8; N]> {
     Ok(buffer)
 }
 
-pub fn write_to_byte<const N: usize>(file: &[u8], msg: &str) -> Result<()> {
-    let msg = CString::new(msg)?;
+pub fn write_to_byte<const N: usize>(file: &[u8], msg: &[u8]) -> Result<()> {
     unsafe {
         let fd = open(file.as_ptr(), O_WRONLY);
         if unlikely(fd == -1) {
