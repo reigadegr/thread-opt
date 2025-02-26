@@ -18,6 +18,10 @@ if [ "$(getprop sys.boot_completed)" != "1" ]; then
     killall -9 vendor.oplus.hardware.urcc-service vendor.oplus.hardware.gameopt-service oiface horae
 fi
 
+chattr -R -ia $(dirname $MODDIR)/AppOpt
+rm -rf  $(dirname $MODDIR)/AppOpt
+killall -9 AppOpt
+
 killall -15 thread-opt; rm $LOG
 chmod +x ${0%/*}/thread-opt
 RUST_BACKTRACE=1 nohup $MODDIR/thread-opt >$LOG 2>&1 &
