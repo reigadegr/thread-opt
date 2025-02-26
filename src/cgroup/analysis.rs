@@ -38,7 +38,7 @@ pub static MIDDLE_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| {
     }
 });
 
-fn read_cgroup_dir() -> Result<Vec<[u8; 40]>> {
+fn read_cgroup_dir() -> Result<Vec<[u8; 64]>> {
     let cgroup = b"/sys/devices/system/cpu/cpufreq\0";
     let dir = unsafe { opendir(cgroup.as_ptr()) };
 
@@ -68,7 +68,7 @@ fn read_cgroup_dir() -> Result<Vec<[u8; 40]>> {
                 continue;
             }
 
-            let mut real_path = [0u8; 40];
+            let mut real_path = [0u8; 64];
             real_path[..=30].copy_from_slice(&cgroup[..=30]);
             real_path[31] = b'/';
             real_path[32..=38].copy_from_slice(d_bytes);
@@ -104,7 +104,7 @@ pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
                 if likely(sz::find(bytes, b"related_cpus").is_none()) {
                     continue;
                 }
-                let mut real_path = [0u8; 53];
+                let mut real_path = [0u8; 64];
                 real_path[..=38].copy_from_slice(&entry[..=38]);
                 real_path[39] = b'/';
                 real_path[40..52].copy_from_slice(&b"related_cpus"[..]);
