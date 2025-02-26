@@ -1,4 +1,7 @@
-use crate::utils::{guard::DirGuard, node_reader::read_to_byte};
+use crate::utils::{
+    guard::DirGuard,
+    node_reader::{get_proc_path, read_to_byte},
+};
 use anyhow::{Result, anyhow};
 use atoi::atoi;
 use compact_str::CompactString;
@@ -7,7 +10,6 @@ use hashbrown::HashMap;
 use libc::{opendir, pid_t, readdir};
 use likely_stable::unlikely;
 use minstant::Instant;
-use std::io::Write;
 use stringzilla::sz;
 extern crate alloc;
 use alloc::vec::Vec;
@@ -75,12 +77,7 @@ impl TidUtils {
 
         let mut task_map: HashMap<pid_t, [u8; 16]> = HashMap::new();
         for tid in tid_list {
-            let mut comm_path = [0u8; 32];
-            comm_path[0..6].copy_from_slice(&b"/proc/"[..]);
-
-            if write!(&mut comm_path[6..], "{tid}/comm").is_err() {
-                continue;
-            }
+            let comm_path = get_proc_path::<32>(tid, b"/comm");
 
             let Ok(comm) = read_to_byte::<16>(&comm_path) else {
                 return &self.tid_info;
@@ -102,9 +99,7 @@ impl TidUtils {
 }
 
 fn read_task_dir(pid: pid_t) -> Result<Vec<pid_t>> {
-    let mut task_dir = [0u8; 32];
-    task_dir[0..6].copy_from_slice(&b"/proc/"[..]);
-    write!(&mut task_dir[6..], "{pid}/task")?;
+    let task_dir = get_proc_path::<32>(pid, b"/task");
 
     let dir = unsafe { opendir(task_dir.as_ptr()) };
     if unlikely(dir.is_null()) {
@@ -133,9 +128,7 @@ fn read_task_dir(pid: pid_t) -> Result<Vec<pid_t>> {
 }
 
 pub fn get_process_name(pid: pid_t) -> Result<CompactString> {
-    let mut cmdline = [0u8; 32];
-    cmdline[0..6].copy_from_slice(&b"/proc/"[..]);
-    write!(&mut cmdline[6..], "{pid}/cmdline")?;
+    let cmdline = get_proc_path::<32>(pid, b"/cmdline");
 
     let buffer = read_to_byte::<128>(&cmdline)?;
 
