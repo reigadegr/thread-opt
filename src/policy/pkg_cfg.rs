@@ -8,65 +8,89 @@ use super::{
 };
 use crate::activity::ActivityUtils;
 use libc::pid_t;
+use once_cell::sync::Lazy;
+use serde::Deserialize;
+extern crate alloc;
+use alloc::{boxed::Box, string::ToString, vec::Vec};
 
-// 对于普通的Unity游戏
-const UNITY: [&str; 12] = [
-    "com.miHoYo.Yuanshen",
-    "com.miHoYo.GenshinImpact",
-    "com.miHoYo.ys.bilibili",
-    "com.miHoYo.yuanshencb",
-    "com.miHoYo.hkrpg",
-    "com.miHoYo.hkrpg.bilibili",
-    "com.HoYoverse.hkrpgoversea",
-    "com.miHoYo.hkrpgcb",
-    "com.tencent.tmgp.sgame",
-    "com.miHoYo.Nap",
-    "com.yongshi.tenojo.ys",
-    "com.tencent.KiHan",
-];
+// 配置文件解析结构
+#[derive(Debug, Deserialize)]
+struct RawConfig {
+    unity: Vec<toml::Value>,
+    ue: Vec<toml::Value>,
+    ue_t1: Vec<toml::Value>,
+    ue5_t1: Vec<toml::Value>,
+    wzm_t1: Vec<toml::Value>,
+    ru_t1: Vec<toml::Value>,
+    cocos_t1: Vec<toml::Value>,
+    unity_t1: Vec<toml::Value>,
+    unity_t1_u2: Vec<toml::Value>,
+    usage_t2: Vec<toml::Value>,
+    unity_t2: Vec<toml::Value>,
+    party_t2: Vec<toml::Value>,
+    ue_t2: Vec<toml::Value>,
+    sky_t2: Vec<toml::Value>,
+}
 
-// 单纯的的线程名匹配，对于ue游戏
-const UE: [&str; 1] = ["com.kurogame.mingchao"];
+// 静态配置转换器
+fn convert_to_static(vec: Vec<toml::Value>) -> &'static [&'static str] {
+    let leaked_strings: Vec<&'static str> = vec
+        .into_iter()
+        .map(|value| {
+            // 提取字符串并转换为 String
+            let s = value.as_str().expect("Value is not a string").to_string();
+            // 将 String 转为 Box<str>，泄漏后得到 &'static mut str
+            let leaked_mut = Box::leak(s.into_boxed_str());
+            // 将 &mut str 转为 &str
+            &*leaked_mut
+        })
+        .collect();
+    log::info!("{leaked_strings:?}");
 
-// 对于需要取一个cputime最大的线程，其线程前缀名为"Thread-"
-const UE_T1: [&str; 2] = ["com.tencent.lzhx", "com.tencent.tmgp.pubgmhd"];
+    // 将 Vec 转为 Box<[&str]> 并泄漏为静态切片
+    Box::leak(leaked_strings.into_boxed_slice())
+}
 
-// 需要取一个cputime最大的线程，其线程前缀名为"GameThread"，只有无限暖暖
-const UE5_T1: [&str; 1] = ["com.papegames.infinitynikki"];
+// 懒加载配置
+static CONFIG: Lazy<RawConfig> = Lazy::new(|| {
+    let config_str = include_str!("../../game_config.toml");
+    toml::from_str(config_str).expect("Failed to parse config")
+});
 
-// 拉力竞速3
-const RU_T1: [&str; 1] = ["brownmonster.app.game.rushrally3"];
+// 静态策略配置
+static STRATEGY_CONFIG: Lazy<StrategyConfig> = Lazy::new(|| StrategyConfig {
+    unity: convert_to_static(CONFIG.unity.clone()),
+    ue: convert_to_static(CONFIG.ue.clone()),
+    ue_t1: convert_to_static(CONFIG.ue_t1.clone()),
+    ue5_t1: convert_to_static(CONFIG.ue5_t1.clone()),
+    wzm_t1: convert_to_static(CONFIG.wzm_t1.clone()),
+    ru_t1: convert_to_static(CONFIG.ru_t1.clone()),
+    cocos_t1: convert_to_static(CONFIG.cocos_t1.clone()),
+    unity_t1: convert_to_static(CONFIG.unity_t1.clone()),
+    unity_t1_u2: convert_to_static(CONFIG.unity_t1_u2.clone()),
+    usage_t2: convert_to_static(CONFIG.usage_t2.clone()),
+    unity_t2: convert_to_static(CONFIG.unity_t2.clone()),
+    party_t2: convert_to_static(CONFIG.party_t2.clone()),
+    ue_t2: convert_to_static(CONFIG.ue_t2.clone()),
+    sky_t2: convert_to_static(CONFIG.sky_t2.clone()),
+});
 
-// cod战区，负载最重线程为WZM_Main
-const WZM_T1: [&str; 1] = ["com.activision.callofduty.warzone"];
-
-// 对于三国杀和时空猎人，跟暖暖策略一样，只是线程名不同
-const COCOS_T1: [&str; 2] = ["com.bf.sgs.hdexp", "com.yinhan.hunter.tx"];
-
-// 需要单独把负载最重的unitymain绑定到cpu7
-const UNITY_T1: [&str; 2] = ["com.tencent.tmgp.cod", "com.tencent.tmgp.cf"];
-
-// 需要取一个cputime第二大的线程，其线程前缀名为"Thread-"，且为unity游戏
-const UNITY_T1_U2: [&str; 2] = ["com.tencent.lolm", "com.tencent.tmgp.speedmobile"];
-
-// 对于需要取两个重负载线程的游戏，其线程前缀名均为"Thread-"，目前策略是燕云十六声特调
-const USAGE_T2: [&str; 1] = ["com.netease.yyslscn"];
-
-// 单纯的的线程名匹配，对于光遇游戏
-const SKY_T2: [&str; 1] = ["com.netease.sky"];
-
-// 对于需要取两个重负载线程的游戏，其线程前缀名分别为"Thread-"，"MainThread"，目前策略是蛋仔派对特调
-const PARTY_T2: [&str; 1] = ["com.netease.party"];
-
-// 对于需要取两个重负载线程的游戏，其线程前缀名分别为"UnityMain","Thread-"
-const UNITY_T2: [&str; 3] = [
-    "com.galasports.operablebasketball.mi",
-    "com.sofunny.Sausage",
-    "com.tencent.jkchess",
-];
-
-// 对于需要取两个重负载线程的游戏，其线程前缀名分别为"GameThread","RenderThread"，目前策略只有三角洲
-const UE_T2: [&str; 1] = ["com.tencent.tmgp.dfm"];
+struct StrategyConfig {
+    unity: &'static [&'static str],
+    ue: &'static [&'static str],
+    ue_t1: &'static [&'static str],
+    ue5_t1: &'static [&'static str],
+    wzm_t1: &'static [&'static str],
+    ru_t1: &'static [&'static str],
+    cocos_t1: &'static [&'static str],
+    unity_t1: &'static [&'static str],
+    unity_t1_u2: &'static [&'static str],
+    usage_t2: &'static [&'static str],
+    unity_t2: &'static [&'static str],
+    party_t2: &'static [&'static str],
+    ue_t2: &'static [&'static str],
+    sky_t2: &'static [&'static str],
+}
 
 pub struct StartArgs<'a> {
     pub activity_utils: &'a mut ActivityUtils,
@@ -75,19 +99,21 @@ pub struct StartArgs<'a> {
 
 type ConfigTuple = (&'static [&'static str], fn(&mut StartArgs));
 
-pub const PACKAGE_CONFIGS: [ConfigTuple; 14] = [
-    (&UE, policy_ue::start_task),
-    (&UNITY, policy_unity::start_task),
-    (&UE_T1, policy_top1::start_task),
-    (&UE5_T1, policy_ue5::start_task),
-    (&WZM_T1, policy_wzm::start_task),
-    (&RU_T1, policy_ru::start_task),
-    (&COCOS_T1, policy_cocos::start_task),
-    (&UNITY_T1, policy_unity_t1::start_task),
-    (&UNITY_T1_U2, policy_unity_t1_u2::start_task),
-    (&USAGE_T2, policy_top2::start_task),
-    (&UNITY_T2, policy_unity_t2::start_task),
-    (&PARTY_T2, policy_party::start_task),
-    (&UE_T2, policy_ue_t2::start_task),
-    (&SKY_T2, policy_sky::start_task),
-];
+pub static PACKAGE_CONFIGS: Lazy<[ConfigTuple; 14]> = Lazy::new(|| {
+    [
+        (STRATEGY_CONFIG.ue, policy_ue::start_task),
+        (STRATEGY_CONFIG.unity, policy_unity::start_task),
+        (STRATEGY_CONFIG.ue_t1, policy_top1::start_task),
+        (STRATEGY_CONFIG.ue5_t1, policy_ue5::start_task),
+        (STRATEGY_CONFIG.wzm_t1, policy_wzm::start_task),
+        (STRATEGY_CONFIG.ru_t1, policy_ru::start_task),
+        (STRATEGY_CONFIG.cocos_t1, policy_cocos::start_task),
+        (STRATEGY_CONFIG.unity_t1, policy_unity_t1::start_task),
+        (STRATEGY_CONFIG.unity_t1_u2, policy_unity_t1_u2::start_task),
+        (STRATEGY_CONFIG.usage_t2, policy_top2::start_task),
+        (STRATEGY_CONFIG.unity_t2, policy_unity_t2::start_task),
+        (STRATEGY_CONFIG.party_t2, policy_party::start_task),
+        (STRATEGY_CONFIG.ue_t2, policy_ue_t2::start_task),
+        (STRATEGY_CONFIG.sky_t2, policy_sky::start_task),
+    ]
+});

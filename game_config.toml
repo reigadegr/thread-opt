@@ -1,0 +1,32 @@
+unity = [
+    "com.miHoYo.Yuanshen",
+    "com.miHoYo.GenshinImpact",
+    "com.miHoYo.ys.bilibili",
+    "com.miHoYo.yuanshencb",
+    "com.miHoYo.hkrpg",
+    "com.miHoYo.hkrpg.bilibili",
+    "com.HoYoverse.hkrpgoversea",
+    "com.miHoYo.hkrpgcb",
+    "com.tencent.tmgp.sgame",
+    "com.miHoYo.Nap",
+    "com.yongshi.tenojo.ys",
+    "com.tencent.KiHan"
+]
+
+ue = ["com.kurogame.mingchao"]
+ue_t1 = ["com.tencent.lzhx", "com.tencent.tmgp.pubgmhd"]
+ue5_t1 = ["com.papegames.infinitynikki"]
+wzm_t1 = ["com.activision.callofduty.warzone"]
+ru_t1 = ["brownmonster.app.game.rushrally3"]
+cocos_t1 = ["com.bf.sgs.hdexp", "com.yinhan.hunter.tx"]
+unity_t1 = ["com.tencent.tmgp.cod", "com.tencent.tmgp.cf"]
+unity_t1_u2 = ["com.tencent.lolm", "com.tencent.tmgp.speedmobile"]
+usage_t2 = ["com.netease.yyslscn"]
+unity_t2 = [
+    "com.galasports.operablebasketball.mi",
+    "com.sofunny.Sausage",
+    "com.tencent.jkchess"
+]
+party_t2 = ["com.netease.party"]
+ue_t2 = ["com.tencent.tmgp.dfm"]
+sky_t2 = ["com.netease.sky"]
