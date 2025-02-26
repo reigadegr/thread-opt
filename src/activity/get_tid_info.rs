@@ -80,7 +80,7 @@ impl TidUtils {
             let comm_path = get_proc_path::<32>(tid, b"/comm");
 
             let Ok(comm) = read_to_byte::<16>(&comm_path) else {
-                return &self.tid_info;
+                continue;
             };
             task_map.insert(tid, comm);
         }

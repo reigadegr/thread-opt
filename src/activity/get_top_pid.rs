@@ -16,12 +16,7 @@ impl TopPidInfo {
         let pid = dump
             .split(|&b| b == b'\n')
             .find(|line| sz::find(line, b" TOP").is_some())
-            .and_then(|line| {
-                // 修正为字节切片的处理方式
-                line.split(|&b| b.is_ascii_whitespace())
-                    .filter(|&s| !s.is_empty())
-                    .nth(4)
-            })
+            .and_then(|line| line.split(|&b| b == b' ').filter(|&s| !s.is_empty()).nth(4))
             .and_then(atoi::<pid_t>)
             .unwrap_or_default();
         Self { pid }
