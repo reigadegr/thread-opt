@@ -1,7 +1,8 @@
 use super::guard::FileGuard;
 use anyhow::{Result, anyhow};
 use compact_str::CompactString;
-use libc::{O_RDONLY, O_WRONLY, c_void, open, read, write};
+use itoa::Buffer;
+use libc::{O_RDONLY, O_WRONLY, c_void, open, pid_t, read, write};
 use likely_stable::unlikely;
 use stringzilla::sz;
 extern crate alloc;
@@ -47,4 +48,20 @@ pub fn write_to_byte<const N: usize>(file: &[u8], msg: &str) -> Result<()> {
         }
     }
     Ok(())
+}
+
+pub fn get_proc_path<const N: usize>(tid: pid_t, file: &[u8]) -> [u8; N] {
+    let mut buffer = [0u8; N];
+    buffer[0..6].copy_from_slice(b"/proc/");
+
+    let mut itoa_buf = Buffer::new();
+    let tid = itoa_buf.format(tid).as_bytes();
+
+    let mid = 6 + tid.len();
+    let end = mid + file.len();
+
+    buffer[6..mid].copy_from_slice(tid);
+    buffer[mid..end].copy_from_slice(file);
+
+    buffer
 }

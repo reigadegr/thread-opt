@@ -1,6 +1,5 @@
-use crate::utils::node_reader::read_to_byte;
+use crate::utils::node_reader::{get_proc_path, read_to_byte};
 use atoi::atoi;
-use itoa::Buffer;
 use libc::pid_t;
 use stringzilla::sz;
 
@@ -20,19 +19,7 @@ impl UsageTracker {
 }
 
 fn get_thread_cpu_time(tid: pid_t) -> u64 {
-    let mut stat_path = [0u8; 32];
-    stat_path[0..6].copy_from_slice(b"/proc/");
-
-    let mut itoa_buf = Buffer::new();
-    let tid_byte = itoa_buf.format(tid).as_bytes();
-
-    let sched_part = b"/schedstat";
-    let mid = 6 + tid_byte.len();
-    let end = mid + 10;
-
-    stat_path[6..mid].copy_from_slice(tid_byte);
-    stat_path[mid..end].copy_from_slice(sched_part);
-
+    let stat_path = get_proc_path::<32>(tid, b"/schedstat");
     let buffer = read_to_byte::<32>(&stat_path).unwrap_or([0u8; 32]);
 
     let pos = sz::find(buffer, b" ");
