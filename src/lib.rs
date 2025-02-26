@@ -1,4 +1,4 @@
-// #![no_std]
+#![no_std]
 #![no_main]
 #![deny(clippy::pedantic)]
 #![warn(clippy::nursery)]

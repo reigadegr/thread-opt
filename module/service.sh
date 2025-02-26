@@ -9,18 +9,19 @@ wait_until_login() {
     until [ -d /sdcard/Android ]; do sleep 1; done
 }
 
+contlict_remover() {
+    [ ! -d "$1" ] && return
+    chattr -R -ia $1
+    rm -rf $1
+    killall -9 $2
+}
+
 if [ "$(getprop sys.boot_completed)" != "1" ]; then
+    contlict_remover "/data/adb/modules/AppOpt" "AppOpt"
     wait_until_login
-    stop oiface
-    stop gameopt_hal_service-1-0
-    stop vendor.urcc-hal-aidl
-    stop horae
+    stop oiface gameopt_hal_service-1-0 vendor.urcc-hal-aidl horae
     killall -9 vendor.oplus.hardware.urcc-service vendor.oplus.hardware.gameopt-service oiface horae
 fi
-
-chattr -R -ia $(dirname $MODDIR)/AppOpt
-rm -rf  $(dirname $MODDIR)/AppOpt
-killall -9 AppOpt
 
 killall -15 thread-opt; rm $LOG
 chmod +x ${0%/*}/thread-opt

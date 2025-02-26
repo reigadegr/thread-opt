@@ -34,7 +34,7 @@ const UE_T1: [&str; 2] = ["com.tencent.lzhx", "com.tencent.tmgp.pubgmhd"];
 // 需要取一个cputime最大的线程，其线程前缀名为"GameThread"，只有无限暖暖
 const UE5_T1: [&str; 1] = ["com.papegames.infinitynikki"];
 
-//拉力竞速3
+// 拉力竞速3
 const RU_T1: [&str; 1] = ["brownmonster.app.game.rushrally3"];
 
 // cod战区，负载最重线程为WZM_Main
