@@ -4,7 +4,7 @@ use dumpsys_rs::Dumpsys;
 use inotify::{Inotify, WatchMask};
 use libc::pid_t;
 use log::info;
-use stringzilla::sz;
+use stringzilla::{StringZilla, sz};
 
 #[derive(Default)]
 pub struct TopPidInfo {
@@ -16,11 +16,8 @@ impl TopPidInfo {
         let pid = dump
             .split(|&b| b == b'\n')
             .find(|line| sz::find(line, b" TOP").is_some())
-            .and_then(|line| {
-                line.split(|&b| b.is_ascii_whitespace())
-                    .filter(|&s| !s.is_empty())
-                    .nth(4)
-            })
+            .and_then(|line| line.split(|&b| b == b'/').next())
+            .and_then(|line| line.sz_rfind(b" ").map(|pos| &line[pos + 1..]))
             .and_then(atoi::<pid_t>)
             .unwrap_or_default();
         Self { pid }
