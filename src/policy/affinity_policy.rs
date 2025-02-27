@@ -1,9 +1,8 @@
 use crate::{
-    cgroup::group_info::{get_background_group, get_middle_group, get_top_group},
+    cgroup::group_info::{get_background_group, get_middle_group},
     utils::affinity_utils::global_cpu_utils::{
-        bind_list_to_middle, bind_list_to_middle_background, bind_list_to_zero_five,
-        bind_tid_to_background, bind_tid_to_middle, bind_tid_to_only6, bind_tid_to_only7,
-        bind_tid_to_top,
+        bind_list_to_middle, bind_list_to_middle_background, bind_tid_to_background,
+        bind_tid_to_middle, bind_tid_to_only6, bind_tid_to_only7, bind_tid_to_top,
     },
 };
 use libc::pid_t;
@@ -16,20 +15,11 @@ static ONLY6_POLICY_FN: Lazy<fn(pid_t)> = Lazy::new(|| {
     bind_tid_to_middle
 });
 
-static MODDLE_POLICY_FN: Lazy<fn(pid_t)> = Lazy::new(|| {
-    if get_top_group().len() == 4 {
-        return bind_tid_to_top;
-    }
-    bind_tid_to_middle
-});
+static MODDLE_POLICY_FN: Lazy<fn(pid_t)> = Lazy::new(|| bind_tid_to_middle);
 
 static TID_LIST_T2_FN: Lazy<fn(&[pid_t])> = Lazy::new(|| {
     if get_background_group() == get_middle_group() {
-        if get_top_group().len() == 4 {
-            bind_list_to_zero_five
-        } else {
-            bind_list_to_middle
-        }
+        bind_list_to_middle
     } else {
         bind_list_to_middle_background
     }

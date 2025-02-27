@@ -1,6 +1,6 @@
 use super::global_cpu_set::{
     get_background_cpu_set, get_middle_background_cpu_set, get_middle_cpu_set, get_only6_cpu_set,
-    get_only7_cpu_set, get_top_cpu_set, get_zero_to_five_cpu_set,
+    get_only7_cpu_set, get_top_cpu_set,
 };
 use core::mem::size_of;
 use libc::{cpu_set_t, pid_t, sched_setaffinity};
@@ -45,4 +45,3 @@ bind_list!(
     bind_list_to_middle_background,
     get_middle_background_cpu_set
 );
-bind_list!(bind_list_to_zero_five, get_zero_to_five_cpu_set);

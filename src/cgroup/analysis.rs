@@ -8,9 +8,15 @@ use log::info;
 use once_cell::sync::Lazy;
 use stringzilla::sz;
 extern crate alloc;
-use alloc::{boxed::Box, ffi::CString, format, vec::Vec};
+use alloc::{boxed::Box, vec::Vec};
 
-pub static TOP_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| analysis_cgroup_new("7").unwrap());
+pub static TOP_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| {
+    let cores = analysis_cgroup_new("7").unwrap();
+    if *cores == [4, 5, 6, 7] {
+        return Box::new([7]);
+    }
+    cores
+});
 
 pub static BACKEND_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| analysis_cgroup_new("0").unwrap());
 
@@ -32,9 +38,8 @@ pub static MIDDLE_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| {
     }
 });
 
-fn read_cgroup_dir() -> Result<Vec<CString>> {
-    let cgroup = "/sys/devices/system/cpu/cpufreq";
-    let cgroup = CString::new(cgroup)?;
+fn read_cgroup_dir() -> Result<Vec<[u8; 64]>> {
+    let cgroup = b"/sys/devices/system/cpu/cpufreq\0";
     let dir = unsafe { opendir(cgroup.as_ptr()) };
 
     if unlikely(dir.is_null()) {
@@ -63,11 +68,11 @@ fn read_cgroup_dir() -> Result<Vec<CString>> {
                 continue;
             }
 
-            let mut real_path = Vec::with_capacity(39);
-            real_path.extend_from_slice(cgroup.as_bytes());
-            real_path.push(b'/');
-            real_path.extend_from_slice(d_bytes);
-            entries.push(CString::new(real_path)?);
+            let mut real_path = [0u8; 64];
+            real_path[..=30].copy_from_slice(&cgroup[..=30]);
+            real_path[31] = b'/';
+            real_path[32..=38].copy_from_slice(d_bytes);
+            entries.push(real_path);
         }
     }
     Ok(entries)
@@ -79,7 +84,7 @@ pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
         let core_dir_ptr = unsafe { opendir(entry.as_ptr()) };
 
         if unlikely(core_dir_ptr.is_null()) {
-            return Err(anyhow!("Cannot read cgroup dir."));
+            continue;
         }
 
         let _dir_ptr_guard = DirGuard::new(core_dir_ptr);
@@ -99,10 +104,12 @@ pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
                 if likely(sz::find(bytes, b"related_cpus").is_none()) {
                     continue;
                 }
-
-                let bytes = core::str::from_utf8(bytes)?;
-                let bytes = format!("{}/{bytes}", entry.to_str()?);
-                let content = read_file(&bytes).unwrap_or_else(|_| CompactString::new("8"));
+                let mut real_path = [0u8; 64];
+                real_path[..=38].copy_from_slice(&entry[..=38]);
+                real_path[39] = b'/';
+                real_path[40..52].copy_from_slice(&b"related_cpus"[..]);
+                let content =
+                    read_file::<16>(&real_path).unwrap_or_else(|_| CompactString::new("8"));
                 // 解析文件内容
                 let nums: Vec<&str> = content.split_whitespace().collect();
                 let rs = init_group(target_core, &nums);
