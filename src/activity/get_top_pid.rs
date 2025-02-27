@@ -14,10 +14,12 @@ pub struct TopPidInfo {
 impl TopPidInfo {
     pub fn new(dump: &[u8]) -> Self {
         let pid = dump
-            .split(|&b| b == b'\n')
+            .sz_splits(&b"\n")
             .find(|line| sz::find(line, b" TOP").is_some())
-            .and_then(|line| line.sz_rfind(b"/").map(|pos| &line[..pos]))
-            .and_then(|line| line.sz_rfind(b" ").map(|pos| &line[pos + 1..]))
+            .and_then(|line| {
+                line.sz_rfind(b"/")
+                    .and_then(|pos1| line[..pos1].sz_rfind(b" ").map(|pos2| &line[pos2 + 1..]))
+            })
             .and_then(atoi::<pid_t>)
             .unwrap_or_default();
         Self { pid }
