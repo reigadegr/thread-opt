@@ -1,7 +1,7 @@
 [package]
 name = "thread-opt"
 version = "1.9.2"
-edition = "2021"
+edition = "2024"
 description = "The Hard Affinity policy binds threads to target cores in gaming."
 authors = ["reigadegr"]
 license = "GPL-3.0"
@@ -26,6 +26,7 @@ hashbrown = { version = "0.15.2", default-features = false, features = [
     "default-hasher",
     "inline-more",
 ] }
+heapless = "0.8.0"
 inotify = { version = "0.11.0", default-features = false }
 itoa = { version = "1.0.14", features = ["no-panic"] }
 libc = { version = "0.2.170", default-features = false }
