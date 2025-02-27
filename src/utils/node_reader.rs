@@ -48,7 +48,7 @@ pub fn write_to_byte<const N: usize>(file: &[u8], msg: &[u8]) -> Result<()> {
     Ok(())
 }
 
-pub fn get_proc_path<const N: usize>(tid: pid_t, file: &[u8]) -> [u8; N] {
+pub fn get_proc_path<const N: usize, const L: usize>(tid: pid_t, file: &[u8]) -> [u8; N] {
     let mut buffer = [0u8; N];
     buffer[0..6].copy_from_slice(b"/proc/");
 
@@ -56,7 +56,7 @@ pub fn get_proc_path<const N: usize>(tid: pid_t, file: &[u8]) -> [u8; N] {
     let tid = itoa_buf.format(tid).as_bytes();
 
     let mid = 6 + tid.len();
-    let end = mid + file.len();
+    let end = mid + L;
 
     buffer[6..mid].copy_from_slice(tid);
     buffer[mid..end].copy_from_slice(file);
