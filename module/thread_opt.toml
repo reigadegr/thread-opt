@@ -13,3 +13,9 @@ packages = [
     "com.yongshi.tenojo.ys",
     "com.tencent.KiHan",
 ]
+[comm_match.policy]
+top = []
+only6 = []
+only7 = ["UnityMain"]
+middle = []
+background = []
