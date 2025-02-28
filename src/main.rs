@@ -5,12 +5,12 @@
 
 mod activity;
 mod cgroup;
+mod config;
 mod cpu_common;
 mod misc;
 mod policy;
 mod scheduler;
 mod utils;
-
 use misc::init_misc;
 use scheduler::Scheduler;
 

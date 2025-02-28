@@ -1,6 +1,6 @@
 use crate::{
     activity::{ActivityUtils, get_tid_info::get_process_name},
-    policy::pkg_cfg::{PACKAGE_CONFIGS, StartArgs},
+    policy::pkg_cfg::{CUST_CPNFIGS, PACKAGE_CONFIGS, StartArgs},
     utils::{affinity_utils::global_cpu_utils::bind_list_to_background, sleep::sleep_secs},
 };
 use compact_str::CompactString;
@@ -69,6 +69,12 @@ impl Looper {
                 self.global_package = name;
             }
             for (package_list, start_task) in PACKAGE_CONFIGS {
+                if self.handle_package_list(package_list, start_task) {
+                    continue 'outer;
+                }
+            }
+
+            for (package_list, start_task) in CUST_CPNFIGS.iter() {
                 if self.handle_package_list(package_list, start_task) {
                     continue 'outer;
                 }

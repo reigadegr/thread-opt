@@ -1,0 +1,17 @@
+mode = 0
+
+[unity]
+packages = [
+    "com.miHoYo.Yuanshen",
+    "com.miHoYo.GenshinImpact",
+    "com.miHoYo.ys.bilibili",
+    "com.miHoYo.yuanshencb",
+    "com.miHoYo.hkrpg",
+    "com.miHoYo.hkrpg.bilibili",
+    "com.HoYoverse.hkrpgoversea",
+    "com.miHoYo.hkrpgcb",
+    "com.tencent.tmgp.sgame",
+    "com.miHoYo.Nap",
+    "com.yongshi.tenojo.ys",
+    "com.tencent.KiHan",
+]

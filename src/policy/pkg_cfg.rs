@@ -6,24 +6,15 @@ use super::{
     },
     usage_top2::{policy_party, policy_top2, policy_ue_t2, policy_unity_t2},
 };
-use crate::activity::ActivityUtils;
+use crate::{
+    activity::ActivityUtils,
+    config::{PROFILE, get_packages},
+};
 use libc::pid_t;
+use once_cell::sync::Lazy;
 
 // 对于普通的Unity游戏
-const UNITY: &[&str] = &[
-    "com.miHoYo.Yuanshen",
-    "com.miHoYo.GenshinImpact",
-    "com.miHoYo.ys.bilibili",
-    "com.miHoYo.yuanshencb",
-    "com.miHoYo.hkrpg",
-    "com.miHoYo.hkrpg.bilibili",
-    "com.HoYoverse.hkrpgoversea",
-    "com.miHoYo.hkrpgcb",
-    "com.tencent.tmgp.sgame",
-    "com.miHoYo.Nap",
-    "com.yongshi.tenojo.ys",
-    "com.tencent.KiHan",
-];
+static UNITY: Lazy<&[&str]> = Lazy::new(|| get_packages(PROFILE.unity.packages.clone()));
 
 // 单纯的的线程名匹配，对于ue游戏
 const UE: &[&str] = &["com.kurogame.mingchao"];
@@ -75,9 +66,12 @@ pub struct StartArgs<'a> {
 
 type ConfigTuple = (&'static [&'static str], fn(&mut StartArgs));
 
+// pub static CUST_CONFIGS: Lazy<&[ConfigTuple]> = Lazy::new(|| &[(UNITY, policy_unity::start_task)]);
+pub static CUST_CPNFIGS: Lazy<[ConfigTuple; 1]> =
+    Lazy::new(|| [(*UNITY, policy_unity::start_task)]);
+
 pub const PACKAGE_CONFIGS: &[ConfigTuple] = &[
     (UE, policy_ue::start_task),
-    (UNITY, policy_unity::start_task),
     (UE_T1, policy_top1::start_task),
     (UE5_T1, policy_ue5::start_task),
     (WZM_T1, policy_wzm::start_task),

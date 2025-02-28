@@ -9,7 +9,7 @@ use stringzilla::sz;
 
 pub fn read_file<const N: usize>(file: &[u8]) -> Result<CompactString> {
     let buffer = read_to_byte::<N>(file)?;
-    let pos = sz::find(buffer, b"\n");
+    let pos = sz::find(buffer, b"\0");
     let buffer = pos.map_or(&buffer[..], |pos| &buffer[..pos]);
     let buffer = CompactString::from_utf8(buffer)?;
     Ok(buffer)
