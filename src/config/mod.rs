@@ -7,7 +7,8 @@ use once_cell::sync::{Lazy, OnceCell};
 
 pub static PROFILE: Lazy<Config> = Lazy::new(|| {
     let config = read_file::<65536>(b"./thread_opt.toml\0").unwrap();
-    log::info!("{config:?}");
+    #[cfg(debug_assertions)]
+    log::debug!("{config:?}");
 
     let config: Config = toml::from_str(&config).unwrap();
     config
@@ -16,7 +17,6 @@ pub static PROFILE: Lazy<Config> = Lazy::new(|| {
 #[derive(Deserialize)]
 pub struct Config {
     pub unity: NameMatch,
-    pub usage1: UsageTop1,
 }
 
 #[derive(Deserialize)]
@@ -24,12 +24,7 @@ pub struct NameMatch {
     pub packages: Vec<CompactString>,
 }
 
-#[derive(Deserialize)]
-pub struct UsageTop1 {
-    pub packages: Vec<CompactString>,
-}
-
-pub fn get_packages(vec: &[CompactString]) -> &'static [&'static str] {
+pub fn init_packages(vec: &[CompactString]) -> &'static [&'static str] {
     static CACHE: OnceCell<Arc<[&'static str]>> = OnceCell::new();
 
     // 获取或初始化缓存
