@@ -6,6 +6,8 @@ if [ ! -d target ]; then
 fi
 
 {
+    cat Cargo.toml
+    echo -e "---以上为项目的Cargo.toml---\n"
     for i in $(find ./src -name "*.rs"); do
         echo "这是$i: "
         cat $i

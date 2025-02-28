@@ -1,11 +1,11 @@
 use super::guard::FileGuard;
 use anyhow::{Result, anyhow};
 use compact_str::CompactString;
+use core::ptr::copy_nonoverlapping;
 use itoa::Buffer;
 use libc::{O_RDONLY, O_WRONLY, c_void, open, pid_t, read, write};
 use likely_stable::unlikely;
 use stringzilla::sz;
-extern crate alloc;
 
 pub fn read_file<const N: usize>(file: &[u8]) -> Result<CompactString> {
     let buffer = read_to_byte::<N>(file)?;
@@ -58,8 +58,8 @@ pub fn get_proc_path<const N: usize, const L: usize>(id: pid_t, file: &[u8]) -> 
     let id_length = id.len();
 
     unsafe {
-        core::ptr::copy_nonoverlapping(id.as_ptr(), buffer.as_mut_ptr().add(6), id_length);
-        core::ptr::copy_nonoverlapping(file.as_ptr(), buffer.as_mut_ptr().add(6 + id_length), L);
+        copy_nonoverlapping(id.as_ptr(), buffer.as_mut_ptr().add(6), id_length);
+        copy_nonoverlapping(file.as_ptr(), buffer.as_mut_ptr().add(6 + id_length), L);
     }
 
     buffer
