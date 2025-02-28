@@ -48,18 +48,19 @@ pub fn write_to_byte<const N: usize>(file: &[u8], msg: &[u8]) -> Result<()> {
     Ok(())
 }
 
-pub fn get_proc_path<const N: usize, const L: usize>(tid: pid_t, file: &[u8]) -> [u8; N] {
+pub fn get_proc_path<const N: usize, const L: usize>(id: pid_t, file: &[u8]) -> [u8; N] {
     let mut buffer = [0u8; N];
     buffer[0..6].copy_from_slice(b"/proc/");
 
     let mut itoa_buf = Buffer::new();
-    let tid = itoa_buf.format(tid).as_bytes();
+    let id = itoa_buf.format(id).as_bytes();
 
-    let mid = 6 + tid.len();
-    let end = mid + L;
+    let id_length = id.len();
 
-    buffer[6..mid].copy_from_slice(tid);
-    buffer[mid..end].copy_from_slice(file);
+    unsafe {
+        core::ptr::copy_nonoverlapping(id.as_ptr(), buffer.as_mut_ptr().add(6), id_length);
+        core::ptr::copy_nonoverlapping(file.as_ptr(), buffer.as_mut_ptr().add(6 + id_length), L);
+    }
 
     buffer
 }
