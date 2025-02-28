@@ -8,12 +8,18 @@ use heapless::String;
 use once_cell::sync::{Lazy, OnceCell};
 
 pub static PROFILE: Lazy<Config> = Lazy::new(|| {
-    let config = read_file::<65536>(b"./thread_opt.toml\0").unwrap();
+    let profile = read_file::<65536>(b"./thread_opt.toml\0").unwrap();
     #[cfg(debug_assertions)]
-    log::debug!("{config:?}");
+    log::debug!("{profile:?}");
 
-    let config: Config = toml::from_str(&config).unwrap();
-    config
+    let profile: Config = toml::from_str(&profile).unwrap();
+    #[cfg(debug_assertions)]
+    for i in &profile.comm_match {
+        for j in &i.packages {
+            log::info!("{j}");
+        }
+    }
+    profile
 });
 
 #[derive(Deserialize)]
@@ -48,12 +54,10 @@ pub fn init_packages(vec: &[CompactString]) -> &'static [&'static str] {
     // 获取或初始化缓存
     let cached = CACHE.get_or_init(|| {
         // 将 CompactString 转换为 &'static str
+        // 安全条件：确保 CompactString 生命周期足够长
         let static_slices: Vec<&'static str> = vec
             .iter()
-            .map(|cs| unsafe {
-                // 安全条件：确保 CompactString 生命周期足够长
-                core::mem::transmute::<&str, &'static str>(cs.as_str())
-            })
+            .map(|cs| unsafe { core::mem::transmute::<&str, &'static str>(cs.as_str()) })
             .collect();
         // 通过 Arc 共享内存
         Arc::from(static_slices.into_boxed_slice())
@@ -70,7 +74,7 @@ where
     for s in strings {
         let bytes = s.as_bytes();
         let vec = heapless::Vec::from_slice(bytes)
-            .map_err(|e| serde::de::Error::custom("String exceeds capacity"))?;
+            .map_err(|()| serde::de::Error::custom("String exceeds capacity"))?;
         result.push(vec);
     }
     Ok(result)

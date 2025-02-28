@@ -1,8 +1,14 @@
+use crate::config::NameMatch;
+use crate::config::Policy;
+use crate::policy::name_match::cfg_start;
 use crate::{
     activity::{ActivityUtils, get_tid_info::get_process_name},
-    policy::pkg_cfg::{CUST_CONFIGS, PACKAGE_CONFIGS, StartArgs},
+    config::{PROFILE, init_packages},
+    policy::pkg_cfg::{PACKAGE_CONFIGS, StartArgs},
     utils::{affinity_utils::global_cpu_utils::bind_list_to_background, sleep::sleep_secs},
 };
+extern crate alloc;
+use alloc::{fmt::format, sync::Arc, vec::Vec};
 use compact_str::CompactString;
 use libc::pid_t;
 use log::info;
@@ -56,6 +62,31 @@ impl Looper {
         false
     }
 
+    fn start_bind_common_cfg<F>(&mut self, start_task: F, policy: &Policy)
+    where
+        F: Fn(&mut StartArgs, &Policy),
+    {
+        start_task(
+            &mut StartArgs {
+                activity_utils: &mut self.activity_utils,
+                pid: self.pid,
+            },
+            policy,
+        );
+        self.game_exit();
+    }
+
+    fn handle_package_list_cfg(&mut self, i: &NameMatch) -> bool {
+        for package in &i.packages {
+            if package == self.global_package {
+                info!("Detected target App: {}", self.global_package);
+                self.start_bind_common_cfg(cfg_start::start_task, &i.policy);
+                return true;
+            }
+        }
+        false
+    }
+
     pub fn enter_loop(&mut self) {
         'outer: loop {
             sleep_secs(1);
@@ -69,11 +100,20 @@ impl Looper {
                 self.global_package = name;
             }
 
-            for (package_list, start_task) in CUST_CONFIGS.iter() {
-                if self.handle_package_list(package_list, start_task) {
+            for i in &PROFILE.comm_match {
+                if self.handle_package_list_cfg(i) {
                     continue 'outer;
                 }
+                // for j in &i.packages {
+                // log::info!("{j}");
+                // }
             }
+
+            // for (package_list, start_task) in CUST_CONFIGS.iter() {
+            // if self.handle_package_list(package_list, start_task) {
+            // continue 'outer;
+            // }
+            // }
 
             for (package_list, start_task) in PACKAGE_CONFIGS {
                 if self.handle_package_list(package_list, start_task) {

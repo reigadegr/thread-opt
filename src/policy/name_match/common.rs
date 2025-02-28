@@ -1,7 +1,8 @@
 use super::super::affinity_policy::{
     background_policy, middle_policy, only6_policy, only7_policy, top_policy,
 };
-
+extern crate alloc;
+use alloc::{fmt::format, sync::Arc, vec::Vec};
 use hashbrown::HashMap;
 use libc::pid_t;
 #[cfg(debug_assertions)]
@@ -18,43 +19,44 @@ enum CmdType {
     Only7,
 }
 
-// 定义通用策略类
-pub struct Policy<'a> {
-    pub top: &'a [&'a [u8]],
-    pub only6: &'a [&'a [u8]],
-    pub only7: &'a [&'a [u8]],
-    pub middle: &'a [&'a [u8]],
-    pub background: &'a [&'a [u8]],
+type ByteArray = heapless::Vec<u8, 16>;
+
+pub struct Policy {
+    pub top: Vec<ByteArray>,
+    pub only6: Vec<ByteArray>,
+    pub only7: Vec<ByteArray>,
+    pub middle: Vec<ByteArray>,
+    pub background: Vec<ByteArray>,
 }
 
-impl<'a> Policy<'a> {
-    pub const fn new(policy: &'a Policy) -> Self {
+impl Policy {
+    pub fn new(policy: &Self) -> Self {
         Self {
-            top: policy.top,
-            only6: policy.only6,
-            only7: policy.only7,
-            middle: policy.middle,
-            background: policy.background,
+            top: policy.top.clone(),
+            only6: policy.only6.clone(),
+            only7: policy.only7.clone(),
+            middle: policy.middle.clone(),
+            background: policy.background.clone(),
         }
     }
 
     fn get_cmd_type(&self, comm: &[u8]) -> CmdType {
-        if self.top.iter().any(|&prefix| comm.starts_with(prefix)) {
+        if self.top.iter().any(|prefix| comm.starts_with(prefix)) {
             return CmdType::Top;
         }
-        if self.only6.iter().any(|&prefix| comm.starts_with(prefix)) {
+        if self.only6.iter().any(|prefix| comm.starts_with(prefix)) {
             return CmdType::Only6;
         }
-        if self.only7.iter().any(|&prefix| comm.starts_with(prefix)) {
+        if self.only7.iter().any(|prefix| comm.starts_with(prefix)) {
             return CmdType::Only7;
         }
-        if self.middle.iter().any(|&prefix| comm.starts_with(prefix)) {
+        if self.middle.iter().any(|prefix| comm.starts_with(prefix)) {
             return CmdType::Middle;
         }
         if self
             .background
             .iter()
-            .any(|&prefix| comm.starts_with(prefix))
+            .any(|prefix| comm.starts_with(prefix))
         {
             return CmdType::Background;
         }

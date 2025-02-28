@@ -1,5 +1,5 @@
 use super::{
-    name_match::policies::{policy_sky, policy_ue, policy_unity},
+    // name_match::policies::{policy_sky, policy_ue, policy_unity},
     usage_top1::policies::{
         policy_cocos, policy_ru, policy_top1, policy_ue5, policy_unity_t1, policy_unity_t1_u2,
         policy_wzm,
@@ -66,11 +66,11 @@ pub struct StartArgs<'a> {
 
 type ConfigTuple = (&'static [&'static str], fn(&mut StartArgs));
 
-pub static CUST_CONFIGS: Lazy<[ConfigTuple; 1]> =
-    Lazy::new(|| [(*UNITY, policy_unity::start_task)]);
+// pub static CUST_CONFIGS: Lazy<[ConfigTuple; 1]> =
+// Lazy::new(|| [(*UNITY, policy_unity::start_task)]);
 
 pub const PACKAGE_CONFIGS: &[ConfigTuple] = &[
-    (UE, policy_ue::start_task),
+    // (UE, policy_ue::start_task),
     (UE_T1, policy_top1::start_task),
     (UE5_T1, policy_ue5::start_task),
     (WZM_T1, policy_wzm::start_task),
@@ -82,5 +82,5 @@ pub const PACKAGE_CONFIGS: &[ConfigTuple] = &[
     (UNITY_T2, policy_unity_t2::start_task),
     (PARTY_T2, policy_party::start_task),
     (UE_T2, policy_ue_t2::start_task),
-    (SKY_T2, policy_sky::start_task),
+    // (SKY_T2, policy_sky::start_task),
 ];

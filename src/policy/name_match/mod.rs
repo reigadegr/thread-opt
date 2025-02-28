@@ -1,5 +1,6 @@
+pub mod cfg_start;
 mod common;
-pub mod policies;
+// pub mod policies;
 
 use crate::{policy::pkg_cfg::StartArgs, utils::sleep::sleep_secs};
 use common::Policy;
@@ -10,7 +11,7 @@ use log::debug;
 use minstant::Instant;
 
 struct StartTask<'b, 'a: 'b> {
-    policy: &'b Policy<'b>,
+    policy: &'b Policy,
     args: &'b mut StartArgs<'a>,
 }
 
