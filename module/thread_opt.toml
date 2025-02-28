@@ -1,5 +1,4 @@
-
-[unity]
+[[comm_match]]
 packages = [
     "com.miHoYo.Yuanshen",
     "com.miHoYo.GenshinImpact",
@@ -14,6 +13,3 @@ packages = [
     "com.yongshi.tenojo.ys",
     "com.tencent.KiHan",
 ]
-
-[usage1]
-packages = []

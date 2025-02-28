@@ -14,7 +14,7 @@ use libc::pid_t;
 use once_cell::sync::Lazy;
 
 // 对于普通的Unity游戏
-static UNITY: Lazy<&[&str]> = Lazy::new(|| init_packages(&PROFILE.unity.packages));
+static UNITY: Lazy<&[&str]> = Lazy::new(|| init_packages(&PROFILE.comm_match[0].packages));
 
 // 单纯的的线程名匹配，对于ue游戏
 const UE: &[&str] = &["com.kurogame.mingchao"];

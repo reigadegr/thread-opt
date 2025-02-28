@@ -16,7 +16,7 @@ pub static PROFILE: Lazy<Config> = Lazy::new(|| {
 
 #[derive(Deserialize)]
 pub struct Config {
-    pub unity: NameMatch,
+    pub comm_match: Vec<NameMatch>,
 }
 
 #[derive(Deserialize)]
