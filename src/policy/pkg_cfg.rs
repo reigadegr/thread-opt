@@ -14,7 +14,7 @@ use libc::pid_t;
 use once_cell::sync::Lazy;
 
 // 对于普通的Unity游戏
-static UNITY: Lazy<&[&str]> = Lazy::new(|| get_packages(PROFILE.unity.packages.clone()));
+static UNITY: Lazy<&[&str]> = Lazy::new(|| get_packages(&PROFILE.unity.packages));
 
 // 单纯的的线程名匹配，对于ue游戏
 const UE: &[&str] = &["com.kurogame.mingchao"];
@@ -66,7 +66,6 @@ pub struct StartArgs<'a> {
 
 type ConfigTuple = (&'static [&'static str], fn(&mut StartArgs));
 
-// pub static CUST_CONFIGS: Lazy<&[ConfigTuple]> = Lazy::new(|| &[(UNITY, policy_unity::start_task)]);
 pub static CUST_CPNFIGS: Lazy<[ConfigTuple; 1]> =
     Lazy::new(|| [(*UNITY, policy_unity::start_task)]);
 
