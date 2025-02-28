@@ -21,22 +21,22 @@ enum CmdType {
 
 type ByteArray = heapless::Vec<u8, 16>;
 
-pub struct Policy {
-    pub top: Vec<ByteArray>,
-    pub only6: Vec<ByteArray>,
-    pub only7: Vec<ByteArray>,
-    pub middle: Vec<ByteArray>,
-    pub background: Vec<ByteArray>,
+pub struct Policy<'a> {
+    pub top: &'a Vec<ByteArray>,
+    pub only6: &'a Vec<ByteArray>,
+    pub only7: &'a Vec<ByteArray>,
+    pub middle: &'a Vec<ByteArray>,
+    pub background: &'a Vec<ByteArray>,
 }
 
-impl Policy {
-    pub fn new(policy: &Self) -> Self {
+impl Policy<'_> {
+    pub const fn new(policy: &Self) -> Self {
         Self {
-            top: policy.top.clone(),
-            only6: policy.only6.clone(),
-            only7: policy.only7.clone(),
-            middle: policy.middle.clone(),
-            background: policy.background.clone(),
+            top: policy.top,
+            only6: policy.only6,
+            only7: policy.only7,
+            middle: policy.middle,
+            background: policy.background,
         }
     }
 

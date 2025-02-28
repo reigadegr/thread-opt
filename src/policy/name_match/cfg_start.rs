@@ -5,11 +5,11 @@ extern crate alloc;
 use alloc::{fmt::format, sync::Arc, vec::Vec};
 pub fn start_task(args: &mut StartArgs<'_>, policy: &config::Policy) {
     let policy = Policy {
-        top: policy.top.clone(),
-        only6: policy.only6.clone(),
-        only7: policy.only7.clone(),
-        middle: policy.middle.clone(),
-        background: policy.background.clone(),
+        top: &policy.top,
+        only6: &policy.only6,
+        only7: &policy.only7,
+        middle: &policy.middle,
+        background: &policy.background,
     };
     super::StartTask::new(args, &policy).start_task();
 }

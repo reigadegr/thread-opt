@@ -11,7 +11,7 @@ use log::debug;
 use minstant::Instant;
 
 struct StartTask<'b, 'a: 'b> {
-    policy: &'b Policy,
+    policy: &'b Policy<'b>,
     args: &'b mut StartArgs<'a>,
 }
 
