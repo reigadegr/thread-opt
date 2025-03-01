@@ -1,15 +1,12 @@
 use super::Looper;
 use crate::{
     config::{self, NameMatch},
-    policy::{
-        name_match::cfg_start,
-        pkg_cfg::StartArgs,
-    },
+    policy::{name_match::cfg_start, pkg_cfg::StartArgs},
 };
 use log::info;
 
 impl Looper {
-    pub fn bind_name_match<F>(&mut self, start_task: F, policy: &config::Policy)
+    fn bind_name_match<F>(&mut self, start_task: F, policy: &config::Policy)
     where
         F: Fn(&mut StartArgs, &config::Policy),
     {

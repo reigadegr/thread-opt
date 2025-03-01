@@ -1,10 +1,7 @@
 use crate::{
     activity::{ActivityUtils, get_tid_info::get_process_name},
-    config::{self, PROFILE, UsageTop1},
-    policy::{
-        name_match::cfg_start,
-        pkg_cfg::{PACKAGE_CONFIGS, StartArgs},
-    },
+    config::{PROFILE},
+    policy::pkg_cfg::{PACKAGE_CONFIGS, StartArgs},
     utils::{affinity_utils::global_cpu_utils::bind_list_to_background, sleep::sleep_secs},
 };
 use compact_str::CompactString;
@@ -54,31 +51,6 @@ impl Looper {
             if package == self.global_package {
                 info!("Detected target App: {}", self.global_package);
                 self.start_bind_common(start_task);
-                return true;
-            }
-        }
-        false
-    }
-
-    fn bind_usage_top1<F>(&mut self, start_task: F, policy: &config::Policy)
-    where
-        F: Fn(&mut StartArgs, &config::Policy),
-    {
-        start_task(
-            &mut StartArgs {
-                activity_utils: &mut self.activity_utils,
-                pid: self.pid,
-            },
-            policy,
-        );
-        self.game_exit();
-    }
-
-    fn policy_usage_top1(&mut self, i: &UsageTop1) -> bool {
-        for package in &i.packages {
-            if package == self.global_package {
-                info!("Detected target App: {}", self.global_package);
-                self.bind_usage_top1(cfg_start::start_task, &i.policy);
                 return true;
             }
         }

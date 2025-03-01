@@ -1,5 +1,7 @@
+pub mod cfg_start;
 pub mod common;
-pub mod policies;
+// pub mod policies;
+
 use super::get_thread_tids;
 use crate::{
     cpu_common::process_monitor::get_top1_tid, policy::pkg_cfg::StartArgs, utils::sleep::sleep_secs,
@@ -64,22 +66,22 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
     }
 }
 
-macro_rules! top1_macro_init {
-    ($CommPrefix:expr,$initial_cmd:ident) => {
-        use super::super::common::{CmdType, Policy};
-        use crate::policy::pkg_cfg::StartArgs;
-        pub fn start_task(args: &mut StartArgs<'_>) {
-            let policy = Policy {
-                top: &TOP,
-                only6: &ONLY6,
-                only7: &ONLY7,
-                middle: &MIDDLE,
-                background: &BACKEND,
-            };
-            super::super::StartTask::new(args, &policy)
-                .start_task($CommPrefix, &CmdType::$initial_cmd);
-        }
-    };
-}
+// macro_rules! top1_macro_init {
+// ($CommPrefix:expr,$initial_cmd:ident) => {
+// use super::super::common::{CmdType, Policy};
+// use crate::policy::pkg_cfg::StartArgs;
+// pub fn start_task(args: &mut StartArgs<'_>) {
+// let policy = Policy {
+// top: &TOP,
+// only6: &ONLY6,
+// only7: &ONLY7,
+// middle: &MIDDLE,
+// background: &BACKEND,
+// };
+// super::super::StartTask::new(args, &policy)
+// .start_task($CommPrefix, &CmdType::$initial_cmd);
+// }
+// };
+// }
 
-use top1_macro_init;
+// use top1_macro_init;

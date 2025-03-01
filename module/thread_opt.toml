@@ -38,14 +38,15 @@ only7 = ["MainThread"]
 middle = ["JobThread"]
 background = []
 
-# 以下功能待开发中，不生效，暂时无需理会
+
+
 [[usage_top1]]
 packages = ["com.bf.sgs.hdexp"]
-max_comm = ["GLThread-"]
+max_comm = ["GLThread"]
 max_comm_target = "Only7"
 [usage_top1.policy]
 top = []
-only6 = ["GLThread"]
+only6 = []
 only7 = []
 middle = []
 background = []
