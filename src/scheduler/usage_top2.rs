@@ -1,6 +1,6 @@
 use super::Looper;
 use crate::{
-    config::{UsageTop2},
+    config::UsageTop2,
     policy::{pkg_cfg::StartArgs, usage_top2::cfg_start},
 };
 use log::info;

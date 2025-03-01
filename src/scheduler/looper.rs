@@ -1,7 +1,6 @@
 use crate::{
     activity::{ActivityUtils, get_tid_info::get_process_name},
     config::PROFILE,
-    policy::pkg_cfg::{PACKAGE_CONFIGS, StartArgs},
     utils::{affinity_utils::global_cpu_utils::bind_list_to_background, sleep::sleep_secs},
 };
 use compact_str::CompactString;
@@ -32,31 +31,6 @@ impl Looper {
         self.activity_utils.tid_utils.tid_info.tid_list.clear();
     }
 
-    fn start_bind_common<F>(&mut self, start_task: F)
-    where
-        F: Fn(&mut StartArgs),
-    {
-        start_task(&mut StartArgs {
-            activity_utils: &mut self.activity_utils,
-            pid: self.pid,
-        });
-        self.game_exit();
-    }
-
-    fn handle_package_list<F>(&mut self, package_list: &[&str], start_task: F) -> bool
-    where
-        F: Fn(&mut StartArgs),
-    {
-        for &package in package_list {
-            if package == self.global_package {
-                info!("Detected target App: {}", self.global_package);
-                self.start_bind_common(start_task);
-                return true;
-            }
-        }
-        false
-    }
-
     pub fn enter_loop(&mut self) {
         'outer: loop {
             sleep_secs(1);
@@ -84,12 +58,6 @@ impl Looper {
 
             for i in &PROFILE.usage_top2 {
                 if self.policy_usage_top2(i) {
-                    continue 'outer;
-                }
-            }
-
-            for (package_list, start_task) in PACKAGE_CONFIGS {
-                if self.handle_package_list(package_list, start_task) {
                     continue 'outer;
                 }
             }
