@@ -124,3 +124,12 @@ only6 = []
 only7 = ["WZM_Main"]
 middle = ["Worker"]
 background = ["Thread-"]
+
+[[usage_top2]]
+packages = ["com.netease.yyslscn"]
+max_comm = ["Thread-"]
+
+[[usage_top2]]
+packages = ["com.netease.party"]
+max_comm = ["MainThread"]
+second_comm = ["Thread-"]

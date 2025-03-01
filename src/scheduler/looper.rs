@@ -82,6 +82,12 @@ impl Looper {
                 }
             }
 
+            for i in &PROFILE.usage_top2 {
+                if self.policy_usage_top2(i) {
+                    continue 'outer;
+                }
+            }
+
             for (package_list, start_task) in PACKAGE_CONFIGS {
                 if self.handle_package_list(package_list, start_task) {
                     continue 'outer;

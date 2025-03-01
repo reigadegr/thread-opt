@@ -28,6 +28,7 @@ pub static PROFILE: Lazy<Config> = Lazy::new(|| {
 pub struct Config {
     pub comm_match: Vec<NameMatch>,
     pub usage_top1: Vec<UsageTop1>,
+    pub usage_top2: Vec<UsageTop2>,
 }
 
 #[derive(Deserialize)]
@@ -43,6 +44,15 @@ pub struct UsageTop1 {
     pub max_comm: ByteArray,
     pub max_comm_core: Top1Enum,
     pub policy: Policy,
+}
+
+#[derive(Deserialize)]
+pub struct UsageTop2 {
+    pub packages: Vec<CompactString>,
+    #[serde(deserialize_with = "deserialize_byte_array_one")]
+    pub max_comm: ByteArray,
+    #[serde(default, deserialize_with = "deserialize_byte_array_one_op")]
+    pub second_comm: Option<ByteArray>,
 }
 
 #[derive(Deserialize)]
@@ -109,4 +119,21 @@ where
         return Ok(vec);
     }
     Ok(heapless::Vec::new())
+}
+
+fn deserialize_byte_array_one_op<'de, D>(deserializer: D) -> Result<Option<ByteArray>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let strings: Vec<CompactString> = Vec::deserialize(deserializer)?;
+    if let Some(s) = strings.into_iter().next() {
+        let mut bytes = s.as_bytes();
+        if bytes.len() > 16 {
+            bytes = &bytes[..16];
+        }
+        let vec = heapless::Vec::from_slice(bytes)
+            .map_err(|()| serde::de::Error::custom("String exceeds capacity"))?;
+        return Ok(Some(vec));
+    }
+    Ok(None)
 }

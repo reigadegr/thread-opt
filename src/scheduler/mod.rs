@@ -3,6 +3,7 @@ pub mod name_match;
 use crate::activity::ActivityUtils;
 use looper::Looper;
 pub mod usage_top1;
+pub mod usage_top2;
 
 pub struct Scheduler {
     looper: Looper,
