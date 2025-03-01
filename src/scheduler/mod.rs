@@ -1,4 +1,5 @@
 pub mod looper;
+pub mod name_match;
 use crate::activity::ActivityUtils;
 use looper::Looper;
 

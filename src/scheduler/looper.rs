@@ -1,21 +1,20 @@
 use crate::{
     activity::{ActivityUtils, get_tid_info::get_process_name},
-    config::{self, NameMatch, PROFILE},
+    config::{self, PROFILE, UsageTop1},
     policy::{
         name_match::cfg_start,
         pkg_cfg::{PACKAGE_CONFIGS, StartArgs},
     },
     utils::{affinity_utils::global_cpu_utils::bind_list_to_background, sleep::sleep_secs},
 };
-extern crate alloc;
 use compact_str::CompactString;
 use libc::pid_t;
 use log::info;
 
 pub struct Looper {
-    activity_utils: ActivityUtils,
-    global_package: CompactString,
-    pid: pid_t,
+    pub activity_utils: ActivityUtils,
+    pub global_package: CompactString,
+    pub pid: pid_t,
 }
 
 impl Looper {
@@ -27,7 +26,7 @@ impl Looper {
         }
     }
 
-    fn game_exit(&mut self) {
+    pub fn game_exit(&mut self) {
         info!("Exiting game\n");
         let tid_list = self.activity_utils.tid_utils.get_tid_list(self.pid);
         bind_list_to_background(tid_list);
@@ -61,7 +60,7 @@ impl Looper {
         false
     }
 
-    fn start_bind_common_cfg<F>(&mut self, start_task: F, policy: &config::Policy)
+    fn bind_usage_top1<F>(&mut self, start_task: F, policy: &config::Policy)
     where
         F: Fn(&mut StartArgs, &config::Policy),
     {
@@ -75,11 +74,11 @@ impl Looper {
         self.game_exit();
     }
 
-    fn handle_package_list_cfg(&mut self, i: &NameMatch) -> bool {
+    fn policy_usage_top1(&mut self, i: &UsageTop1) -> bool {
         for package in &i.packages {
             if package == self.global_package {
                 info!("Detected target App: {}", self.global_package);
-                self.start_bind_common_cfg(cfg_start::start_task, &i.policy);
+                self.bind_usage_top1(cfg_start::start_task, &i.policy);
                 return true;
             }
         }
@@ -100,7 +99,13 @@ impl Looper {
             }
 
             for i in &PROFILE.comm_match {
-                if self.handle_package_list_cfg(i) {
+                if self.policy_name_match(i) {
+                    continue 'outer;
+                }
+            }
+
+            for i in &PROFILE.usage_top1 {
+                if self.policy_usage_top1(i) {
                     continue 'outer;
                 }
             }
