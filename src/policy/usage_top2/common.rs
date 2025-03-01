@@ -11,7 +11,8 @@ use log::debug;
 use minstant::Instant;
 
 // 定义线程类型
-enum CmdType {
+#[derive(serde::Deserialize)]
+pub enum CmdType {
     Only6,
     Only7,
 }

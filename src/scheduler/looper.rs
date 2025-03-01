@@ -1,6 +1,6 @@
 use crate::{
     activity::{ActivityUtils, get_tid_info::get_process_name},
-    policy::pkg_cfg::{PACKAGE_CONFIGS, StartArgs},
+    config::PROFILE,
     utils::{affinity_utils::global_cpu_utils::bind_list_to_background, sleep::sleep_secs},
 };
 use compact_str::CompactString;
@@ -8,9 +8,9 @@ use libc::pid_t;
 use log::info;
 
 pub struct Looper {
-    activity_utils: ActivityUtils,
-    global_package: CompactString,
-    pid: pid_t,
+    pub activity_utils: ActivityUtils,
+    pub global_package: CompactString,
+    pub pid: pid_t,
 }
 
 impl Looper {
@@ -22,38 +22,13 @@ impl Looper {
         }
     }
 
-    fn game_exit(&mut self) {
+    pub fn game_exit(&mut self) {
         info!("Exiting game\n");
         let tid_list = self.activity_utils.tid_utils.get_tid_list(self.pid);
         bind_list_to_background(tid_list);
         self.pid = -1;
         self.activity_utils.tid_utils.tid_info.task_map.clear();
         self.activity_utils.tid_utils.tid_info.tid_list.clear();
-    }
-
-    fn start_bind_common<F>(&mut self, start_task: F)
-    where
-        F: Fn(&mut StartArgs),
-    {
-        start_task(&mut StartArgs {
-            activity_utils: &mut self.activity_utils,
-            pid: self.pid,
-        });
-        self.game_exit();
-    }
-
-    fn handle_package_list<F>(&mut self, package_list: &[&str], start_task: F) -> bool
-    where
-        F: Fn(&mut StartArgs),
-    {
-        for &package in package_list {
-            if package == self.global_package {
-                info!("Detected target App: {}", self.global_package);
-                self.start_bind_common(start_task);
-                return true;
-            }
-        }
-        false
     }
 
     pub fn enter_loop(&mut self) {
@@ -68,8 +43,21 @@ impl Looper {
                 let name = get_process_name(pid).unwrap_or_default();
                 self.global_package = name;
             }
-            for (package_list, start_task) in PACKAGE_CONFIGS {
-                if self.handle_package_list(package_list, start_task) {
+
+            for i in &PROFILE.comm_match {
+                if self.policy_name_match(i) {
+                    continue 'outer;
+                }
+            }
+
+            for i in &PROFILE.usage_top1 {
+                if self.policy_usage_top1(i) {
+                    continue 'outer;
+                }
+            }
+
+            for i in &PROFILE.usage_top2 {
+                if self.policy_usage_top2(i) {
                     continue 'outer;
                 }
             }

@@ -1,0 +1,158 @@
+# 单纯线程前缀的匹配，unity游戏
+[[comm_match]]
+packages = [
+    "com.miHoYo.Yuanshen",
+    "com.miHoYo.GenshinImpact",
+    "com.miHoYo.ys.bilibili",
+    "com.miHoYo.yuanshencb",
+    "com.miHoYo.hkrpg",
+    "com.miHoYo.hkrpg.bilibili",
+    "com.HoYoverse.hkrpgoversea",
+    "com.miHoYo.hkrpgcb",
+    "com.tencent.tmgp.sgame",
+    "com.miHoYo.Nap",
+    "com.yongshi.tenojo.ys",
+    "com.tencent.KiHan",
+]
+[comm_match.policy]
+top = []
+only6 = ["UnityGfx"]
+only7 = ["UnityMain"]
+middle = ["Thread-", "Job.Worker"]
+background = []
+
+# 单纯线程前缀的匹配，ue游戏
+[[comm_match]]
+packages = ["com.kurogame.mingchao"]
+[comm_match.policy]
+top = ["Pool"]
+only6 = ["RHIThread"]
+only7 = ["GameThread"]
+middle = ["RenderThread"]
+background = []
+
+# 单纯线程前缀的匹配，光遇
+[[comm_match]]
+packages = ["com.netease.sky"]
+[comm_match.policy]
+top = []
+only6 = []
+only7 = ["MainThread"]
+middle = ["JobThread"]
+background = []
+
+# 对于三国杀和时空猎人，cocos游戏，取一个负载最高的GLThread丢cpu7
+[[usage_top1]]
+packages = ["com.bf.sgs.hdexp", "com.yinhan.hunter.tx"]
+max_comm = ["GLThread"]
+max_comm_core = "Only7"
+[usage_top1.policy]
+top = []
+only6 = []
+only7 = []
+middle = []
+background = []
+
+# 拉力竞速3
+[[usage_top1]]
+packages = ["brownmonster.app.game.rushrally3"]
+max_comm = ["Thread-"]
+max_comm_core = "Only7"
+[usage_top1.policy]
+top = []
+only6 = ["._RuMain"]
+only7 = []
+middle = ["mail-cmar"]
+background = []
+
+# 对于需要取一个负载最大的线程，其线程前缀名为"Thread-"
+[[usage_top1]]
+packages = ["com.tencent.lzhx", "com.tencent.tmgp.pubgmhd"]
+max_comm = ["Thread-"]
+max_comm_core = "Only7"
+[usage_top1.policy]
+top = ["FAsync"]
+only6 = ["RHIThread"]
+only7 = []
+middle = ["RenderThread"]
+background = []
+
+# 无限暖暖，取一个负载最重的GameThread绑cpu7
+[[usage_top1]]
+packages = ["com.papegames.infinitynikki"]
+max_comm = ["GameThread"]
+max_comm_core = "Only7"
+[usage_top1.policy]
+top = []
+only6 = ["RHIThread"]
+only7 = []
+middle = ["RenderThread"]
+background = []
+
+# 需要单独把负载最重的unitymain绑定到cpu7
+[[usage_top1]]
+packages = ["com.tencent.tmgp.cod", "com.tencent.tmgp.cf"]
+max_comm = ["UnityMain"]
+max_comm_core = "Only7"
+[usage_top1.policy]
+top = []
+only6 = ["UnityGfx"]
+only7 = []
+middle = []
+background = ["Thread-"]
+
+# 需要把负载第二重的线程绑定cpu6
+[[usage_top1]]
+packages = ["com.tencent.lolm", "com.tencent.tmgp.speedmobile"]
+max_comm = ["Thread-"]
+max_comm_core = "Only6"
+[usage_top1.policy]
+top = []
+only6 = []
+only7 = ["UnityMain"]
+middle = []
+background = ["Thread-"]
+
+# cod战区
+[[usage_top1]]
+packages = ["com.activision.callofduty.warzone"]
+max_comm = ["Thread-"]
+max_comm_core = "Only6"
+[usage_top1.policy]
+top = []
+only6 = []
+only7 = ["WZM_Main"]
+middle = ["Worker"]
+background = ["Thread-"]
+
+# 对于需要取两个重负载线程的游戏，
+# 其线程前缀名均为"Thread-"，目前策略是燕云十六声特调
+# 若不需要检索第二个高负载线程，second_comm不写即可
+[[usage_top2]]
+packages = ["com.netease.yyslscn"]
+max_comm = ["Thread-"]
+
+# 对于需要取两个重负载线程的游戏，
+# 其线程前缀名分别为"Thread-"，"MainThread"，目前策略是蛋仔派对特调
+[[usage_top2]]
+packages = ["com.netease.party"]
+max_comm = ["MainThread"]
+second_comm = ["Thread-"]
+
+# 对于需要取两个重负载线程的游戏
+# 其线程前缀名分别为"UnityMain","Thread-"
+[[usage_top2]]
+packages = [
+    "com.galasports.operablebasketball.mi",
+    "com.sofunny.Sausage",
+    "com.tencent.jkchess",
+]
+max_comm = ["UnityMain"]
+second_comm = ["Thread-"]
+
+# 对于需要取两个重负载线程的游戏，
+# 其线程前缀名分别为"GameThread","RenderThread"，目前策略只有三角洲
+[[usage_top2]]
+packages = ["com.tencent.tmgp.dfm"]
+max_comm = ["GameThread"]
+second_comm = ["RenderThread"]

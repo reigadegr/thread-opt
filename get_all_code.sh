@@ -6,6 +6,11 @@ if [ ! -d target ]; then
 fi
 
 {
+    for i in Cargo.toml module/thread_opt.toml; do
+        echo -e "---以下为项目的$i---\n"
+        cat $i
+        echo "------------------------"
+    done
     for i in $(find ./src -name "*.rs"); do
         echo "这是$i: "
         cat $i

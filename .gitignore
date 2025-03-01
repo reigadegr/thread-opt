@@ -10,3 +10,4 @@ src/*.sh
 **/*.txt
 .idea
 *patch
+thread_opt.toml

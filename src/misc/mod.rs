@@ -5,7 +5,6 @@ use libc::getpid;
 use likely_stable::unlikely;
 use log::info;
 use logger::{init_log, log_metainfo};
-extern crate alloc;
 
 pub fn init_misc() {
     working_in_background();

@@ -1,5 +1,5 @@
+pub mod cfg_start;
 mod common;
-pub mod policies;
 
 use crate::{policy::pkg_cfg::StartArgs, utils::sleep::sleep_secs};
 use common::Policy;
@@ -45,24 +45,3 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         }
     }
 }
-
-// 定义宏，但不导出
-macro_rules! name_match_init {
-    () => {
-        use super::super::common::Policy;
-        use crate::policy::pkg_cfg::StartArgs;
-        pub fn start_task(args: &mut StartArgs<'_>) {
-            let policy = Policy {
-                top: &TOP,
-                only6: &ONLY6,
-                only7: &ONLY7,
-                middle: &MIDDLE,
-                background: &BACKEND,
-            };
-            super::super::StartTask::new(args, &policy).start_task();
-        }
-    };
-}
-
-// 重新导出宏，使其在子模块中可用
-use name_match_init;

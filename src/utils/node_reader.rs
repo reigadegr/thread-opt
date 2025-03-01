@@ -1,15 +1,15 @@
 use super::guard::FileGuard;
 use anyhow::{Result, anyhow};
 use compact_str::CompactString;
+use core::ptr::copy_nonoverlapping;
 use itoa::Buffer;
 use libc::{O_RDONLY, O_WRONLY, c_void, open, pid_t, read, write};
 use likely_stable::unlikely;
 use stringzilla::sz;
-extern crate alloc;
 
 pub fn read_file<const N: usize>(file: &[u8]) -> Result<CompactString> {
     let buffer = read_to_byte::<N>(file)?;
-    let pos = sz::find(buffer, b"\n");
+    let pos = sz::find(buffer, b"\0");
     let buffer = pos.map_or(&buffer[..], |pos| &buffer[..pos]);
     let buffer = CompactString::from_utf8(buffer)?;
     Ok(buffer)
@@ -48,18 +48,19 @@ pub fn write_to_byte<const N: usize>(file: &[u8], msg: &[u8]) -> Result<()> {
     Ok(())
 }
 
-pub fn get_proc_path<const N: usize>(tid: pid_t, file: &[u8]) -> [u8; N] {
+pub fn get_proc_path<const N: usize, const L: usize>(id: pid_t, file: &[u8]) -> [u8; N] {
     let mut buffer = [0u8; N];
     buffer[0..6].copy_from_slice(b"/proc/");
 
     let mut itoa_buf = Buffer::new();
-    let tid = itoa_buf.format(tid).as_bytes();
+    let id = itoa_buf.format(id).as_bytes();
 
-    let mid = 6 + tid.len();
-    let end = mid + file.len();
+    let id_length = id.len();
 
-    buffer[6..mid].copy_from_slice(tid);
-    buffer[mid..end].copy_from_slice(file);
+    unsafe {
+        copy_nonoverlapping(id.as_ptr(), buffer.as_mut_ptr().add(6), id_length);
+        copy_nonoverlapping(file.as_ptr(), buffer.as_mut_ptr().add(6 + id_length), L);
+    }
 
     buffer
 }

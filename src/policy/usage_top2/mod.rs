@@ -1,9 +1,5 @@
-mod common;
-pub mod policy_party;
-pub mod policy_top2;
-pub mod policy_ue_t2;
-pub mod policy_unity_t2;
-
+pub mod cfg_start;
+pub mod common;
 use super::get_thread_tids;
 use crate::{
     cpu_common::process_monitor::{get_top1_tid, get_top2_tids},
@@ -75,14 +71,3 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         }
     }
 }
-
-macro_rules! top2_macro_init {
-    ($CommPrefix:expr,$CommPrefix2:expr) => {
-        use crate::policy::pkg_cfg::StartArgs;
-        pub fn start_task(args: &mut StartArgs<'_>) {
-            super::StartTask::new(args).start_task($CommPrefix, $CommPrefix2);
-        }
-    };
-}
-
-use top2_macro_init;
