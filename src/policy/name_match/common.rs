@@ -2,6 +2,7 @@ use super::super::affinity_policy::{
     background_policy, middle_policy, only6_policy, only7_policy, top_policy,
 };
 extern crate alloc;
+use crate::config::ByteArray;
 use hashbrown::HashMap;
 use libc::pid_t;
 #[cfg(debug_assertions)]
@@ -17,8 +18,6 @@ enum CmdType {
     Only6,
     Only7,
 }
-
-type ByteArray = heapless::Vec<u8, 16>;
 
 pub struct Policy<'a> {
     pub top: &'a [ByteArray],

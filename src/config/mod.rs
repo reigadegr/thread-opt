@@ -7,7 +7,7 @@ use alloc::{sync::Arc, vec::Vec};
 use anyhow::Result;
 use once_cell::sync::{Lazy, OnceCell};
 
-type ByteArray = heapless::Vec<u8, 16>;
+pub type ByteArray = heapless::Vec<u8, 16>;
 
 pub static PROFILE: Lazy<Config> = Lazy::new(|| {
     let profile = read_file::<65536>(b"/data/adb/modules/thread_opt/thread_opt.toml\0").unwrap();
@@ -76,14 +76,17 @@ pub fn init_packages(vec: &[CompactString]) -> &'static [&'static str] {
     &cached[..]
 }
 
-fn deserialize_byte_array<'de, D>(deserializer: D) -> Result<Vec<heapless::Vec<u8, 16>>, D::Error>
+fn deserialize_byte_array<'de, D>(deserializer: D) -> Result<Vec<ByteArray>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
     let strings: Vec<CompactString> = Vec::deserialize(deserializer)?;
     let mut result = Vec::new();
     for s in strings {
-        let bytes = s.as_bytes();
+        let mut bytes = s.as_bytes();
+        if bytes.len() > 16 {
+            bytes = &bytes[..16];
+        }
         let vec = heapless::Vec::from_slice(bytes)
             .map_err(|()| serde::de::Error::custom("String exceeds capacity"))?;
         result.push(vec);
@@ -91,17 +94,19 @@ where
     Ok(result)
 }
 
-fn deserialize_byte_array_one<'de, D>(deserializer: D) -> Result<heapless::Vec<u8, 16>, D::Error>
+fn deserialize_byte_array_one<'de, D>(deserializer: D) -> Result<ByteArray, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
     let strings: Vec<CompactString> = Vec::deserialize(deserializer)?;
-    let mut result: alloc::vec::Vec<heapless::Vec<u8, 16>> = Vec::new();
     if let Some(s) = strings.into_iter().next() {
-        let bytes = s.as_bytes();
+        let mut bytes = s.as_bytes();
+        if bytes.len() > 16 {
+            bytes = &bytes[..16];
+        }
         let vec = heapless::Vec::from_slice(bytes)
             .map_err(|()| serde::de::Error::custom("String exceeds capacity"))?;
         return Ok(vec);
-    }    
+    }
     Ok(heapless::Vec::new())
 }
