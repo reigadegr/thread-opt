@@ -41,7 +41,7 @@ pub struct UsageTop1 {
     pub packages: Vec<CompactString>,
     #[serde(deserialize_with = "deserialize_byte_array_one")]
     pub max_comm: ByteArray,
-    pub max_comm_target: Top1Enum,
+    pub max_comm_core: Top1Enum,
     pub policy: Policy,
 }
 

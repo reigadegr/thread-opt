@@ -38,7 +38,7 @@ impl Looper {
                     usage_top1::cfg_start::start_task,
                     &i.policy,
                     &i.max_comm,
-                    &i.max_comm_target,
+                    &i.max_comm_core,
                 );
                 return true;
             }

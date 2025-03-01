@@ -1,6 +1,6 @@
 use crate::{
     activity::{ActivityUtils, get_tid_info::get_process_name},
-    config::{PROFILE},
+    config::PROFILE,
     policy::pkg_cfg::{PACKAGE_CONFIGS, StartArgs},
     utils::{affinity_utils::global_cpu_utils::bind_list_to_background, sleep::sleep_secs},
 };
