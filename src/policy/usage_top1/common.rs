@@ -10,6 +10,7 @@ use log::debug;
 use minstant::Instant;
 
 // 动态生成 CmdType 枚举
+#[derive(serde::Deserialize)]
 pub enum CmdType {
     Top,
     Middle,

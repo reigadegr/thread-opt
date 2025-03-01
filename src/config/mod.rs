@@ -2,12 +2,15 @@ use crate::utils::node_reader::read_file;
 use compact_str::CompactString;
 use serde::Deserialize;
 extern crate alloc;
+use crate::policy::usage_top1::common::CmdType as Top1Enum;
 use alloc::{sync::Arc, vec::Vec};
 use anyhow::Result;
 use once_cell::sync::{Lazy, OnceCell};
 
+type ByteArray = heapless::Vec<u8, 16>;
+
 pub static PROFILE: Lazy<Config> = Lazy::new(|| {
-    let profile = read_file::<65536>(b"./thread_opt.toml\0").unwrap();
+    let profile = read_file::<65536>(b"/data/adb/modules/thread_opt/thread_opt.toml\0").unwrap();
     #[cfg(debug_assertions)]
     log::debug!("{profile:?}");
 
@@ -24,6 +27,7 @@ pub static PROFILE: Lazy<Config> = Lazy::new(|| {
 #[derive(Deserialize)]
 pub struct Config {
     pub comm_match: Vec<NameMatch>,
+    pub usage_top1: Vec<UsageTop1>,
 }
 
 #[derive(Deserialize)]
@@ -32,7 +36,15 @@ pub struct NameMatch {
     pub policy: Policy,
 }
 
-type ByteArray = heapless::Vec<u8, 16>;
+#[derive(Deserialize)]
+pub struct UsageTop1 {
+    pub packages: Vec<CompactString>,
+    #[serde(deserialize_with = "deserialize_byte_array_one")]
+    pub max_comm: ByteArray,
+    pub max_comm_target: Top1Enum,
+    pub policy: Policy,
+}
+
 #[derive(Deserialize)]
 pub struct Policy {
     #[serde(deserialize_with = "deserialize_byte_array")]
@@ -77,4 +89,19 @@ where
         result.push(vec);
     }
     Ok(result)
+}
+
+fn deserialize_byte_array_one<'de, D>(deserializer: D) -> Result<heapless::Vec<u8, 16>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let strings: Vec<CompactString> = Vec::deserialize(deserializer)?;
+    let mut result: alloc::vec::Vec<heapless::Vec<u8, 16>> = Vec::new();
+    if let Some(s) = strings.into_iter().next() {
+        let bytes = s.as_bytes();
+        let vec = heapless::Vec::from_slice(bytes)
+            .map_err(|()| serde::de::Error::custom("String exceeds capacity"))?;
+        return Ok(vec);
+    }    
+    Ok(heapless::Vec::new())
 }

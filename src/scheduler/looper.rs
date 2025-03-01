@@ -1,10 +1,10 @@
-use crate::config::NameMatch;
-use crate::config::Policy;
-use crate::policy::name_match::cfg_start;
 use crate::{
     activity::{ActivityUtils, get_tid_info::get_process_name},
-    config::PROFILE,
-    policy::pkg_cfg::{PACKAGE_CONFIGS, StartArgs},
+    config::{self, NameMatch, PROFILE},
+    policy::{
+        name_match::cfg_start,
+        pkg_cfg::{PACKAGE_CONFIGS, StartArgs},
+    },
     utils::{affinity_utils::global_cpu_utils::bind_list_to_background, sleep::sleep_secs},
 };
 extern crate alloc;
@@ -61,9 +61,9 @@ impl Looper {
         false
     }
 
-    fn start_bind_common_cfg<F>(&mut self, start_task: F, policy: &Policy)
+    fn start_bind_common_cfg<F>(&mut self, start_task: F, policy: &config::Policy)
     where
-        F: Fn(&mut StartArgs, &Policy),
+        F: Fn(&mut StartArgs, &config::Policy),
     {
         start_task(
             &mut StartArgs {
@@ -104,12 +104,6 @@ impl Looper {
                     continue 'outer;
                 }
             }
-
-            // for (package_list, start_task) in CUST_CONFIGS.iter() {
-            // if self.handle_package_list(package_list, start_task) {
-            // continue 'outer;
-            // }
-            // }
 
             for (package_list, start_task) in PACKAGE_CONFIGS {
                 if self.handle_package_list(package_list, start_task) {
