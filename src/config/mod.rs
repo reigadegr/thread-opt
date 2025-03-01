@@ -2,9 +2,8 @@ use crate::utils::node_reader::read_file;
 use compact_str::CompactString;
 use serde::Deserialize;
 extern crate alloc;
-use alloc::{fmt::format, sync::Arc, vec::Vec};
+use alloc::{sync::Arc, vec::Vec};
 use anyhow::Result;
-use heapless::String;
 use once_cell::sync::{Lazy, OnceCell};
 
 pub static PROFILE: Lazy<Config> = Lazy::new(|| {

@@ -3,12 +3,11 @@ use crate::config::Policy;
 use crate::policy::name_match::cfg_start;
 use crate::{
     activity::{ActivityUtils, get_tid_info::get_process_name},
-    config::{PROFILE, init_packages},
+    config::PROFILE,
     policy::pkg_cfg::{PACKAGE_CONFIGS, StartArgs},
     utils::{affinity_utils::global_cpu_utils::bind_list_to_background, sleep::sleep_secs},
 };
 extern crate alloc;
-use alloc::{fmt::format, sync::Arc, vec::Vec};
 use compact_str::CompactString;
 use libc::pid_t;
 use log::info;

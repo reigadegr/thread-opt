@@ -2,7 +2,6 @@ use super::super::affinity_policy::{
     background_policy, middle_policy, only6_policy, only7_policy, top_policy,
 };
 extern crate alloc;
-use alloc::{fmt::format, sync::Arc, vec::Vec};
 use hashbrown::HashMap;
 use libc::pid_t;
 #[cfg(debug_assertions)]
