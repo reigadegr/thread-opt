@@ -16,5 +16,3 @@ pub fn start_task(
     };
     super::StartTask::new(args, &policy).start_task(comm_prefix, cmd_type);
 }
-// super::super::StartTask::new(args, &policy)
-// .start_task($CommPrefix, &CmdType::$initial_cmd);
