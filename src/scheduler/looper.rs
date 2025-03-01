@@ -104,9 +104,6 @@ impl Looper {
                 if self.handle_package_list_cfg(i) {
                     continue 'outer;
                 }
-                // for j in &i.packages {
-                // log::info!("{j}");
-                // }
             }
 
             // for (package_list, start_task) in CUST_CONFIGS.iter() {

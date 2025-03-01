@@ -22,11 +22,11 @@ enum CmdType {
 type ByteArray = heapless::Vec<u8, 16>;
 
 pub struct Policy<'a> {
-    pub top: &'a Vec<ByteArray>,
-    pub only6: &'a Vec<ByteArray>,
-    pub only7: &'a Vec<ByteArray>,
-    pub middle: &'a Vec<ByteArray>,
-    pub background: &'a Vec<ByteArray>,
+    pub top: &'a [ByteArray],
+    pub only6: &'a [ByteArray],
+    pub only7: &'a [ByteArray],
+    pub middle: &'a [ByteArray],
+    pub background: &'a [ByteArray],
 }
 
 impl Policy<'_> {
