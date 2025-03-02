@@ -11,11 +11,14 @@ extern crate alloc;
 use alloc::{boxed::Box, vec::Vec};
 
 pub static TOP_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| {
-    let cores = analysis_cgroup_new("7").unwrap();
-    if *cores == [4, 5, 6, 7] {
-        return Box::new([7]);
+    let cores = analysis_cgroup_new("7");
+    if let Ok(cores) = cores {
+        if *cores == [4, 5, 6, 7] {
+            return Box::new([7]);
+        }
+        return cores;
     }
-    cores
+    Box::new([6])
 });
 
 pub static BACKEND_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| analysis_cgroup_new("0").unwrap());
@@ -24,6 +27,10 @@ pub static MIDDLE_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| {
     let mut all_core = heapless::Vec::<u8, 8>::from_slice(&[0, 1, 2, 3, 4, 5, 6, 7]).unwrap();
     let background_values = get_background_group();
     let top_values = get_top_group();
+
+    if top_values == [6] {
+        all_core.remove(7);
+    }
 
     for &value in background_values.iter().chain(top_values.iter()) {
         all_core.retain(|&x| x != value);
