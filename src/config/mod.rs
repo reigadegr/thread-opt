@@ -58,18 +58,18 @@ pub struct UsageTop2 {
 #[derive(Deserialize)]
 pub struct Policy {
     #[serde(deserialize_with = "deserialize_byte_array")]
-    pub top: Vec<ByteArray>,
+    pub top: Box<[ByteArray]>,
     #[serde(deserialize_with = "deserialize_byte_array")]
-    pub only6: Vec<ByteArray>,
+    pub only6: Box<[ByteArray]>,
     #[serde(deserialize_with = "deserialize_byte_array")]
-    pub only7: Vec<ByteArray>,
+    pub only7: Box<[ByteArray]>,
     #[serde(deserialize_with = "deserialize_byte_array")]
-    pub middle: Vec<ByteArray>,
+    pub middle: Box<[ByteArray]>,
     #[serde(deserialize_with = "deserialize_byte_array")]
-    pub background: Vec<ByteArray>,
+    pub background: Box<[ByteArray]>,
 }
 
-fn deserialize_byte_array<'de, D>(deserializer: D) -> Result<Vec<ByteArray>, D::Error>
+fn deserialize_byte_array<'de, D>(deserializer: D) -> Result<Box<[ByteArray]>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
@@ -84,7 +84,7 @@ where
             .map_err(|()| serde::de::Error::custom("String exceeds capacity"))?;
         result.push(vec);
     }
-    Ok(result)
+    Ok(result.into())
 }
 
 fn deserialize_byte_array_one<'de, D>(deserializer: D) -> Result<ByteArray, D::Error>
