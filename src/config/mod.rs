@@ -12,15 +12,11 @@ use format_profile::format_toml;
 use once_cell::sync::Lazy;
 
 pub type ByteArray = heapless::Vec<u8, 16>;
-
 pub static PROFILE: Lazy<Config> = Lazy::new(|| {
-    let profile = read_file::<65536>(b"/data/adb/modules/thread_opt/thread_opt.toml\0").unwrap();
-    let rs = format_toml(&profile);
-    write_to_byte(
-        b"/data/adb/modules/thread_opt/thread_opt.toml\0",
-        rs.as_bytes(),
-    )
-    .unwrap();
+    let profile_path = b"/data/adb/modules/thread_opt/thread_opt.toml\0";
+    let profile = read_file::<65536>(profile_path).unwrap();
+    let format_rs = format_toml(&profile);
+    write_to_byte(profile_path, format_rs.as_bytes()).unwrap();
     let profile: Config = toml::from_str(&profile).unwrap();
     profile
 });
