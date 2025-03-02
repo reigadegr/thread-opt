@@ -6,7 +6,7 @@ use anyhow::{Result, anyhow};
 use atoi::atoi;
 use compact_str::CompactString;
 use core::time::Duration;
-use hashbrown::HashMap;
+use hashbrown::{HashMap, HashSet};
 use libc::{opendir, pid_t, readdir};
 use likely_stable::unlikely;
 use minstant::Instant;
@@ -74,17 +74,27 @@ impl TidUtils {
         let Ok(tid_list) = read_task_dir(pid) else {
             return &self.tid_info;
         };
-
-        let mut task_map: HashMap<pid_t, [u8; 16]> = HashMap::new();
+        #[cfg(debug_assertions)]
+        let start = minstant::Instant::now();
+        let tid_list: HashSet<pid_t> = tid_list.into_iter().collect();
+        self.tid_info
+            .task_map
+            .retain(|tid, _| tid_list.contains(tid));
         for tid in tid_list {
+            if self.tid_info.task_map.contains_key(&tid) {
+                continue;
+            }
             let comm_path = get_proc_path::<32, 5>(tid, b"/comm");
-
             let Ok(comm) = read_to_byte::<16>(&comm_path) else {
                 continue;
             };
-            task_map.insert(tid, comm);
+            self.tid_info.task_map.insert(tid, comm);
         }
-        self.tid_info.task_map = task_map;
+        #[cfg(debug_assertions)]
+        {
+            let end = start.elapsed();
+            log::debug!("读task_map时间: {:?}", end);
+        }
         &self.tid_info
     }
 
@@ -94,6 +104,7 @@ impl TidUtils {
             return &self.tid_info;
         };
         self.tid_info.tid_list = tid_list;
+
         &self.tid_info
     }
 }

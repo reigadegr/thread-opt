@@ -54,8 +54,7 @@ impl TopAppUtils {
 
     pub fn set_top_pid(&mut self) -> TopPidInfo {
         self.inotify.read_events_blocking(&mut [0; 1024]).unwrap();
-        #[cfg(debug_assertions)]
-        let start = minstant::Instant::now();
+
         let dump = loop {
             match self.dumper.dump_to_byte::<1024>(&["lru"]) {
                 Ok(dump) => break dump,
@@ -65,11 +64,7 @@ impl TopAppUtils {
                 }
             }
         };
-        #[cfg(debug_assertions)]
-        {
-            let end = start.elapsed();
-            log::debug!("读toppid成时间: {:?}", end);
-        }
+
         TopPidInfo::new(&dump)
     }
 }
