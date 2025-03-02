@@ -1,26 +1,27 @@
-use crate::policy::usage_top1::common::CmdType as Top1Enum;
-use crate::utils::node_reader::read_file;
+pub mod format_profile;
+use crate::{
+    policy::usage_top1::common::CmdType as Top1Enum,
+    utils::node_reader::{read_file, write_to_byte},
+};
 use compact_str::CompactString;
 use serde::Deserialize;
 extern crate alloc;
 use alloc::{boxed::Box, vec::Vec};
 use anyhow::Result;
+use format_profile::format_toml;
 use once_cell::sync::Lazy;
 
 pub type ByteArray = heapless::Vec<u8, 16>;
 
 pub static PROFILE: Lazy<Config> = Lazy::new(|| {
     let profile = read_file::<65536>(b"/data/adb/modules/thread_opt/thread_opt.toml\0").unwrap();
-    #[cfg(debug_assertions)]
-    log::debug!("{profile:?}");
-
+    let rs = format_toml(&profile);
+    write_to_byte(
+        b"/data/adb/modules/thread_opt/thread_opt.toml\0",
+        rs.as_bytes(),
+    )
+    .unwrap();
     let profile: Config = toml::from_str(&profile).unwrap();
-    #[cfg(debug_assertions)]
-    for i in &profile.comm_match {
-        for j in &i.packages {
-            log::info!("{j}");
-        }
-    }
     profile
 });
 
