@@ -6,7 +6,7 @@ use anyhow::{Result, anyhow};
 use atoi::atoi;
 use compact_str::CompactString;
 use core::time::Duration;
-use hashbrown::HashMap;
+use hashbrown::{HashMap, HashSet};
 use libc::{opendir, pid_t, readdir};
 use likely_stable::unlikely;
 use minstant::Instant;
@@ -17,7 +17,7 @@ use alloc::vec::Vec;
 #[derive(Default)]
 pub struct TidInfo {
     pub task_map: HashMap<pid_t, [u8; 16]>,
-    pub tid_list: Vec<pid_t>,
+    pub tid_list: HashSet<pid_t>,
     task_map_pid: pid_t,
     tid_list_pid: pid_t,
 }
@@ -57,7 +57,7 @@ impl TidUtils {
         &self.set_task_map(pid).task_map
     }
 
-    pub fn get_tid_list(&mut self, pid: pid_t) -> &Vec<pid_t> {
+    pub fn get_tid_list(&mut self, pid: pid_t) -> &HashSet<pid_t> {
         if self.last_refresh_tid_list.elapsed() > Duration::from_millis(5000) {
             self.last_refresh_tid_list = Instant::now();
             return &self.set_tid_list(pid).tid_list;
@@ -75,16 +75,32 @@ impl TidUtils {
             return &self.tid_info;
         };
 
-        let mut task_map: HashMap<pid_t, [u8; 16]> = HashMap::new();
+        #[cfg(debug_assertions)]
+        let start = minstant::Instant::now();
+        // let tid_list: HashSet<pid_t> = tid_list.into_iter().collect();
+        #[cfg(debug_assertions)]
+        {
+            let end = start.elapsed();
+            log::debug!("转换HashSet时间: {:?}", end);
+        }
+        self.tid_info
+            .task_map
+            .retain(|tid, _| tid_list.contains(tid));
         for tid in tid_list {
+            if self.tid_info.task_map.contains_key(&tid) {
+                continue;
+            }
             let comm_path = get_proc_path::<32, 5>(tid, b"/comm");
-
             let Ok(comm) = read_to_byte::<16>(&comm_path) else {
                 continue;
             };
-            task_map.insert(tid, comm);
+            self.tid_info.task_map.insert(tid, comm);
         }
-        self.tid_info.task_map = task_map;
+        #[cfg(debug_assertions)]
+        {
+            let end = start.elapsed();
+            log::debug!("读task_map时间: {:?}", end);
+        }
         &self.tid_info
     }
 
@@ -94,11 +110,12 @@ impl TidUtils {
             return &self.tid_info;
         };
         self.tid_info.tid_list = tid_list;
+
         &self.tid_info
     }
 }
 
-fn read_task_dir(pid: pid_t) -> Result<Vec<pid_t>> {
+fn read_task_dir(pid: pid_t) -> Result<HashSet<pid_t>> {
     let task_dir = get_proc_path::<32, 5>(pid, b"/task");
 
     let dir = unsafe { opendir(task_dir.as_ptr()) };
@@ -124,6 +141,7 @@ fn read_task_dir(pid: pid_t) -> Result<Vec<pid_t>> {
         .filter(|&s| s != 0)
         .collect()
     };
+    let entries: HashSet<pid_t> = entries.into_iter().collect();
     Ok(entries)
 }
 

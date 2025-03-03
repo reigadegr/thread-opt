@@ -20,7 +20,7 @@ fn working_in_background() {
         let pid = getpid();
         let mut itoa_buf = Buffer::new();
         let pid = itoa_buf.format(pid).as_bytes();
-        let _ = write_to_byte::<6>(b"/dev/cpuset/background/tasks\0", pid);
+        let _ = write_to_byte(b"/dev/cpuset/background/tasks\0", pid);
     }
 }
 

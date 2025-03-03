@@ -3,7 +3,7 @@ use anyhow::{Result, anyhow};
 use compact_str::CompactString;
 use core::ptr::copy_nonoverlapping;
 use itoa::Buffer;
-use libc::{O_RDONLY, O_WRONLY, c_void, open, pid_t, read, write};
+use libc::{O_CREAT, O_RDONLY, O_TRUNC, O_WRONLY, c_void, open, pid_t, read, write};
 use likely_stable::unlikely;
 use stringzilla::sz;
 
@@ -32,14 +32,14 @@ pub fn read_to_byte<const N: usize>(file: &[u8]) -> Result<[u8; N]> {
     Ok(buffer)
 }
 
-pub fn write_to_byte<const N: usize>(file: &[u8], msg: &[u8]) -> Result<()> {
+pub fn write_to_byte(file: &[u8], msg: &[u8]) -> Result<()> {
     unsafe {
-        let fd = open(file.as_ptr(), O_WRONLY);
+        let fd = open(file.as_ptr(), O_WRONLY | O_CREAT | O_TRUNC, 0o666);
         if unlikely(fd == -1) {
             return Err(anyhow!("Cannot open file."));
         }
         let _fd_guard = FileGuard::new(fd);
-        let bytes_write = write(fd, msg.as_ptr().cast::<c_void>(), N);
+        let bytes_write = write(fd, msg.as_ptr().cast::<c_void>(), msg.len());
 
         if unlikely(bytes_write == -1) {
             return Err(anyhow!("Cannot write file."));

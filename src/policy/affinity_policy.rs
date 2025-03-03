@@ -8,12 +8,7 @@ use crate::{
 use libc::pid_t;
 use once_cell::sync::Lazy;
 
-static ONLY6_POLICY_FN: Lazy<fn(pid_t)> = Lazy::new(|| {
-    if get_middle_group() == get_background_group() {
-        return bind_tid_to_only6;
-    }
-    bind_tid_to_middle
-});
+static ONLY6_POLICY_FN: Lazy<fn(pid_t)> = Lazy::new(|| bind_tid_to_only6);
 
 static MODDLE_POLICY_FN: Lazy<fn(pid_t)> = Lazy::new(|| bind_tid_to_middle);
 
