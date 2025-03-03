@@ -1,5 +1,44 @@
 # thread-opt
+> thread-opt是使用Rust语言构建的自定义线程规则的模块
+
 通过硬亲和的方式把线程绑定到指定的CPU核心，以优化游戏效果。通过libc库的sched_setaffinity函数实现
+
+模块刷了就能使用，无需任何其他操作，已经适配大部分主流游戏
+当然，你也可以对现有规则进行修改，且任何人可以发布二改的配置文件
+
+从2.0.0版本开始，对三种放置规则全面引入了配置文件的支持
+
+配置文件位置: 
+```txt
+/data/adb/modules/thread_opt/thread_opt.toml
+```
+
+```txt
+/storage/emulated/0/Android/thread_opt.toml
+```
+
+- 程序开始运行将读取本机cgroup。使得一份配置文件，能够在全平台通用
+
+- 每个规则你都可以定义很多组，但是配置文件大小不得超过65536字节(64kb)
+
+- 修改完配置文件需要重新执行service.sh以应用更改。执行完记得看一眼log.txt，别改错了
+
+### `规则1(comm_match)`: 
+- 单纯进行线程前缀的匹配，依次遍历Top,Only6,Only7,Middle,Background数组。若对应数组内某个元素是你当前正在匹配的线程前缀，那么将当前线程按照其对应的规则绑定。如果都不符合，按照Middle方案处理
+
+### `规则2(usage_top1)`: 
+- 根据配置文件指定的线程前缀名，找出具有此前缀全部的线程，通过读负载的形式找出一个负载最高的线程，绑定到cpu6或者cpu7。随后，对于其他全部的线程，按照`规则1(comm_match)`的方案处理其余线程
+
+### `规则3(usage_top2)`: 有两种小规则:
+- 1，只写了`max_comm`字段: 将找出具有此前缀全部的线程，通过读负载的形式找出前两个负载最高的线程，依次应用Only7和Only6。其余线程绑定到`Middle` + `Background`组成的大集合内
+
+- 2，也写了`second_comm`字段: 将分别找出具有max_comm，second_comm前缀的线程，分别计算一个负载最高的线程。把max_comm计算出的tid应用为Only7，把second_comm计算出的tid应用为Only6。其余线程绑定到`Middle` + `Background`组成的大集合内
+
+> 若能帮到你，还请前往GitHub为项目点一颗star⭐(作者的小心思(x))
+
+## 问答
+Q: 什么是`Top,Middle,Background,Only6,Only7`?
+A: 这些是几个预定义的枚举，其中Top，Middle，Background为本机的大，中，小核集群。如果本机只有两个集群，则令Middle = Background。具体可以去`/data/adb/modules/thread_opt/log.txt`查看。Only7为把线程单独放置到cpu7，Only6为把线程单独放置到cpu6
 
 ### 编译方法
 #### 环境搭建(任意完整的Linux环境即可，使用Termux的Arch Linux proot做示范)
