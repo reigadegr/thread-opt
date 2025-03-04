@@ -63,6 +63,8 @@ pub struct Policy {
     #[serde(deserialize_with = "deserialize_byte_array")]
     pub middle: Box<[ByteArray]>,
     #[serde(deserialize_with = "deserialize_byte_array")]
+    pub mono: Box<[ByteArray]>,
+    #[serde(deserialize_with = "deserialize_byte_array")]
     pub background: Box<[ByteArray]>,
 }
 

@@ -12,6 +12,7 @@ pub fn start_task(
         only6: &policy.only6,
         only7: &policy.only7,
         middle: &policy.middle,
+        mono: &policy.mono,
         background: &policy.background,
     };
     super::StartTask::new(args, &policy).start_task(comm_prefix, cmd_type);

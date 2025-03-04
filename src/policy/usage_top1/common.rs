@@ -1,5 +1,5 @@
 use super::super::affinity_policy::{
-    background_policy, middle_policy, only6_policy, only7_policy, top_policy,
+    background_policy, middle_policy, mono_policy, only6_policy, only7_policy, top_policy,
 };
 
 use crate::config::ByteArray;
@@ -15,17 +15,18 @@ use minstant::Instant;
 pub enum CmdType {
     Top,
     Middle,
+    Mono,
     Background,
     Only6,
     Only7,
 }
 
-// 动态生成 Policy 结构体
 pub struct Policy<'a> {
     pub top: &'a [ByteArray],
     pub only6: &'a [ByteArray],
     pub only7: &'a [ByteArray],
     pub middle: &'a [ByteArray],
+    pub mono: &'a [ByteArray],
     pub background: &'a [ByteArray],
 }
 
@@ -36,6 +37,7 @@ impl Policy<'_> {
             only6: policy.only6,
             only7: policy.only7,
             middle: policy.middle,
+            mono: policy.mono,
             background: policy.background,
         }
     }
@@ -52,6 +54,9 @@ impl Policy<'_> {
         }
         if self.middle.iter().any(|prefix| comm.starts_with(prefix)) {
             return CmdType::Middle;
+        }
+        if self.mono.iter().any(|prefix| comm.starts_with(prefix)) {
+            return CmdType::Mono;
         }
         if self
             .background
@@ -99,6 +104,7 @@ fn execute_task(cmd_type: &CmdType, tid: pid_t) {
         CmdType::Only6 => only6_policy(tid),
         CmdType::Only7 => only7_policy(tid),
         CmdType::Middle => middle_policy(tid),
+        CmdType::Mono => mono_policy(tid),
         CmdType::Background => background_policy(tid),
     }
 }

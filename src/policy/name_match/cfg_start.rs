@@ -7,6 +7,7 @@ pub fn start_task(args: &mut StartArgs<'_>, policy: &config::Policy) {
         only6: &policy.only6,
         only7: &policy.only7,
         middle: &policy.middle,
+        mono: &policy.mono,
         background: &policy.background,
     };
     super::StartTask::new(args, &policy).start_task();

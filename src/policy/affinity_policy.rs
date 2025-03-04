@@ -49,7 +49,7 @@ pub fn only7_policy(tid: pid_t) {
     ONLY7_POLICY_FN(tid);
 }
 
-pub fn zero_six_policy(tid: pid_t) {
+pub fn mono_policy(tid: pid_t) {
     ZERO_SIX_POLICY_FN(tid);
 }
 
