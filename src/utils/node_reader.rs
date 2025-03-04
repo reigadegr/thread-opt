@@ -61,6 +61,5 @@ pub fn get_proc_path<const N: usize, const L: usize>(id: pid_t, file: &[u8]) -> 
         copy_nonoverlapping(id.as_ptr(), buffer.as_mut_ptr().add(6), id_length);
         copy_nonoverlapping(file.as_ptr(), buffer.as_mut_ptr().add(6 + id_length), L);
     }
-
     buffer
 }

@@ -24,7 +24,8 @@ pub static TOP_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| {
 pub static BACKEND_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| analysis_cgroup_new("0").unwrap());
 
 pub static MIDDLE_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| {
-    let mut all_core = heapless::Vec::<u8, 8>::from_slice(&[0, 1, 2, 3, 4, 5, 6, 7]).unwrap();
+    let mut all_core =
+        unsafe { heapless::Vec::<u8, 8>::from_slice(&[0, 1, 2, 3, 4, 5, 6, 7]).unwrap_unchecked() };
     let background_values = get_background_group();
     let top_values = get_top_group();
 

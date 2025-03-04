@@ -1,7 +1,6 @@
 #![no_std]
 #![no_main]
-#![warn(clippy::pedantic)]
-#![warn(clippy::nursery)]
+#![warn(clippy::nursery, clippy::pedantic)]
 #![allow(
     clippy::non_std_lazy_statics,
     clippy::similar_names,
@@ -19,6 +18,7 @@ mod scheduler;
 mod utils;
 
 use core::{ffi::CStr, slice};
+use libc::{c_char, c_int};
 use misc::init_misc;
 use scheduler::Scheduler;
 
@@ -26,7 +26,7 @@ use scheduler::Scheduler;
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn main(argc: libc::c_int, argv: *const *const libc::c_char) {
+unsafe extern "C" fn main(argc: c_int, argv: *const *const c_char) {
     init_misc();
     let args = unsafe { slice::from_raw_parts(argv, argc.try_into().unwrap_or(0)) };
 

@@ -3,6 +3,7 @@ use crate::{
     utils::affinity_utils::global_cpu_utils::{
         bind_list_to_middle, bind_list_to_middle_background, bind_tid_to_background,
         bind_tid_to_middle, bind_tid_to_only6, bind_tid_to_only7, bind_tid_to_top,
+        bind_tid_to_zero_six,
     },
 };
 use libc::pid_t;
@@ -17,6 +18,14 @@ static ONLY7_POLICY_FN: Lazy<fn(pid_t)> = Lazy::new(|| {
 });
 
 static ONLY6_POLICY_FN: Lazy<fn(pid_t)> = Lazy::new(|| bind_tid_to_only6);
+
+static ZERO_SIX_POLICY_FN: Lazy<fn(pid_t)> = Lazy::new(|| {
+    if get_top_group() == [6, 7] {
+        bind_tid_to_zero_six
+    } else {
+        bind_tid_to_middle
+    }
+});
 
 static MODDLE_POLICY_FN: Lazy<fn(pid_t)> = Lazy::new(|| bind_tid_to_middle);
 
@@ -38,6 +47,10 @@ pub fn only6_policy(tid: pid_t) {
 
 pub fn only7_policy(tid: pid_t) {
     ONLY7_POLICY_FN(tid);
+}
+
+pub fn zero_six_policy(tid: pid_t) {
+    ZERO_SIX_POLICY_FN(tid);
 }
 
 pub fn middle_policy(tid: pid_t) {

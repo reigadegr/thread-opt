@@ -23,6 +23,7 @@ macro_rules! cpuset_getter {
 cpuset_once_lazy!(TOP_CPU_SET, get_top_group());
 cpuset_once_lazy!(ONLY7_CPU_SET, &[7]);
 cpuset_once_lazy!(ONLY6_CPU_SET, &[6]);
+cpuset_once_lazy!(ZERO_SIX_CPU_SET, &[0, 1, 2, 3, 4, 5, 6]);
 cpuset_once_lazy!(MIDDLE_CPU_SET, get_middle_group());
 cpuset_once_lazy!(BACKGROUND_CPU_SET, get_background_group());
 cpuset_once_lazy!(
@@ -34,6 +35,7 @@ cpuset_once_lazy!(
 cpuset_getter!(get_top_cpu_set, TOP_CPU_SET);
 cpuset_getter!(get_only7_cpu_set, ONLY7_CPU_SET);
 cpuset_getter!(get_only6_cpu_set, ONLY6_CPU_SET);
+cpuset_getter!(get_zero_six_cpu_set, ZERO_SIX_CPU_SET);
 cpuset_getter!(get_middle_cpu_set, MIDDLE_CPU_SET);
 cpuset_getter!(get_background_cpu_set, BACKGROUND_CPU_SET);
 cpuset_getter!(get_middle_background_cpu_set, BACKGROUND_MIDDLE_CPU_SET);
