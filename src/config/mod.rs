@@ -57,7 +57,7 @@ pub struct Policy {
     #[serde(deserialize_with = "deserialize_byte_array")]
     pub top: Box<[ByteArray]>,
     #[serde(deserialize_with = "deserialize_byte_array")]
-    pub only6: Box<[ByteArray]>,
+    pub dualo: Box<[ByteArray]>,
     #[serde(deserialize_with = "deserialize_byte_array")]
     pub only7: Box<[ByteArray]>,
     #[serde(deserialize_with = "deserialize_byte_array")]

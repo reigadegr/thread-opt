@@ -34,7 +34,7 @@ cpuset_once_lazy!(
 // 使用宏定义获取函数
 cpuset_getter!(get_top_cpu_set, TOP_CPU_SET);
 cpuset_getter!(get_only7_cpu_set, ONLY7_CPU_SET);
-cpuset_getter!(get_only6_cpu_set, ONLY6_CPU_SET);
+cpuset_getter!(get_dualo_cpu_set, ONLY6_CPU_SET);
 cpuset_getter!(get_zero_six_cpu_set, ZERO_SIX_CPU_SET);
 cpuset_getter!(get_middle_cpu_set, MIDDLE_CPU_SET);
 cpuset_getter!(get_background_cpu_set, BACKGROUND_CPU_SET);

@@ -4,7 +4,7 @@ extern crate alloc;
 pub fn start_task(args: &mut StartArgs<'_>, policy: &config::Policy) {
     let policy = Policy {
         top: &policy.top,
-        only6: &policy.only6,
+        dualo: &policy.dualo,
         only7: &policy.only7,
         middle: &policy.middle,
         mono: &policy.mono,

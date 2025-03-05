@@ -1,5 +1,5 @@
 use super::super::affinity_policy::{
-    background_policy, middle_policy, mono_policy, only6_policy, only7_policy, top_policy,
+    background_policy, dualo_policy, middle_policy, mono_policy, only7_policy, top_policy,
 };
 extern crate alloc;
 use crate::config::ByteArray;
@@ -16,13 +16,13 @@ enum CmdType {
     Middle,
     Mono,
     Background,
-    Only6,
+    Dualo,
     Only7,
 }
 
 pub struct Policy<'a> {
     pub top: &'a [ByteArray],
-    pub only6: &'a [ByteArray],
+    pub dualo: &'a [ByteArray],
     pub only7: &'a [ByteArray],
     pub middle: &'a [ByteArray],
     pub mono: &'a [ByteArray],
@@ -33,7 +33,7 @@ impl Policy<'_> {
     pub const fn new(policy: &Self) -> Self {
         Self {
             top: policy.top,
-            only6: policy.only6,
+            dualo: policy.dualo,
             only7: policy.only7,
             middle: policy.middle,
             mono: policy.mono,
@@ -45,8 +45,8 @@ impl Policy<'_> {
         if self.top.iter().any(|prefix| comm.starts_with(prefix)) {
             return CmdType::Top;
         }
-        if self.only6.iter().any(|prefix| comm.starts_with(prefix)) {
-            return CmdType::Only6;
+        if self.dualo.iter().any(|prefix| comm.starts_with(prefix)) {
+            return CmdType::Dualo;
         }
         if self.only7.iter().any(|prefix| comm.starts_with(prefix)) {
             return CmdType::Only7;
@@ -91,7 +91,7 @@ impl Policy<'_> {
 fn execute_task(cmd_type: &CmdType, tid: pid_t) {
     match cmd_type {
         CmdType::Top => top_policy(tid),
-        CmdType::Only6 => only6_policy(tid),
+        CmdType::Dualo => dualo_policy(tid),
         CmdType::Only7 => only7_policy(tid),
         CmdType::Middle => middle_policy(tid),
         CmdType::Mono => mono_policy(tid),

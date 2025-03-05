@@ -32,6 +32,7 @@ unsafe extern "C" fn main(argc: c_int, argv: *const *const c_char) {
 
     for arg in args {
         if let Ok(s) = unsafe { CStr::from_ptr(*arg) }.to_str() {
+            #[cfg(debug_assertions)]
             log::info!("命令行参数{s}");
         }
     }
