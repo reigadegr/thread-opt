@@ -3,6 +3,7 @@ use atoi::atoi;
 use dumpsys_rs::Dumpsys;
 use inotify::{Inotify, WatchMask};
 use libc::pid_t;
+use likely_stable::LikelyOption;
 use log::info;
 use stringzilla::{StringZilla, sz};
 
@@ -16,11 +17,12 @@ impl TopPidInfo {
         let pid = dump
             .sz_splits(&b"\n")
             .find(|line| sz::find(line, b" TOP").is_some())
-            .and_then(|line| {
-                line.sz_rfind(b"/")
-                    .and_then(|pos1| line[..pos1].sz_rfind(b" ").map(|pos2| &line[pos2 + 1..]))
+            .and_then_likely(|line| {
+                line.sz_rfind(b"/").and_then_likely(|pos1| {
+                    line[..pos1].sz_rfind(b" ").map(|pos2| &line[pos2 + 1..])
+                })
             })
-            .and_then(atoi::<pid_t>)
+            .and_then_likely(atoi::<pid_t>)
             .unwrap_or_default();
         Self { pid }
     }
