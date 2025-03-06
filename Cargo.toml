@@ -27,6 +27,7 @@ dumpsys-rs = { git = "https://github.com/reigadegr/dumpsys-rs" }
 hashbrown = { version = "0.15.2", default-features = false, features = [
     "default-hasher",
     "inline-more",
+    "serde",
 ] }
 heapless = { version = "0.8", features = ["serde"] }
 inotify = { version = "0.11.0", default-features = false }

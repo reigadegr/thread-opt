@@ -11,7 +11,7 @@ use log::debug;
 use minstant::Instant;
 
 // 动态生成 CmdType 枚举
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Eq, Hash, PartialEq)]
 pub enum CmdType {
     Top,
     Middle,

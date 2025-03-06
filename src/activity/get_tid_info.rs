@@ -40,7 +40,7 @@ impl TidUtils {
     }
 
     pub fn get_task_map(&mut self, pid: pid_t) -> &HashMap<pid_t, [u8; 16]> {
-        if self.last_refresh_task_map.elapsed() > Duration::from_millis(5000) {
+        if self.last_refresh_task_map.elapsed() > Duration::from_millis(3000) {
             self.last_refresh_task_map = Instant::now();
             return &self.set_task_map(pid).task_map;
         }

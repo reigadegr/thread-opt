@@ -21,6 +21,7 @@ only7 = ["UnityMain"]
 middle = ["Thread-", "Job.Worker"]
 mono = []
 background = []
+core_closer = false
 
 # 单纯线程前缀的匹配，ue游戏
 [[comm_match]]
@@ -32,6 +33,7 @@ only7 = ["GameThread"]
 middle = ["RenderThread"]
 mono = []
 background = []
+core_closer = false
 
 # 单纯线程前缀的匹配，光遇
 [[comm_match]]
@@ -43,6 +45,7 @@ only7 = ["MainThread"]
 middle = []
 mono = ["JobThread"]
 background = []
+core_closer = false
 
 # 对于三国杀和时空猎人，cocos游戏，取一个负载最高的GLThread丢cpu7
 [[usage_top1]]
@@ -56,6 +59,7 @@ only7 = []
 middle = []
 mono = []
 background = []
+core_closer = false
 
 # 拉力竞速3
 [[usage_top1]]
@@ -69,6 +73,7 @@ only7 = []
 middle = ["mail-cmar"]
 mono = []
 background = []
+core_closer = false
 
 # 对于需要取一个负载最大的线程，其线程前缀名为"Thread-"
 [[usage_top1]]
@@ -82,6 +87,7 @@ only7 = []
 middle = ["RenderThread"]
 mono = []
 background = []
+core_closer = false
 
 # 无限暖暖，取一个负载最重的GameThread绑cpu7
 [[usage_top1]]
@@ -95,6 +101,7 @@ only7 = []
 middle = ["RenderThread"]
 mono = []
 background = []
+core_closer = false
 
 # 需要单独把负载最重的unitymain绑定到cpu7
 [[usage_top1]]
@@ -108,6 +115,7 @@ only7 = []
 middle = []
 mono = []
 background = ["Thread-"]
+core_closer = false
 
 # 需要把负载第二重的线程绑定cpu6
 [[usage_top1]]
@@ -121,6 +129,7 @@ only7 = ["UnityMain"]
 middle = []
 mono = []
 background = ["Thread-"]
+core_closer = false
 
 # cod战区
 [[usage_top1]]
@@ -134,6 +143,7 @@ only7 = ["WZM_Main"]
 middle = ["Worker"]
 mono = []
 background = ["Thread-"]
+core_closer = false
 
 # 对于需要取两个重负载线程的游戏，
 # 其线程前缀名均为"Thread-"，目前策略是燕云十六声特调
