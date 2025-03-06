@@ -37,15 +37,15 @@ core_closer = false
 
 # 单纯线程前缀的匹配，光遇
 [[comm_match]]
-packages = ["com.netease.sky"]
+packages = ["com.netease.sky", "com.bilibili.fatego"]
 [comm_match.policy]
 top = []
 dualo = []
-only7 = ["MainThread"]
+only7 = ["MainThread", "UnityMain"]
 middle = []
-mono = ["JobThread"]
+mono = ["JobThread", "Job.Worker"]
 background = []
-core_closer = false
+core_closer = true
 
 # 对于三国杀和时空猎人，cocos游戏，取一个负载最高的GLThread丢cpu7
 [[usage_top1]]
