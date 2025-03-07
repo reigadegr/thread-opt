@@ -16,6 +16,28 @@ contlict_remover() {
     killall -9 $2
 }
 
+lock_val() {
+    find "$2" -type f | while read -r file; do
+        file="$(realpath "$file")"
+        umount "$file"
+        chown root:root "$file"
+        chmod 0644 "$file"
+        echo "$1" >"$file"
+        chmod 0444 "$file"
+    done
+}
+
+reset_freq(){
+    for i in /sys/devices/system/cpu/cpu?/cpufreq/cpuinfo_max_freq; do
+        lock_val $(cat $i) $(dirname "$i")/scaling_max_freq
+    done
+
+    for i in /sys/devices/system/cpu/cpu?/cpufreq/cpuinfo_min_freq; do
+        lock_val $(cat $i) $(dirname "$i")/scaling_min_freq
+    done
+}
+
+
 if [ "$(getprop sys.boot_completed)" != "1" ]; then
     contlict_remover "/data/adb/modules/AppOpt" "AppOpt"
     wait_until_login
@@ -25,6 +47,7 @@ if [ "$(getprop sys.boot_completed)" != "1" ]; then
     fi
     stop oiface gameopt_hal_service-1-0 vendor.urcc-hal-aidl horae
     killall -9 vendor.oplus.hardware.urcc-service vendor.oplus.hardware.gameopt-service oiface horae
+    reset_freq
 fi
 
 killall -15 thread-opt; rm $LOG
