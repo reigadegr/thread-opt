@@ -17,6 +17,7 @@ pub fn start_task(
     let mut only7 = &policy.only7;
     let mut middle = &policy.middle;
     let mut mono = &policy.mono;
+    let mut cmd_type = cmd_type;
 
     let empty_box: Box<[heapless::Vec<u8, 16>]> = Box::new([]);
 
@@ -26,6 +27,7 @@ pub fn start_task(
         only7 = &empty_box;
         mono = &empty_box;
         middle = &policy.mono;
+        cmd_type = &CmdType::Dualo;
     }
 
     let policy = Policy {
