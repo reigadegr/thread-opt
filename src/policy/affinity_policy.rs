@@ -1,14 +1,37 @@
 use crate::{
-    cgroup::group_info::{get_background_group, get_middle_group},
+    cgroup::group_info::{get_background_group, get_middle_group, get_top_group},
     utils::affinity_utils::global_cpu_utils::{
         bind_list_to_middle, bind_list_to_middle_background, bind_tid_to_background,
-        bind_tid_to_middle, bind_tid_to_only6, bind_tid_to_only7, bind_tid_to_top,
+        bind_tid_to_dualo, bind_tid_to_middle, bind_tid_to_only7, bind_tid_to_top,
+        bind_tid_to_zero_six,
     },
 };
 use libc::pid_t;
 use once_cell::sync::Lazy;
 
-static ONLY6_POLICY_FN: Lazy<fn(pid_t)> = Lazy::new(|| bind_tid_to_only6);
+static ONLY7_POLICY_FN: Lazy<fn(pid_t)> = Lazy::new(|| {
+    if get_top_group() == [6] {
+        bind_tid_to_top
+    } else {
+        bind_tid_to_only7
+    }
+});
+
+static ONLY6_POLICY_FN: Lazy<fn(pid_t)> = Lazy::new(|| {
+    if get_middle_group() == get_background_group() {
+        bind_tid_to_dualo
+    } else {
+        bind_tid_to_middle
+    }
+});
+
+static ZERO_SIX_POLICY_FN: Lazy<fn(pid_t)> = Lazy::new(|| {
+    if get_top_group() == [6, 7] {
+        bind_tid_to_zero_six
+    } else {
+        bind_tid_to_middle
+    }
+});
 
 static MODDLE_POLICY_FN: Lazy<fn(pid_t)> = Lazy::new(|| bind_tid_to_middle);
 
@@ -24,12 +47,16 @@ pub fn top_policy(tid: pid_t) {
     bind_tid_to_top(tid);
 }
 
-pub fn only6_policy(tid: pid_t) {
+pub fn dualo_policy(tid: pid_t) {
     ONLY6_POLICY_FN(tid);
 }
 
 pub fn only7_policy(tid: pid_t) {
-    bind_tid_to_only7(tid);
+    ONLY7_POLICY_FN(tid);
+}
+
+pub fn mono_policy(tid: pid_t) {
+    ZERO_SIX_POLICY_FN(tid);
 }
 
 pub fn middle_policy(tid: pid_t) {

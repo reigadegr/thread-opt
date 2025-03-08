@@ -9,6 +9,7 @@ extern crate alloc;
 use alloc::{boxed::Box, vec::Vec};
 use anyhow::Result;
 use format_profile::format_toml;
+use hashbrown::HashSet;
 use once_cell::sync::Lazy;
 
 pub type ByteArray = heapless::Vec<u8, 16>;
@@ -23,18 +24,18 @@ pub static PROFILE: Lazy<Config> = Lazy::new(|| {
 
 #[derive(Deserialize)]
 pub struct Config {
-    pub comm_match: Vec<NameMatch>,
-    pub usage_top1: Vec<UsageTop1>,
-    pub usage_top2: Vec<UsageTop2>,
+    pub comm_match: HashSet<NameMatch>,
+    pub usage_top1: HashSet<UsageTop1>,
+    pub usage_top2: HashSet<UsageTop2>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Eq, Hash, PartialEq)]
 pub struct NameMatch {
     pub packages: Box<[CompactString]>,
     pub policy: Policy,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Eq, Hash, PartialEq)]
 pub struct UsageTop1 {
     pub packages: Box<[CompactString]>,
     #[serde(deserialize_with = "deserialize_byte_array_one")]
@@ -43,7 +44,7 @@ pub struct UsageTop1 {
     pub policy: Policy,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Eq, Hash, PartialEq)]
 pub struct UsageTop2 {
     pub packages: Box<[CompactString]>,
     #[serde(deserialize_with = "deserialize_byte_array_one")]
@@ -52,18 +53,21 @@ pub struct UsageTop2 {
     pub second_comm: Option<ByteArray>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Eq, Hash, PartialEq)]
 pub struct Policy {
     #[serde(deserialize_with = "deserialize_byte_array")]
     pub top: Box<[ByteArray]>,
     #[serde(deserialize_with = "deserialize_byte_array")]
-    pub only6: Box<[ByteArray]>,
+    pub dualo: Box<[ByteArray]>,
     #[serde(deserialize_with = "deserialize_byte_array")]
     pub only7: Box<[ByteArray]>,
     #[serde(deserialize_with = "deserialize_byte_array")]
     pub middle: Box<[ByteArray]>,
     #[serde(deserialize_with = "deserialize_byte_array")]
+    pub mono: Box<[ByteArray]>,
+    #[serde(deserialize_with = "deserialize_byte_array")]
     pub background: Box<[ByteArray]>,
+    pub core_closer: bool,
 }
 
 fn deserialize_byte_array<'de, D>(deserializer: D) -> Result<Box<[ByteArray]>, D::Error>

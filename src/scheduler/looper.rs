@@ -1,11 +1,15 @@
 use crate::{
-    activity::{ActivityUtils, get_tid_info::get_process_name},
+    activity::{ActivityUtils, get_tid_info::get_process_name, get_tid_info::read_task_dir},
     config::PROFILE,
     utils::{affinity_utils::global_cpu_utils::bind_list_to_background, sleep::sleep_secs},
 };
+use anyhow::Result;
 use compact_str::CompactString;
 use libc::pid_t;
 use log::info;
+// unsafe extern "C" {
+    // fn __llvm_profile_write_file() -> i32;
+// }
 
 pub struct Looper {
     pub activity_utils: ActivityUtils,
@@ -22,13 +26,13 @@ impl Looper {
         }
     }
 
-    pub fn game_exit(&mut self) {
+    pub fn game_exit(&mut self) -> Result<()> {
         info!("Exiting game\n");
-        let tid_list = self.activity_utils.tid_utils.get_tid_list(self.pid);
-        bind_list_to_background(tid_list);
+        let tid_list = read_task_dir(self.pid)?;
+        bind_list_to_background(&tid_list);
         self.pid = -1;
         self.activity_utils.tid_utils.tid_info.task_map.clear();
-        self.activity_utils.tid_utils.tid_info.tid_list.clear();
+        Ok(())
     }
 
     pub fn enter_loop(&mut self) {
@@ -61,6 +65,9 @@ impl Looper {
                     continue 'outer;
                 }
             }
+            // unsafe {
+                // __llvm_profile_write_file();
+            // }
         }
     }
 }

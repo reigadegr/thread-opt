@@ -18,7 +18,7 @@ impl Looper {
             comm1,
             comm2,
         );
-        self.game_exit();
+        let _ = self.game_exit();
     }
 
     pub fn policy_usage_top2(&mut self, i: &UsageTop2) -> bool {

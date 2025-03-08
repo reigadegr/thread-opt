@@ -17,7 +17,7 @@ impl Looper {
             },
             policy,
         );
-        self.game_exit();
+        let _ = self.game_exit();
     }
 
     pub fn policy_name_match(&mut self, i: &NameMatch) -> bool {

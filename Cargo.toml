@@ -1,6 +1,6 @@
 [package]
 name = "thread-opt"
-version = "2.0.0"
+version = "2.0.1"
 edition = "2024"
 description = "The Hard Affinity policy binds threads to target cores in gaming."
 authors = ["reigadegr"]
@@ -21,31 +21,32 @@ path = "src/main.rs"
 anyhow = { version = "1.0.95", default-features = false }
 atoi = { version = "2.0.0", default-features = false }
 compact_str = { version = "0.9.0", default-features = false, features = [
-  "serde",
+    "serde",
 ] }
 dumpsys-rs = { git = "https://github.com/reigadegr/dumpsys-rs" }
 hashbrown = { version = "0.15.2", default-features = false, features = [
-  "default-hasher",
-  "inline-more",
+    "default-hasher",
+    "inline-more",
+    "serde",
 ] }
 heapless = { version = "0.8", features = ["serde"] }
 inotify = { version = "0.11.0", default-features = false }
-itoa = { version = "1.0.14", features = ["no-panic"] }
+itoa = { version = "1.0.14", features = [] }
 libc = { version = "0.2.170", default-features = false }
 likely_stable = "0.1.3"
 log = "0.4.26"
 mimalloc = { version = "0.1.43", features = [
-  "local_dynamic_tls",
-  "no_thp",
-  "override",
+    "local_dynamic_tls",
+    "no_thp",
+    "override",
 ] }
 minstant = "0.1.7"
 once_cell = { version = "1.20.3", default-features = false }
 serde = { version = "1.0.218", default-features = false, features = ["derive"] }
 stringzilla = "3.12.0"
-taplo = { version = "0.13.2", features = ["serde", "schema"] }
+taplo = { version = "0.13.2", default-features = false }
 tklog = "0.2.9"
-toml = "0.8.20"
+toml = { version = "0.8.20", default-features = false, features = ["parse"] }
 
 [build-dependencies]
 anyhow = "1.0.95"
@@ -55,7 +56,7 @@ vergen = { version = "9.0.4", features = ["build", "cargo", "rustc", "si"] }
 debug = 0
 debug-assertions = true
 panic = "abort"
-incremental = false
+incremental = true
 
 [profile.release]
 overflow-checks = false
@@ -65,4 +66,4 @@ opt-level = 3
 strip = true
 debug = 0
 debug-assertions = false
-incremental = false
+incremental = true

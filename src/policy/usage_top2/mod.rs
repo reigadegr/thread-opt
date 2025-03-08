@@ -60,7 +60,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
 
     fn start_task(&mut self, comm_prefix1: &[u8], comm_prefix2: Option<&[u8]>) {
         loop {
-            sleep_secs(2);
+            sleep_secs(1);
 
             let pid = self.args.activity_utils.top_app_utils.get_top_pid();
             if unlikely(pid != self.args.pid) {

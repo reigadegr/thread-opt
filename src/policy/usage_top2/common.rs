@@ -1,4 +1,4 @@
-use super::super::affinity_policy::{only6_policy, only7_policy, tid_list_t2_policy};
+use super::super::affinity_policy::{dualo_policy, only7_policy, tid_list_t2_policy};
 
 extern crate alloc;
 use alloc::vec::Vec;
@@ -13,14 +13,14 @@ use minstant::Instant;
 // 定义线程类型
 #[derive(serde::Deserialize)]
 pub enum CmdType {
-    Only6,
+    Dualo,
     Only7,
 }
 
 // 执行策略
 pub fn execute_policy(task_map: &HashMap<pid_t, [u8; 16]>, first: pid_t, second: pid_t) {
     execute_task(&CmdType::Only7, first);
-    execute_task(&CmdType::Only6, second);
+    execute_task(&CmdType::Dualo, second);
 
     let filtered_keys: Vec<pid_t> = task_map
         .keys()
@@ -43,7 +43,7 @@ pub fn execute_policy(task_map: &HashMap<pid_t, [u8; 16]>, first: pid_t, second:
 // 执行线程绑定任务
 fn execute_task(cmd_type: &CmdType, tid: pid_t) {
     match cmd_type {
-        CmdType::Only6 => only6_policy(tid),
+        CmdType::Dualo => dualo_policy(tid),
         CmdType::Only7 => only7_policy(tid),
     }
 }

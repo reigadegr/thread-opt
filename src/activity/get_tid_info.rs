@@ -17,9 +17,7 @@ use alloc::vec::Vec;
 #[derive(Default)]
 pub struct TidInfo {
     pub task_map: HashMap<pid_t, [u8; 16]>,
-    pub tid_list: HashSet<pid_t>,
     task_map_pid: pid_t,
-    tid_list_pid: pid_t,
 }
 
 impl TidInfo {
@@ -31,7 +29,6 @@ impl TidInfo {
 pub struct TidUtils {
     pub tid_info: TidInfo,
     last_refresh_task_map: Instant,
-    last_refresh_tid_list: Instant,
 }
 
 impl TidUtils {
@@ -39,12 +36,11 @@ impl TidUtils {
         Self {
             tid_info: TidInfo::new(),
             last_refresh_task_map: Instant::now(),
-            last_refresh_tid_list: Instant::now(),
         }
     }
 
     pub fn get_task_map(&mut self, pid: pid_t) -> &HashMap<pid_t, [u8; 16]> {
-        if self.last_refresh_task_map.elapsed() > Duration::from_millis(5000) {
+        if self.last_refresh_task_map.elapsed() > Duration::from_millis(3000) {
             self.last_refresh_task_map = Instant::now();
             return &self.set_task_map(pid).task_map;
         }
@@ -55,19 +51,6 @@ impl TidUtils {
         self.tid_info.task_map_pid = pid;
 
         &self.set_task_map(pid).task_map
-    }
-
-    pub fn get_tid_list(&mut self, pid: pid_t) -> &HashSet<pid_t> {
-        if self.last_refresh_tid_list.elapsed() > Duration::from_millis(5000) {
-            self.last_refresh_tid_list = Instant::now();
-            return &self.set_tid_list(pid).tid_list;
-        }
-        if self.tid_info.tid_list_pid == pid {
-            return &self.tid_info.tid_list;
-        }
-        self.tid_info.tid_list_pid = pid;
-
-        &self.set_tid_list(pid).tid_list
     }
 
     pub fn set_task_map(&mut self, pid: pid_t) -> &TidInfo {
@@ -103,19 +86,9 @@ impl TidUtils {
         }
         &self.tid_info
     }
-
-    pub fn set_tid_list(&mut self, pid: pid_t) -> &TidInfo {
-        let Ok(tid_list) = read_task_dir(pid) else {
-            self.tid_info.tid_list.clear();
-            return &self.tid_info;
-        };
-        self.tid_info.tid_list = tid_list;
-
-        &self.tid_info
-    }
 }
 
-fn read_task_dir(pid: pid_t) -> Result<HashSet<pid_t>> {
+pub fn read_task_dir(pid: pid_t) -> Result<HashSet<pid_t>> {
     let task_dir = get_proc_path::<32, 5>(pid, b"/task");
 
     let dir = unsafe { opendir(task_dir.as_ptr()) };

@@ -1,6 +1,6 @@
 {
-    "versionCode": 200,
-    "version": "2.0.0",
-    "zipUrl": "https://github.com/reigadegr/thread-opt/releases/download/v2.0.0/thread-opt_release.zip",
+    "versionCode": 201,
+    "version": "2.0.1",
+    "zipUrl": "https://github.com/reigadegr/thread-opt/releases/download/v2.0.1/thread-opt_release.zip",
     "changelog": "https://github.com/reigadegr/thread-opt/raw/dev/module/changelog.md"
 }
