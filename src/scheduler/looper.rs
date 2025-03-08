@@ -7,6 +7,9 @@ use anyhow::Result;
 use compact_str::CompactString;
 use libc::pid_t;
 use log::info;
+// unsafe extern "C" {
+    // fn __llvm_profile_write_file() -> i32;
+// }
 
 pub struct Looper {
     pub activity_utils: ActivityUtils,
@@ -62,6 +65,9 @@ impl Looper {
                     continue 'outer;
                 }
             }
+            // unsafe {
+                // __llvm_profile_write_file();
+            // }
         }
     }
 }
