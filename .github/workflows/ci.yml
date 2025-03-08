@@ -36,7 +36,7 @@ jobs:
         run: |
           rustup default nightly
           rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android i686-linux-android
-          rustup component add rust-src
+          rustup component add rust-src llvm-tools-preview
           rustup update
       - name: Install cargo ndk
         run: cargo install cargo-ndk
@@ -49,8 +49,7 @@ jobs:
           export ANDROID_NDK_HOME=$(realpath ~/ndk_temp)
           export ANDROID_NDK_ROOT=$ANDROID_NDK_HOME
           rm -rf .cargo Cargo.lock
-          export RUSTFLAGS="-C default-linker-libraries -C link-args=-fomit-frame-pointer -C link-args=-Wl,--as-needed,--icf=all,-z,relro,--pack-dyn-relocs=android+relr,-x,-s,--strip-all,-z,now"
-          python3 ./make.py build --release --nightly
+          sh pgo.sh
       - name: Prepare artifacts
         run: |
           mkdir -p output/artifact/release
