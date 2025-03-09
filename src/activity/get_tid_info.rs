@@ -7,7 +7,7 @@ use atoi::atoi;
 use compact_str::CompactString;
 use core::time::Duration;
 use hashbrown::{HashMap, HashSet};
-use libc::{opendir, pid_t, readdir};
+use libc::{DIR, opendir, pid_t, readdir, rewinddir};
 use likely_stable::unlikely;
 use minstant::Instant;
 use stringzilla::sz;
@@ -37,6 +37,58 @@ impl TidUtils {
             tid_info: TidInfo::new(),
             last_refresh_task_map: Instant::now(),
         }
+    }
+
+    pub fn get_task_map_cache(
+        &mut self,
+        pid: pid_t,
+        dir_ptr: *mut DIR,
+    ) -> &HashMap<pid_t, [u8; 16]> {
+        if self.last_refresh_task_map.elapsed() > Duration::from_millis(3000) {
+            self.last_refresh_task_map = Instant::now();
+            return &self.set_task_map_cache(pid, dir_ptr).task_map;
+        }
+
+        if self.tid_info.task_map_pid == pid {
+            return &self.tid_info.task_map;
+        }
+        self.tid_info.task_map_pid = pid;
+
+        &self.set_task_map_cache(pid, dir_ptr).task_map
+    }
+
+    pub fn set_task_map_cache(&mut self, pid: pid_t, dir_ptr: *mut DIR) -> &TidInfo {
+        let Ok(tid_list) = read_task_dir_cache(pid, dir_ptr) else {
+            return &self.tid_info;
+        };
+
+        #[cfg(debug_assertions)]
+        let start = minstant::Instant::now();
+        // let tid_list: HashSet<pid_t> = tid_list.into_iter().collect();
+        #[cfg(debug_assertions)]
+        {
+            let end = start.elapsed();
+            log::debug!("转换HashSet时间: {:?}", end);
+        }
+        self.tid_info
+            .task_map
+            .retain(|tid, _| tid_list.contains(tid));
+        for tid in tid_list {
+            if self.tid_info.task_map.contains_key(&tid) {
+                continue;
+            }
+            let comm_path = get_proc_path::<32, 5>(tid, b"/comm");
+            let Ok(comm) = read_to_byte::<16>(&comm_path) else {
+                continue;
+            };
+            self.tid_info.task_map.insert(tid, comm);
+        }
+        #[cfg(debug_assertions)]
+        {
+            let end = start.elapsed();
+            log::debug!("读task_map时间: {:?}", end);
+        }
+        &self.tid_info
     }
 
     pub fn get_task_map(&mut self, pid: pid_t) -> &HashMap<pid_t, [u8; 16]> {
@@ -114,6 +166,33 @@ pub fn read_task_dir(pid: pid_t) -> Result<HashSet<pid_t>> {
         .filter(|&s| s != 0)
         .collect()
     };
+    let entries: HashSet<pid_t> = entries.into_iter().collect();
+    Ok(entries)
+}
+
+pub fn read_task_dir_cache(pid: pid_t, dir_ptr: *mut DIR) -> Result<HashSet<pid_t>> {
+    let entries: Vec<_> = unsafe {
+        let dir_ptr = dir_ptr;
+
+        core::iter::from_fn(move || {
+            let entry = readdir(dir_ptr);
+            if unlikely(entry.is_null()) {
+                return None;
+            }
+
+            let d_name_ptr = (*entry).d_name.as_ptr();
+            // 这里，d_name_ptr长度不可能超过6,Linux PID最大32768
+            let bytes = core::slice::from_raw_parts(d_name_ptr, 6);
+            // 如果以'.'开头，会被fallback为0，最后被过滤
+            Some(atoi::<pid_t>(bytes).unwrap_or(0))
+        })
+        .filter(|&s| s != 0)
+        .collect()
+    };
+    unsafe {
+        rewinddir(dir_ptr);
+    }
+
     let entries: HashSet<pid_t> = entries.into_iter().collect();
     Ok(entries)
 }

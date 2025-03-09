@@ -8,7 +8,7 @@ use compact_str::CompactString;
 use libc::pid_t;
 use log::info;
 // unsafe extern "C" {
-    // fn __llvm_profile_write_file() -> i32;
+// fn __llvm_profile_write_file() -> i32;
 // }
 
 pub struct Looper {
@@ -66,7 +66,7 @@ impl Looper {
                 }
             }
             // unsafe {
-                // __llvm_profile_write_file();
+            // __llvm_profile_write_file();
             // }
         }
     }

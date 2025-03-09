@@ -11,6 +11,8 @@ done
 
 nohup rm -rf $(find ./target -name "*thread-opt*") >/dev/null 2>&1 &
 nohup rm -rf $(find ./target -name "*thread_opt*") >/dev/null 2>&1 &
+nohup rm -rf $(find ./target -name "*mimalloc*") >/dev/null 2>&1 &
+nohup rm -rf $(find ./target -name "*binder*") >/dev/null 2>&1 &
 uid=$(dumpsys package com.termux | grep appId | awk 'NR==1{print $1}' | cut -d '=' -f2)
 chown -R $uid:$uid  ./src build.rs ./*.toml ./module
 chmod -R 0644 ./src build.rs  ./*.toml  ./module
