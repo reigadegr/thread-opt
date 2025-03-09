@@ -6,7 +6,7 @@ use crate::{
     utils::{guard::DirGuard, node_reader::get_proc_path, sleep::sleep_secs},
 };
 use common::Policy;
-use libc::{DIR, closedir, opendir};
+use libc::{DIR, opendir};
 use likely_stable::unlikely;
 #[cfg(debug_assertions)]
 use log::debug;

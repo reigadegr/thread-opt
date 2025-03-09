@@ -46,7 +46,7 @@ impl TidUtils {
     ) -> &HashMap<pid_t, [u8; 16]> {
         if self.last_refresh_task_map.elapsed() > Duration::from_millis(3000) {
             self.last_refresh_task_map = Instant::now();
-            return &self.set_task_map_cache(pid, dir_ptr).task_map;
+            return &self.set_task_map_cache(dir_ptr).task_map;
         }
 
         if self.tid_info.task_map_pid == pid {
@@ -54,17 +54,14 @@ impl TidUtils {
         }
         self.tid_info.task_map_pid = pid;
 
-        &self.set_task_map_cache(pid, dir_ptr).task_map
+        &self.set_task_map_cache(dir_ptr).task_map
     }
 
-    pub fn set_task_map_cache(&mut self, pid: pid_t, dir_ptr: *mut DIR) -> &TidInfo {
-        let Ok(tid_list) = read_task_dir_cache(pid, dir_ptr) else {
-            return &self.tid_info;
-        };
+    pub fn set_task_map_cache(&mut self, dir_ptr: *mut DIR) -> &TidInfo {
+        let tid_list = read_task_dir_cache(dir_ptr);
 
         #[cfg(debug_assertions)]
         let start = minstant::Instant::now();
-        // let tid_list: HashSet<pid_t> = tid_list.into_iter().collect();
         #[cfg(debug_assertions)]
         {
             let end = start.elapsed();
@@ -170,10 +167,8 @@ pub fn read_task_dir(pid: pid_t) -> Result<HashSet<pid_t>> {
     Ok(entries)
 }
 
-pub fn read_task_dir_cache(pid: pid_t, dir_ptr: *mut DIR) -> Result<HashSet<pid_t>> {
+pub fn read_task_dir_cache(dir_ptr: *mut DIR) -> HashSet<pid_t> {
     let entries: Vec<_> = unsafe {
-        let dir_ptr = dir_ptr;
-
         core::iter::from_fn(move || {
             let entry = readdir(dir_ptr);
             if unlikely(entry.is_null()) {
@@ -194,7 +189,7 @@ pub fn read_task_dir_cache(pid: pid_t, dir_ptr: *mut DIR) -> Result<HashSet<pid_
     }
 
     let entries: HashSet<pid_t> = entries.into_iter().collect();
-    Ok(entries)
+    entries
 }
 
 pub fn get_process_name(pid: pid_t) -> Result<CompactString> {
