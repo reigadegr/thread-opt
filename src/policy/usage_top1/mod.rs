@@ -59,7 +59,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
     }
 
     fn start_task(&mut self, comm_prefix: &[u8], cmd_type: &CmdType) {
-        if self.dir_ptr.is_null() {
+        if unlikely(self.dir_ptr.is_null()) {
             return;
         }
         let _dir_ptr_guard = DirGuard::new(self.dir_ptr);

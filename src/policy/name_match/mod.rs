@@ -32,7 +32,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
     }
 
     fn start_task(&mut self) {
-        if self.dir_ptr.is_null() {
+        if unlikely(self.dir_ptr.is_null()) {
             return;
         }
         let _dir_ptr_guard = DirGuard::new(self.dir_ptr);
