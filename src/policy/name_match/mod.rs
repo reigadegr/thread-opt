@@ -45,7 +45,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
                 .args
                 .activity_utils
                 .tid_utils
-                .get_task_map_cache(pid, self.dir_ptr);
+                .get_task_map(pid, self.dir_ptr);
             common::Policy::new(self.policy).execute_policy(task_map);
             #[cfg(debug_assertions)]
             {

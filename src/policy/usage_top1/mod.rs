@@ -37,7 +37,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
             .args
             .activity_utils
             .tid_utils
-            .get_task_map_cache(self.args.pid, self.dir_ptr);
+            .get_task_map(self.args.pid, self.dir_ptr);
         Policy::new(self.policy).execute_policy(task_map, self.usage_top1, cmd_type);
     }
 
@@ -46,7 +46,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
             .args
             .activity_utils
             .tid_utils
-            .get_task_map_cache(self.args.pid, self.dir_ptr);
+            .get_task_map(self.args.pid, self.dir_ptr);
         let unname_tids = get_thread_tids(task_map, comm_prefix);
         get_top1_tid(&unname_tids)
     }
