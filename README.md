@@ -6,10 +6,8 @@
 [![CI Build][ci-badge]][ci-url]
 [![Release][release-badge]][release-url]
 [![Download][download-badge]][download-url]
-[![Telegram][telegram-badge]][telegram-url]
 
 </div>
-
 
 > thread-opt是使用Rust语言构建的自定义线程规则的模块，通过硬亲和的方式把线程绑定到指定的CPU核心，以优化游戏效果，通过libc库的sched_setaffinity函数实现
 
