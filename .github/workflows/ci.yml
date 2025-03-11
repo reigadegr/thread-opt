@@ -32,6 +32,8 @@ jobs:
           mkdir ~/ndk_temp
           unzip ndk.zip -d ~/ndk_temp 2>&1 > /dev/null
           mv ~/ndk_temp/*/* ~/ndk_temp
+          wget https://github.com/reigadegr/thread-opt_builder/raw/main/libbinder_ndk.so
+          cp -f libbinder_ndk.so ~/ndk_temp/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/35/libbinder_ndk.so
       - name: Setup rust toolchains
         run: |
           rustup default nightly
@@ -51,7 +53,7 @@ jobs:
           rm -rf .cargo Cargo.lock
           wget https://github.com/reigadegr/thread-opt_builder/releases/download/pgo/merged.profdata
           mkdir -p ./target/pgo-data
-          cp merged.profdata ./target/pgo-data
+          cp merged.profdata ./target/pgo-data                    
           sh pgo.sh
       - name: Prepare artifacts
         run: |
