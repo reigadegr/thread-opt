@@ -13,6 +13,7 @@ packages = [
     "com.miHoYo.Nap",
     "com.yongshi.tenojo.ys",
     "com.tencent.KiHan",
+    "com.hypergryph.arknights",
 ]
 [comm_match.policy]
 top = []
@@ -119,7 +120,11 @@ core_closer = false
 
 # 需要把负载第二重的线程绑定cpu6
 [[usage_top1]]
-packages = ["com.tencent.lolm", "com.tencent.tmgp.speedmobile"]
+packages = [
+    "com.tencent.lolm",
+    "com.tencent.tmgp.speedmobile",
+    "com.gameabc.sgspad",
+]
 max_comm = ["Thread-"]
 max_comm_core = "Dualo"
 [usage_top1.policy]

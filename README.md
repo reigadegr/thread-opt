@@ -1,13 +1,28 @@
-# thread-opt
-> thread-opt是使用Rust语言构建的自定义线程规则的模块
+<div align="center">
 
-通过硬亲和的方式把线程绑定到指定的CPU核心，以优化游戏效果
+# **thread-opt**
 
-通过libc库的sched_setaffinity函数实现
+[![Stars][stars-badge]][stars-url]
+[![CI Build][ci-badge]][ci-url]
+[![Release][release-badge]][release-url]
+[![Download][download-badge]][download-url]
 
-模块刷了就能使用，无需任何其他操作，已经适配大部分主流游戏
+</div>
+
+> thread-opt是使用Rust语言构建的自定义线程规则的模块，通过硬亲和的方式把线程绑定到指定的CPU核心，以优化游戏效果，通过libc库的sched_setaffinity函数实现
+
+[stars-badge]: https://img.shields.io/github/stars/reigadegr/thread-opt?style=for-the-badge&logo=github
+[stars-url]: https://github.com/reigadegr/thread-opt
+[ci-badge]: https://img.shields.io/github/actions/workflow/status/reigadegr/thread-opt/ci.yml?style=for-the-badge&label=CI%20Build&logo=githubactions
+[ci-url]: https://github.com/reigadegr/thread-opt/actions/workflows/ci.yml
+[release-badge]: https://img.shields.io/github/v/release/reigadegr/thread-opt?style=for-the-badge&logo=rust
+[release-url]: https://github.com/reigadegr/thread-opt/releases/latest
+[download-badge]: https://img.shields.io/github/downloads/reigadegr/thread-opt/total?style=for-the-badge
+[download-url]: https://github.com/reigadegr/thread-opt/releases/latest
 
 从2.0.0版本开始，对三种放置规则全面引入了配置文件的支持
+
+默认配置在大部分场景下已足够优秀，无特殊需求无需修改
 
 当然，你也可以对现有规则进行修改，且任何人可以发布二改的配置文件
 

@@ -3,10 +3,12 @@ pub mod common;
 
 use super::get_thread_tids;
 use crate::{
-    cpu_common::process_monitor::get_top1_tid, policy::pkg_cfg::StartArgs, utils::sleep::sleep_secs,
+    cpu_common::process_monitor::get_top1_tid,
+    policy::pkg_cfg::StartArgs,
+    utils::{guard::DirGuard, node_reader::get_proc_path, sleep::sleep_secs},
 };
 use common::{CmdType, Policy};
-use libc::pid_t;
+use libc::{DIR, opendir, pid_t};
 use likely_stable::unlikely;
 #[cfg(debug_assertions)]
 use log::debug;
@@ -15,14 +17,18 @@ struct StartTask<'b, 'a: 'b> {
     policy: &'b Policy<'b>,
     args: &'b mut StartArgs<'a>,
     usage_top1: pid_t,
+    dir_ptr: *mut DIR,
 }
 
 impl<'b, 'a: 'b> StartTask<'b, 'a> {
-    const fn new(start_args: &'b mut StartArgs<'a>, policy: &'b Policy) -> Self {
+    fn new(start_args: &'b mut StartArgs<'a>, policy: &'b Policy) -> Self {
+        let task_dir = get_proc_path::<32, 5>(start_args.pid, b"/task");
+        let dir_ptr = unsafe { opendir(task_dir.as_ptr()) };
         Self {
             policy,
             args: start_args,
             usage_top1: 0,
+            dir_ptr,
         }
     }
 
@@ -31,7 +37,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
             .args
             .activity_utils
             .tid_utils
-            .get_task_map(self.args.pid);
+            .get_task_map(self.args.pid, self.dir_ptr);
         Policy::new(self.policy).execute_policy(task_map, self.usage_top1, cmd_type);
     }
 
@@ -40,7 +46,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
             .args
             .activity_utils
             .tid_utils
-            .get_task_map(self.args.pid);
+            .get_task_map(self.args.pid, self.dir_ptr);
         let unname_tids = get_thread_tids(task_map, comm_prefix);
         get_top1_tid(&unname_tids)
     }
@@ -53,6 +59,10 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
     }
 
     fn start_task(&mut self, comm_prefix: &[u8], cmd_type: &CmdType) {
+        if unlikely(self.dir_ptr.is_null()) {
+            return;
+        }
+        let _dir_ptr_guard = DirGuard::new(self.dir_ptr);
         loop {
             sleep_secs(1);
             let pid = self.args.activity_utils.top_app_utils.get_top_pid();
