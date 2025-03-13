@@ -9,7 +9,7 @@ rustflags = [
 registry = "https://github.com/rust-lang/crates.io-index"
 
 # 替换成你偏好的镜像源
-replace-with = 'rsproxy'
+replace-with = 'tuna'
 
 # 清华大学
 [source.tuna]
