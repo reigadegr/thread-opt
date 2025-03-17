@@ -13,7 +13,6 @@ packages = [
     "com.miHoYo.Nap",
     "com.yongshi.tenojo.ys",
     "com.tencent.KiHan",
-    "com.hypergryph.arknights",
 ]
 [comm_match.policy]
 top = []
@@ -176,6 +175,7 @@ packages = [
     "com.galasports.operablebasketball.mi",
     "com.sofunny.Sausage",
     "com.tencent.jkchess",
+    "com.hypergryph.arknights",
 ]
 max_comm = ["UnityMain"]
 second_comm = ["Thread-"]
