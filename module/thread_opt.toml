@@ -176,6 +176,7 @@ packages = [
     "com.sofunny.Sausage",
     "com.tencent.jkchess",
     "com.hypergryph.arknights",
+    "com.tencent.tmgp.WePop",
 ]
 max_comm = ["UnityMain"]
 second_comm = ["Thread-"]
