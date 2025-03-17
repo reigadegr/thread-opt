@@ -17,8 +17,8 @@ pub static PROFILE: Lazy<Config> = Lazy::new(|| {
     let profile_path = b"/data/adb/modules/thread_opt/thread_opt.toml\0";
     let profile = read_file::<65536>(profile_path).unwrap();
     let format_rs = format_toml(&profile);
-    write_to_byte(profile_path, format_rs.as_bytes()).unwrap();
     let profile: Config = toml::from_str(&profile).unwrap();
+    write_to_byte(profile_path, format_rs.as_bytes()).unwrap();
     profile
 });
 
