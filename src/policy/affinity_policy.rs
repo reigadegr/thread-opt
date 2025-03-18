@@ -11,15 +11,18 @@ use once_cell::sync::Lazy;
 
 static ONLY7_POLICY_FN: Lazy<fn(pid_t)> = Lazy::new(|| {
     if get_top_group() == [6] {
-        bind_tid_to_top
-    } else {
-        bind_tid_to_only7
+        return bind_tid_to_top;
     }
+    if get_middle_group() == get_background_group() {
+        return bind_tid_to_dualo;
+    }
+
+    bind_tid_to_only7
 });
 
 static ONLY6_POLICY_FN: Lazy<fn(pid_t)> = Lazy::new(|| {
     if get_middle_group() == get_background_group() {
-        bind_tid_to_dualo
+        bind_tid_to_only7
     } else {
         bind_tid_to_middle
     }
