@@ -7,8 +7,8 @@ extern crate alloc;
 use alloc::boxed::Box;
 
 pub fn start_task(args: &mut StartArgs<'_>, policy: &config::Policy) {
-    let mut dualo = &policy.dualo;
-    let mut only7 = &policy.only7;
+    let dualo = &policy.dualo;
+    let only7 = &policy.only7;
     let mut middle = &policy.middle;
     let mut mono = &policy.mono;
 
@@ -16,8 +16,8 @@ pub fn start_task(args: &mut StartArgs<'_>, policy: &config::Policy) {
 
     if policy.core_closer && get_top_group().len() > 1 {
         let _ = write_to_byte(b"/sys/devices/system/cpu/cpu7/online\0", b"0");
-        dualo = &policy.only7;
-        only7 = &empty_box;
+        // dualo = &policy.only7;
+        // only7 = &empty_box;
         mono = &empty_box;
         middle = &policy.mono;
     }
