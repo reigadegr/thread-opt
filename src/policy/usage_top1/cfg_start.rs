@@ -27,7 +27,7 @@ pub fn start_task(
         // only7 = &empty_box;
         mono = &empty_box;
         middle = &policy.mono;
-        cmd_type = &CmdType::Dualo;
+        cmd_type = &CmdType::Only7;
     }
 
     let policy = Policy {
