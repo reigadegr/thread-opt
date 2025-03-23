@@ -63,13 +63,14 @@ impl TidUtils {
             let end = start.elapsed();
             log::debug!("转换HashSet时间: {:?}", end);
         }
-        self.tid_info
-            .task_map
-            .retain(|tid, _| tid_list.contains(tid));
+        // self.tid_info
+        // .task_map
+        // .retain(|tid, _| tid_list.contains(tid));
+        self.tid_info.task_map.clear();
         for tid in tid_list {
-            if self.tid_info.task_map.contains_key(&tid) {
-                continue;
-            }
+            // if self.tid_info.task_map.contains_key(&tid) {
+            // continue;
+            // }
             let comm_path = get_proc_path::<32, 5>(tid, b"/comm");
             let Ok(comm) = read_to_byte::<16>(&comm_path) else {
                 continue;

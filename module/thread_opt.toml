@@ -13,7 +13,6 @@ packages = [
     "com.miHoYo.Nap",
     "com.yongshi.tenojo.ys",
     "com.tencent.KiHan",
-    "com.hypergryph.arknights",
 ]
 [comm_match.policy]
 top = []
@@ -154,7 +153,12 @@ core_closer = false
 # 其线程前缀名均为"Thread-"，目前策略是燕云十六声特调
 # 若不需要检索第二个高负载线程，second_comm不写即可
 [[usage_top2]]
-packages = ["com.netease.yyslscn"]
+packages = [
+    "com.netease.yyslscn",
+    "com.netease.dwrg",
+    "com.netease.dwrg.mi",
+    "com.netease.idv.googleplay",
+]
 max_comm = ["Thread-"]
 
 # 对于需要取两个重负载线程的游戏，
@@ -171,6 +175,8 @@ packages = [
     "com.galasports.operablebasketball.mi",
     "com.sofunny.Sausage",
     "com.tencent.jkchess",
+    "com.hypergryph.arknights",
+    "com.tencent.tmgp.WePop",
 ]
 max_comm = ["UnityMain"]
 second_comm = ["Thread-"]
