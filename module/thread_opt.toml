@@ -13,6 +13,7 @@ packages = [
     "com.miHoYo.Nap",
     "com.yongshi.tenojo.ys",
     "com.tencent.KiHan",
+    "com.ChillyRoom.DungeonShooter",
 ]
 [comm_match.policy]
 top = []
