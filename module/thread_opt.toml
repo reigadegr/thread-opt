@@ -26,7 +26,7 @@ core_closer = false
 
 # 单纯线程前缀的匹配，ue游戏
 [[comm_match]]
-packages = ["com.kurogame.mingchao"]
+packages = ["com.kurogame.mingchao", "com.tencent.mf.uam"]
 [comm_match.policy]
 top = ["Pool"]
 dualo = ["RHIThread"]
