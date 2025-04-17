@@ -2,6 +2,7 @@ use super::super::affinity_policy::{
     background_policy, dualo_policy, middle_policy, mono_policy, only7_policy, top_policy,
 };
 extern crate alloc;
+use super::trie::Trie;
 use crate::config::ByteArray;
 use hashbrown::HashMap;
 use libc::pid_t;
@@ -9,10 +10,10 @@ use libc::pid_t;
 use log::debug;
 #[cfg(debug_assertions)]
 use minstant::Instant;
-use super::trie::{CmdType, Trie};
 
 // 定义线程类型
-enum CmdType {
+#[derive(Clone)]
+pub enum CmdType {
     Top,
     Middle,
     Mono,
@@ -44,7 +45,7 @@ impl Policy<'_> {
 
     fn get_cmd_type(&self, comm: &[u8]) -> CmdType {
         let mut trie = Trie::new();
-        
+
         for prefix in self.top {
             trie.insert(prefix, CmdType::Top);
         }
@@ -63,7 +64,7 @@ impl Policy<'_> {
         for prefix in self.background {
             trie.insert(prefix, CmdType::Background);
         }
-        
+
         trie.search(comm).unwrap_or(CmdType::Middle)
     }
 

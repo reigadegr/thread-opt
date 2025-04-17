@@ -1,10 +1,9 @@
-use crate::config::ByteArray;
+use super::common::CmdType;
 use hashbrown::HashMap;
-use std::collections::HashMap as StdHashMap;
-
+// use hashbrown::HashMap;
 #[derive(Default)]
 struct TrieNode {
-    children: StdHashMap<u8, TrieNode>,
+    children: HashMap<u8, TrieNode>,
     cmd_type: Option<CmdType>,
 }
 
@@ -35,16 +34,6 @@ impl Trie {
                 None => return None,
             }
         }
-        node.cmd_type
+        node.cmd_type.clone()
     }
-}
-
-#[derive(Copy, Clone, Debug)]
-pub enum CmdType {
-    Top,
-    Middle,
-    Mono,
-    Background,
-    Dualo,
-    Only7,
 }
