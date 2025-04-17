@@ -9,6 +9,7 @@ use libc::pid_t;
 use log::debug;
 #[cfg(debug_assertions)]
 use minstant::Instant;
+use super::trie::{CmdType, Trie};
 
 // 定义线程类型
 enum CmdType {
@@ -42,29 +43,28 @@ impl Policy<'_> {
     }
 
     fn get_cmd_type(&self, comm: &[u8]) -> CmdType {
-        if self.top.iter().any(|prefix| comm.starts_with(prefix)) {
-            return CmdType::Top;
+        let mut trie = Trie::new();
+        
+        for prefix in self.top {
+            trie.insert(prefix, CmdType::Top);
         }
-        if self.dualo.iter().any(|prefix| comm.starts_with(prefix)) {
-            return CmdType::Dualo;
+        for prefix in self.dualo {
+            trie.insert(prefix, CmdType::Dualo);
         }
-        if self.only7.iter().any(|prefix| comm.starts_with(prefix)) {
-            return CmdType::Only7;
+        for prefix in self.only7 {
+            trie.insert(prefix, CmdType::Only7);
         }
-        if self.middle.iter().any(|prefix| comm.starts_with(prefix)) {
-            return CmdType::Middle;
+        for prefix in self.middle {
+            trie.insert(prefix, CmdType::Middle);
         }
-        if self.mono.iter().any(|prefix| comm.starts_with(prefix)) {
-            return CmdType::Mono;
+        for prefix in self.mono {
+            trie.insert(prefix, CmdType::Mono);
         }
-        if self
-            .background
-            .iter()
-            .any(|prefix| comm.starts_with(prefix))
-        {
-            return CmdType::Background;
+        for prefix in self.background {
+            trie.insert(prefix, CmdType::Background);
         }
-        CmdType::Middle
+        
+        trie.search(comm).unwrap_or(CmdType::Middle)
     }
 
     pub fn execute_policy(&self, task_map: &HashMap<pid_t, [u8; 16]>) {
