@@ -12,7 +12,7 @@ use log::debug;
 use minstant::Instant;
 
 // 定义线程类型
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum CmdType {
     Top,
     Middle,
@@ -64,6 +64,8 @@ impl Policy<'_> {
         for prefix in self.background {
             trie.insert(prefix, CmdType::Background);
         }
+
+        log::info!("{trie:?}");
 
         trie.search(comm).unwrap_or(CmdType::Middle)
     }

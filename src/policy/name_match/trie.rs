@@ -1,12 +1,13 @@
 use super::common::CmdType;
 use hashbrown::HashMap;
-// use hashbrown::HashMap;
-#[derive(Default)]
+
+#[derive(Default, Debug)]
 struct TrieNode {
     children: HashMap<u8, TrieNode>,
     cmd_type: Option<CmdType>,
 }
 
+#[derive(Debug)]
 pub struct Trie {
     root: TrieNode,
 }
