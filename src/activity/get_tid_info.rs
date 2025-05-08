@@ -61,7 +61,7 @@ impl TidUtils {
         #[cfg(debug_assertions)]
         {
             let end = start.elapsed();
-            log::debug!("转换HashSet时间: {:?}", end);
+            log::debug!("转换HashSet时间: {end:?}");
         }
         // self.tid_info
         // .task_map
@@ -80,7 +80,7 @@ impl TidUtils {
         #[cfg(debug_assertions)]
         {
             let end = start.elapsed();
-            log::debug!("读task_map时间: {:?}", end);
+            log::debug!("读task_map时间: {end:?}");
         }
         &self.tid_info
     }

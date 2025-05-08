@@ -55,16 +55,21 @@ impl TopAppUtils {
     }
 
     pub fn set_top_pid(&mut self) -> TopPidInfo {
-        unsafe {
-            self.inotify
-                .read_events_blocking(&mut [0; 1024])
-                .unwrap_unchecked();
+        loop {
+            match self.inotify.read_events_blocking(&mut [0; 1024]) {
+                Ok(_) => break,
+                Err(e) => {
+                    info!("Failed to read_events: {e}, retrying");
+                    sleep_secs(1);
+                }
+            }
         }
+
         let dump = loop {
             match self.dumper.dump_to_byte::<1024>(&["lru"]) {
                 Ok(dump) => break dump,
                 Err(e) => {
-                    info!("Failed to dump windows: {}, retrying", e);
+                    info!("Failed to dump windows: {e}, retrying");
                     sleep_secs(1);
                 }
             }
