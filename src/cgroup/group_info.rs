@@ -18,7 +18,7 @@ pub fn print_group_core() {
     let middle_group = get_middle_group();
     let background_group = get_background_group();
 
-    info!("TOP_GROUP: {:?}", top_group);
-    info!("MIDDLE_GROUP: {:?}", middle_group);
-    info!("BACKEND_GROUP: {:?}", background_group);
+    info!("TOP_GROUP: {top_group:?}");
+    info!("MIDDLE_GROUP: {middle_group:?}");
+    info!("BACKEND_GROUP: {background_group:?}");
 }
