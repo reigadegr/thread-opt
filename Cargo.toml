@@ -44,7 +44,7 @@ minstant = "0.1.7"
 once_cell = { version = "1.20.3", default-features = false }
 serde = { version = "1.0.218", default-features = false, features = ["derive"] }
 stringzilla = "3.12.0"
-taplo = { version = "0.13.2", default-features = false }
+taplo = { version = "0.14.0", default-features = false }
 tklog = "0.2.9"
 toml = { version = "0.8.20", default-features = false, features = ["parse"] }
 
