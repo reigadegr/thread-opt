@@ -1,10 +1,3 @@
-[target.aarch64-linux-android]
-linker = "clang"
-rustflags = [
-  "-C",
-  "link-arg=/data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/archlinux/usr/local/bin/mold",
-]
-
 [source.crates-io]
 replace-with = 'rsproxy-sparse'
 [source.rsproxy]
