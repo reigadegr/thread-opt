@@ -42,8 +42,9 @@ if [ "$(getprop sys.boot_completed)" != "1" ]; then
     contlict_remover "/data/adb/modules/AppOpt" "AppOpt"
     wait_until_login
     if [ ! -L $MODDIR/thread_opt.toml ]; then
+        profile_dir="/storage/emulated/0/Android/thread_opt"
         rm $MODDIR/thread_opt.toml
-        ln -s /storage/emulated/0/Android/thread_opt.toml $MODDIR/thread_opt.toml
+        ln -s "$profile_dir/thread_opt.toml" $MODDIR/thread_opt.toml
     fi
     stop oiface gameopt_hal_service-1-0 vendor.urcc-hal-aidl horae
     killall -9 vendor.oplus.hardware.urcc-service vendor.oplus.hardware.gameopt-service oiface horae
