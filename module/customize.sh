@@ -1,12 +1,15 @@
 #!/system/bin/sh
-echo "Hello World!"
-if [ ! -f /storage/emulated/0/Android/thread_opt.toml ]; then
-    cp $MODPATH/thread_opt.toml /storage/emulated/0/Android/thread_opt.toml
+profile_dir="/storage/emulated/0/Android/thread_opt"
+
+[ ! -d "$profile_dir" ] && mkdir "$profile_dir"
+
+if [ ! -f "$profile_dir/thread_opt.toml" ]; then
+    cp "$MODPATH/thread_opt.toml" "$profile_dir/thread_opt.toml"
 fi
 
 time=$(date "+%Y-%m-%d_%H:%M:%S")
-cp -af /storage/emulated/0/Android/thread_opt.toml /storage/emulated/0/Android/thread_opt_"$time"backup.toml
-cp -f $MODPATH/thread_opt.toml /storage/emulated/0/Android/thread_opt.toml
+cp -af "$profile_dir/thread_opt.toml" "$profile_dir"/thread_opt_"$time"backup.toml
+cp -f $MODPATH/thread_opt.toml "$profile_dir/thread_opt.toml"
 
 echo "仓库地址: https://github.com/reigadegr/thread-opt"
 echo "适配游戏请截屏Scene帧率统计图 && 线程负载统计图"
