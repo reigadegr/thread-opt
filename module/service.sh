@@ -20,19 +20,16 @@ reset_freq(){
     done
 }
 
-
-if [ "$(getprop sys.boot_completed)" != "1" ]; then
-    wait_until_login
-    if [ ! -L $MODDIR/thread_opt.toml ]; then
-        profile_dir="/storage/emulated/0/Android/thread_opt"
-        rm $MODDIR/thread_opt.toml
-        ln -s "$profile_dir/thread_opt.toml" $MODDIR/thread_opt.toml
-    fi
-    stop oiface gameopt_hal_service-1-0 vendor.urcc-hal-aidl horae
-    killall -9 vendor.oplus.hardware.urcc-service vendor.oplus.hardware.gameopt-service oiface horae
-    mask_val_in_path "0" "/sys/module/cpufreq_bouncing/parameters/" "*"
-    reset_freq
+wait_until_login
+if [ ! -L $MODDIR/thread_opt.toml ]; then
+    profile_dir="/storage/emulated/0/Android/thread_opt"
+    rm $MODDIR/thread_opt.toml
+    ln -s "$profile_dir/thread_opt.toml" $MODDIR/thread_opt.toml
 fi
+stop oiface gameopt_hal_service-1-0 vendor.urcc-hal-aidl horae
+killall -9 vendor.oplus.hardware.urcc-service vendor.oplus.hardware.gameopt-service oiface horae
+mask_val_in_path "0" "/sys/module/cpufreq_bouncing/parameters/" "*"
+reset_freq
 
 killall -15 thread-opt; rm $LOG
 chmod +x ${0%/*}/thread-opt
