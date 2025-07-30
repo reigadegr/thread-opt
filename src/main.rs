@@ -1,4 +1,11 @@
-#![warn(clippy::nursery, clippy::pedantic)]
+#![warn(
+    clippy::nursery,
+    clippy::pedantic,
+    clippy::style,
+    clippy::complexity,
+    clippy::perf,
+    clippy::correctness
+)]
 #![allow(
     clippy::non_std_lazy_statics,
     clippy::similar_names,
