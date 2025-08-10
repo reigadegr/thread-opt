@@ -12,6 +12,7 @@ export RUSTFLAGS="
     -C llvm-args=-enable-ml-inliner=release \
     -C llvm-args=-regalloc-enable-advisor=release \
     -C llvm-args=-hot-cold-split=true \
+    -C llvm-args=-enable-misched \
     -C llvm-args=-enable-scalable-autovec-in-streaming-mode \
     -C llvm-args=-inliner-interactive-include-default \
     -C llvm-args=-ml-inliner-model-selector=arm64-mixed \
