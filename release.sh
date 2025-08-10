@@ -9,19 +9,22 @@ export RUSTFLAGS="
     -Z remap-cwd-prefix=. \
     -Z dep-info-omit-d-target \
     -Z merge-functions=aliases \
-    -C llvm-args=-aggressive-ext-opt \
-    -C llvm-args=-enable-ml-inliner=release \
-    -C llvm-args=-regalloc-enable-advisor=release \
-    -C llvm-args=-hot-cold-split=true \
     -C llvm-args=-enable-misched \
-    -C llvm-args=-enable-scalable-autovec-in-streaming-mode \
-    -C llvm-args=-inliner-interactive-include-default \
-    -C llvm-args=-ml-inliner-model-selector=arm64-mixed \
-    -C llvm-args=-ml-inliner-skip-policy=if-caller-not-cold \
-    -C llvm-args=-mergefunc-use-aliases \
-    -C llvm-args=-enable-shrink-wrap=1 \
     -C llvm-args=-enable-gvn-hoist \
+    -C llvm-args=-hot-cold-split=true \
+    -C llvm-args=-aggressive-ext-opt \
+    -C llvm-args=-enable-loop-flatten \
+    -C llvm-args=-enable-post-misched \
+    -C llvm-args=-enable-shrink-wrap=1 \
+    -C llvm-args=-mergefunc-use-aliases \
+    -C llvm-args=-enable-dfa-jump-thread \
+    -C llvm-args=-enable-ml-inliner=release \
     -C llvm-args=-enable-loop-versioning-licm \
+    -C llvm-args=-regalloc-enable-advisor=release \
+    -C llvm-args=-inliner-interactive-include-default \
+    -C llvm-args=-ml-inliner-skip-policy=if-caller-not-cold \
+    -C llvm-args=-ml-inliner-model-selector=arm64-mixed \
+    -C llvm-args=-enable-scalable-autovec-in-streaming-mode \
     -C link-args=-fomit-frame-pointer \
     -C link-args=-Wl,-O3,--gc-sections,--as-needed \
     -C link-args=-Wl,--icf=all,-z,norelro,--pack-dyn-relocs=android+relr,-x,-s,--strip-all,--relax
