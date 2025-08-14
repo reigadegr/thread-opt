@@ -76,7 +76,7 @@ class CargoNightly:
             else:
                 raise Exception("missing env 'PREFIX'")
         elif shutil.which("cargo-ndk") is not None:
-            self.__cargo = "cargo +nightly ndk -p 35 -t arm64-v8a"
+            self.__cargo = "cargo +nightly ndk --platform 35 -t arm64-v8a"
         else:
             raise Exception("Install cargo-ndk first")
 
@@ -190,7 +190,7 @@ class Buildtools:
                 case _:
                     raise Exception("Unsupported platform: {} {}".format(arch, system))
 
-            self.__cargo = "cargo ndk -p 35 -t arm64-v8a"
+            self.__cargo = "cargo ndk --platform 35 -t arm64-v8a"
             self.__strip = bins.joinpath("llvm-strip")
             self.__clang_plusplus = bins.joinpath("aarch64-linux-android31-clang++")
             self.__clang_format = "clang-format"
