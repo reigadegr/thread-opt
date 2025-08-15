@@ -67,7 +67,6 @@ pub struct Policy {
     pub mono: Box<[ByteArray]>,
     #[serde(deserialize_with = "deserialize_byte_array")]
     pub background: Box<[ByteArray]>,
-    pub core_closer: bool,
 }
 
 fn deserialize_byte_array<'de, D>(deserializer: D) -> Result<Box<[ByteArray]>, D::Error>

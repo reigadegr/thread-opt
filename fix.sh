@@ -1,1 +1,1 @@
-cargo clippy --fix --allow-dirty
+cargo clippy --fix --allow-dirty --allow-staged -- -W clippy::all -W clippy::pedantic -W clippy::nursery -W clippy::style -W clippy::complexity -W clippy::perf -W clippy::correctness -A clippy::restriction

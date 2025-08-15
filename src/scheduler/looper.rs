@@ -65,9 +65,6 @@ impl Looper {
                     continue 'outer;
                 }
             }
-            // unsafe {
-            // __llvm_profile_write_file();
-            // }
         }
     }
 }

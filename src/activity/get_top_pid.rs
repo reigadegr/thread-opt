@@ -23,6 +23,7 @@ impl TopPidInfo {
             dump.sz_splits(&b"\n")
                 .find(|line| sz::find(line, b"Session{").is_some())
         };
+
         let pid = pid
             .and_then_likely(|line| {
                 line.sz_rfind(b":").and_then_likely(|pos1| {
@@ -72,7 +73,7 @@ impl TopAppUtils {
             }
         }
         let dump = loop {
-            match self.dumper.dump_to_byte::<32768>(&["visible-apps"]) {
+            match self.dumper.dump_to_byte::<65536>(&["visible-apps"]) {
                 Ok(dump) => break dump,
                 Err(e) => {
                     info!("Failed to dump windows: {e}, retrying");
