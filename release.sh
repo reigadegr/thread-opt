@@ -11,9 +11,7 @@ export RUSTFLAGS="
     -Z remap-cwd-prefix=. \
     -Z function-sections=yes \
     -Z dep-info-omit-d-target \
-    -C llvm-args=-enable-ipra \
     -C llvm-args=-enable-misched \
-    -C llvm-args=-enable-gvn-hoist \
     -C llvm-args=-hot-cold-split=true \
     -C llvm-args=-aggressive-ext-opt \
     -C llvm-args=-enable-post-misched \
