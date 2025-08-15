@@ -4,7 +4,8 @@
     clippy::style,
     clippy::complexity,
     clippy::perf,
-    clippy::correctness
+    clippy::correctness,
+    clippy::suspicious
 )]
 #![allow(
     clippy::non_std_lazy_statics,
