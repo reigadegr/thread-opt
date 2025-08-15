@@ -6,7 +6,6 @@ export RUSTFLAGS="
     -C default-linker-libraries \
     -Z plt=no \
     -Z mir-opt-level=4 \
-    -Z external-clangrt \
     -Z share-generics=yes \
     -Z remap-cwd-prefix=. \
     -Z function-sections=yes \
