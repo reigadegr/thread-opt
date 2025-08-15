@@ -9,17 +9,12 @@ pub fn start_task(
     comm_prefix: &[u8],
     cmd_type: &CmdType,
 ) {
-    let dualo = &policy.dualo;
-    let only7 = &policy.only7;
-    let middle = &policy.middle;
-    let mono = &policy.mono;
-
     let policy = Policy {
         top: &policy.top,
-        dualo,
-        only7,
-        middle,
-        mono,
+        dualo: &policy.dualo,
+        only7: &policy.only7,
+        middle: &policy.middle,
+        mono: &policy.mono,
         background: &policy.background,
     };
     super::StartTask::new(args, &policy).start_task(comm_prefix, cmd_type);
