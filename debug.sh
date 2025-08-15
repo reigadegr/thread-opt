@@ -1,2 +1,2 @@
 cargo fmt
-cargo +nightly ndk -p 35 -t arm64-v8a clippy
+cargo +nightly ndk --platform 35 -t arm64-v8a clippy
