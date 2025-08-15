@@ -128,3 +128,5 @@ export ANDROID_NDK_ROOT=$ANDROID_NDK_HOME
 本项目采用GPL v3协议，如果使用了本项目相关内容请您开源。
 如果能帮到你，还请为本项目添加Start。
 如果需要对游戏适配，欢迎提issue，并附上包名和Scene线程负载统计图。
+
+[![DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/reigadegr/thread-opt)
