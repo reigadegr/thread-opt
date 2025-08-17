@@ -18,13 +18,11 @@ export RUSTFLAGS="
     -C link-args=-fomit-frame-pointer \
     -C link-arg=-Wl,--no-rosegment \
     -C link-args=-Wl,-O3,--gc-sections,--as-needed \
-    -C link-args=-Wl,-z,norelro,-x,-z,noexecstack,--pack-dyn-relocs=android+relr,-s,--strip-all,--relax
-" 
-export RUSTFLAGS+="
+    -C link-args=-Wl,-z,norelro,-x,-z,noexecstack,--pack-dyn-relocs=android+relr,-s,--strip-all,--relax \
     -C llvm-args=-enable-ml-inliner=release \
     -C llvm-args=-ml-inliner-skip-policy=if-caller-not-cold \
     -C llvm-args=-ml-inliner-model-selector=arm64-mixed
-"
+" 
 
 export RUSTFLAGS="$RUSTFLAGS -Z time-passes"
 
