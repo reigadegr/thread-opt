@@ -3,12 +3,15 @@ rm -rf output
 rm -rf $(find ./target/aarch64-linux-android/release -name "*thread-opt*")
 
 export RUSTFLAGS="
+    -Z validate-mir \
+    -Z verify-llvm-ir \
     -Z mir-opt-level=2 \
     -Z share-generics=yes \
     -Z remap-cwd-prefix=. \
     -Z function-sections=yes \
     -Z dep-info-omit-d-target \
     -C default-linker-libraries \
+    -C symbol-mangling-version=v0 \
     -C llvm-args=-vectorize-loops \
     -C llvm-args=-enable-misched \
     -C llvm-args=-enable-branch-hint \
