@@ -5,12 +5,11 @@ use compact_str::CompactString;
 use libc::{DT_DIR, opendir, readdir};
 use likely_stable::{likely, unlikely};
 use log::info;
-use once_cell::sync::Lazy;
 use stringzilla::sz;
 extern crate alloc;
 use alloc::{boxed::Box, vec::Vec};
 
-pub static TOP_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| {
+pub static TOP_GROUP: std::sync::LazyLock<Box<[u8]>> = std::sync::LazyLock::new(|| {
     let cores = analysis_cgroup_new("7");
     if let Ok(cores) = cores {
         if *cores == [4, 5, 6, 7] {
@@ -21,9 +20,9 @@ pub static TOP_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| {
     Box::new([6])
 });
 
-pub static BACKEND_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| analysis_cgroup_new("0").unwrap());
+pub static BACKEND_GROUP: std::sync::LazyLock<Box<[u8]>> = std::sync::LazyLock::new(|| analysis_cgroup_new("0").unwrap());
 
-pub static MIDDLE_GROUP: Lazy<Box<[u8]>> = Lazy::new(|| {
+pub static MIDDLE_GROUP: std::sync::LazyLock<Box<[u8]>> = std::sync::LazyLock::new(|| {
     let mut all_core =
         unsafe { heapless::Vec::<u8, 8>::from_slice(&[0, 1, 2, 3, 4, 5, 6, 7]).unwrap_unchecked() };
     let background_values = get_background_group();

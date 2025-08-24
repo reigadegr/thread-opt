@@ -5,7 +5,7 @@ rm -rf $(find ./target/aarch64-linux-android/release -name "*thread-opt*")
 export RUSTFLAGS="
     -Z validate-mir \
     -Z verify-llvm-ir \
-    -Z mir-opt-level=1 \
+    -Z mir-opt-level=2 \
     -Z share-generics=yes \
     -Z remap-cwd-prefix=. \
     -Z function-sections=yes \
