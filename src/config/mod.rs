@@ -10,9 +10,10 @@ use alloc::{boxed::Box, vec::Vec};
 use anyhow::Result;
 use format_profile::format_toml;
 use hashbrown::HashSet;
+use std::sync::LazyLock;
 
 pub type ByteArray = heapless::Vec<u8, 16>;
-pub static PROFILE: std::sync::LazyLock<Config> = std::sync::LazyLock::new(|| {
+pub static PROFILE: LazyLock<Config> = LazyLock::new(|| {
     let profile_path = b"/data/adb/modules/thread_opt/thread_opt.toml\0";
     let profile = read_file::<65536>(profile_path).unwrap();
     let format_rs = format_toml(&profile);

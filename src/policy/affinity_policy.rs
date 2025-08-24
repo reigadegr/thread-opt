@@ -7,8 +7,9 @@ use crate::{
     },
 };
 use libc::pid_t;
+use std::sync::LazyLock;
 
-static ONLY7_POLICY_FN: std::sync::LazyLock<fn(pid_t)> = std::sync::LazyLock::new(|| {
+static ONLY7_POLICY_FN: LazyLock<fn(pid_t)> = LazyLock::new(|| {
     if get_top_group() == [6] {
         return bind_tid_to_top;
     }
@@ -19,7 +20,7 @@ static ONLY7_POLICY_FN: std::sync::LazyLock<fn(pid_t)> = std::sync::LazyLock::ne
     bind_tid_to_only7
 });
 
-static ONLY6_POLICY_FN: std::sync::LazyLock<fn(pid_t)> = std::sync::LazyLock::new(|| {
+static ONLY6_POLICY_FN: LazyLock<fn(pid_t)> = LazyLock::new(|| {
     if get_middle_group() == get_background_group() {
         bind_tid_to_only7
     } else {
@@ -27,7 +28,7 @@ static ONLY6_POLICY_FN: std::sync::LazyLock<fn(pid_t)> = std::sync::LazyLock::ne
     }
 });
 
-static ZERO_SIX_POLICY_FN: std::sync::LazyLock<fn(pid_t)> = std::sync::LazyLock::new(|| {
+static ZERO_SIX_POLICY_FN: LazyLock<fn(pid_t)> = LazyLock::new(|| {
     if get_top_group() == [6, 7] {
         bind_tid_to_zero_six
     } else {
@@ -35,9 +36,9 @@ static ZERO_SIX_POLICY_FN: std::sync::LazyLock<fn(pid_t)> = std::sync::LazyLock:
     }
 });
 
-static MODDLE_POLICY_FN: std::sync::LazyLock<fn(pid_t)> = std::sync::LazyLock::new(|| bind_tid_to_middle);
+static MODDLE_POLICY_FN: LazyLock<fn(pid_t)> = LazyLock::new(|| bind_tid_to_middle);
 
-static TID_LIST_T2_FN: std::sync::LazyLock<fn(&[pid_t])> = std::sync::LazyLock::new(|| {
+static TID_LIST_T2_FN: LazyLock<fn(&[pid_t])> = LazyLock::new(|| {
     if get_background_group() == get_middle_group() {
         bind_list_to_middle
     } else {

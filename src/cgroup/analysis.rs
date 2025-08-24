@@ -20,7 +20,8 @@ pub static TOP_GROUP: std::sync::LazyLock<Box<[u8]>> = std::sync::LazyLock::new(
     Box::new([6])
 });
 
-pub static BACKEND_GROUP: std::sync::LazyLock<Box<[u8]>> = std::sync::LazyLock::new(|| analysis_cgroup_new("0").unwrap());
+pub static BACKEND_GROUP: std::sync::LazyLock<Box<[u8]>> =
+    std::sync::LazyLock::new(|| analysis_cgroup_new("0").unwrap());
 
 pub static MIDDLE_GROUP: std::sync::LazyLock<Box<[u8]>> = std::sync::LazyLock::new(|| {
     let mut all_core =
