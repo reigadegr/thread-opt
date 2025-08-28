@@ -81,7 +81,7 @@ where
             bytes = &bytes[..16];
         }
         let vec = heapless::Vec::from_slice(bytes)
-            .map_err(|()| serde::de::Error::custom("String exceeds capacity"))?;
+            .map_err(|_| serde::de::Error::custom("String exceeds capacity"))?;
         result.push(vec);
     }
     Ok(result.into())
@@ -98,7 +98,7 @@ where
             bytes = &bytes[..16];
         }
         let vec = heapless::Vec::from_slice(bytes)
-            .map_err(|()| serde::de::Error::custom("String exceeds capacity"))?;
+            .map_err(|_| serde::de::Error::custom("String exceeds capacity"))?;
         return Ok(vec);
     }
     Ok(heapless::Vec::new())
@@ -115,7 +115,7 @@ where
             bytes = &bytes[..16];
         }
         let vec = heapless::Vec::from_slice(bytes)
-            .map_err(|()| serde::de::Error::custom("String exceeds capacity"))?;
+            .map_err(|_| serde::de::Error::custom("String exceeds capacity"))?;
         return Ok(Some(vec));
     }
     Ok(None)
