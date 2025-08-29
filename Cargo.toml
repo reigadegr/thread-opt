@@ -19,7 +19,7 @@ compact_str = { version = "0.9.0", default-features = false, features = [
     "serde",
 ] }
 dumpsys-rs = { git = "https://github.com/reigadegr/dumpsys-rs" }
-hashbrown = { version = "0.15.5", default-features = false, features = [
+hashbrown = { version = "0.16.0", default-features = false, features = [
     "default-hasher",
     "inline-more",
     "serde",
