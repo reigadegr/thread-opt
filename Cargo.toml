@@ -3,10 +3,12 @@ name = "thread-opt"
 version = "2.2.0"
 edition = "2024"
 description = "The Hard Affinity policy binds threads to target cores in gaming."
+keywords = ["thread", "game", "android"]
 authors = ["reigadegr"]
 license = "GPL-3.0"
 readme = "README.md"
 repository = "https://github.com/reigadegr/thread-opt"
+categories = ["utils"]
 
 [[bin]]
 name = "thread-opt"
@@ -30,10 +32,11 @@ itoa = { version = "1.0.15", features = [] }
 libc = { version = "0.2.175", default-features = false }
 likely_stable = "0.1.3"
 log = "0.4.27"
-mimalloc = { version = "0.1.47", features = [
+mimalloc = { version = "0.1.48", features = [
+    "v3",
     "no_thp",
-    "local_dynamic_tls",
     "override",
+    "local_dynamic_tls",
 ] }
 minstant = "0.1.7"
 once_cell = { version = "1.21.3", default-features = false }

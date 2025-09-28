@@ -1,12 +1,12 @@
 use super::cpu_set_initer::create_cpu_set;
 use crate::cgroup::group_info::{get_background_group, get_middle_group, get_top_group};
 use libc::cpu_set_t;
-use once_cell::sync::Lazy;
+use std::sync::LazyLock;
 
 // 定义静态变量的宏
 macro_rules! cpuset_once_lazy {
     ($name:ident, $init:expr) => {
-        pub static $name: Lazy<cpu_set_t> = Lazy::new(|| create_cpu_set($init));
+        pub static $name: LazyLock<cpu_set_t> = LazyLock::new(|| create_cpu_set($init));
     };
 }
 

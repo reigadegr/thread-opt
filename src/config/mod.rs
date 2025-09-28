@@ -10,10 +10,10 @@ use alloc::{boxed::Box, vec::Vec};
 use anyhow::Result;
 use format_profile::format_toml;
 use hashbrown::HashSet;
-use once_cell::sync::Lazy;
+use std::sync::LazyLock;
 
 pub type ByteArray = heapless::Vec<u8, 16>;
-pub static PROFILE: Lazy<Config> = Lazy::new(|| {
+pub static PROFILE: LazyLock<Config> = LazyLock::new(|| {
     let profile_path = b"/data/adb/modules/thread_opt/thread_opt.toml\0";
     let profile = read_file::<65536>(profile_path).unwrap();
     let format_rs = format_toml(&profile);
@@ -67,7 +67,6 @@ pub struct Policy {
     pub mono: Box<[ByteArray]>,
     #[serde(deserialize_with = "deserialize_byte_array")]
     pub background: Box<[ByteArray]>,
-    pub core_closer: bool,
 }
 
 fn deserialize_byte_array<'de, D>(deserializer: D) -> Result<Box<[ByteArray]>, D::Error>
@@ -82,7 +81,7 @@ where
             bytes = &bytes[..16];
         }
         let vec = heapless::Vec::from_slice(bytes)
-            .map_err(|()| serde::de::Error::custom("String exceeds capacity"))?;
+            .map_err(|_| serde::de::Error::custom("String exceeds capacity"))?;
         result.push(vec);
     }
     Ok(result.into())
@@ -99,7 +98,7 @@ where
             bytes = &bytes[..16];
         }
         let vec = heapless::Vec::from_slice(bytes)
-            .map_err(|()| serde::de::Error::custom("String exceeds capacity"))?;
+            .map_err(|_| serde::de::Error::custom("String exceeds capacity"))?;
         return Ok(vec);
     }
     Ok(heapless::Vec::new())
@@ -116,7 +115,7 @@ where
             bytes = &bytes[..16];
         }
         let vec = heapless::Vec::from_slice(bytes)
-            .map_err(|()| serde::de::Error::custom("String exceeds capacity"))?;
+            .map_err(|_| serde::de::Error::custom("String exceeds capacity"))?;
         return Ok(Some(vec));
     }
     Ok(None)
