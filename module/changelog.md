@@ -1,6 +1,6 @@
-### 更新修复，时间拖太久了，发个正式版
+## ✨ Bug修复（fix）
+- 修复缓冲区设置较小导致部分情况无法识别顶层APP
+- 读文件采用更安全的方式，移除unsafe
 
-## ✨ 功能迭代（feat）
-- 修复线程名字更改后无法识别的问题
-- 修复unsafe内inotify读取事件块时小概率panic
-- 读顶层从`dumpsys activity lru`变更`dumpsys window visible-apps`，更加精准识别应用
+## 🔨功能调整
+- 移除不必要的关核功能
