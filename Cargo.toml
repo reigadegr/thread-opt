@@ -33,10 +33,8 @@ libc = { version = "0.2.175", default-features = false }
 likely_stable = "0.1.3"
 log = "0.4.27"
 mimalloc = { version = "0.1.48", features = [
-    "v3",
     "no_thp",
     "override",
-    "local_dynamic_tls",
 ] }
 minstant = "0.1.7"
 once_cell = { version = "1.21.3", default-features = false }
