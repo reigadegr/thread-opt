@@ -5,7 +5,11 @@ use core::ptr::copy_nonoverlapping;
 use itoa::Buffer;
 use libc::{O_CREAT, O_TRUNC, O_WRONLY, c_void, chmod, chown, open, pid_t, write};
 use likely_stable::unlikely;
-use std::{fs::File, io::Read, str::from_utf8};
+use std::{
+    fs::File,
+    io::{ErrorKind, Read},
+    str::from_utf8,
+};
 use stringzilla::sz;
 
 pub fn read_file<const N: usize>(file: &[u8]) -> Result<CompactString> {
@@ -26,15 +30,13 @@ pub fn read_to_byte<const N: usize>(file: &[u8]) -> Result<[u8; N]> {
     };
     let mut buffer = [0u8; N];
     let mut total_read = 0;
-    while total_read < N {
-        let Ok(n) = file.read(&mut buffer) else {
-            return Err(anyhow!("Cannot read file."));
+    loop {
+        let n = match file.read(&mut buffer[total_read..]) {
+            Ok(0) => break,
+            Ok(n) => n,
+            Err(e) if e.kind() == ErrorKind::Interrupted => continue,
+            Err(e) => return Err(e.into()),
         };
-
-        if n == 0 {
-            break;
-        }
-
         total_read += n;
     }
 
