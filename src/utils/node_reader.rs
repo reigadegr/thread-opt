@@ -31,12 +31,10 @@ pub fn read_to_byte<const N: usize>(file: &[u8]) -> Result<[u8; N]> {
     let mut buffer = [0u8; N];
 
     match file.read_exact(&mut buffer) {
-        Ok(()) => return Ok(buffer),
-        Err(e) if e.kind() == ErrorKind::UnexpectedEof => return Ok(buffer),
-        Err(e) => return Err(e.into()),
+        Ok(()) => Ok(buffer),
+        Err(e) if e.kind() == ErrorKind::UnexpectedEof => Ok(buffer),
+        Err(e) => Err(e.into()),
     }
-
-    Ok(buffer)
 }
 
 pub fn write_to_byte(file: &[u8], msg: &[u8]) -> Result<()> {
