@@ -34,6 +34,17 @@ middle = ["RenderThread"]
 mono = []
 background = []
 
+# 单纯线程前缀的匹配，ue游戏，另一种策略
+[[comm_match]]
+packages = ["com.tencent.tmgp.codev"]
+[comm_match.policy]
+top = []
+dualo = ["RenderThread"]
+only7 = ["GameThread"]
+middle = ["NativeThread", "TaskGraphThread"]
+mono = []
+background = []
+
 # 单纯线程前缀的匹配，光遇
 [[comm_match]]
 packages = ["com.netease.sky", "com.bilibili.fatego"]
