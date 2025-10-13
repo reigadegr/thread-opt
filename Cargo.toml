@@ -36,7 +36,7 @@ mimalloc = { version = "0.1.48", features = ["no_thp", "override"] }
 minstant = "0.1.7"
 once_cell = { version = "1.21.3", default-features = false }
 serde = { version = "1.0.219", default-features = false, features = ["derive"] }
-stringzilla = "=3.12.6"
+stringzilla = "=4.2.1"
 taplo = { version = "0.14.0", default-features = false }
 tklog = "0.3.0"
 toml = { version = "0.9.5", default-features = false, features = [
