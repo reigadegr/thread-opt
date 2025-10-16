@@ -63,3 +63,4 @@ strip = true
 debug = 0
 debug-assertions = false
 incremental = false
+panic = "abort"

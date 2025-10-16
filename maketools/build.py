@@ -124,7 +124,7 @@ def task(args):
         if nightly:
             cargo.arg("-Z trim-paths")
             if release:
-                cargo.arg("-Z build-std")
+                cargo.arg("-Z build-std=core,alloc,std,panic_abort")
             
 
     if release:
