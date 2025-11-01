@@ -8,7 +8,7 @@ use crate::{
 };
 
 use common::execute_policy;
-use libc::{DIR, opendir, pid_t};
+use libc::{DIR, opendir};
 use likely_stable::unlikely;
 #[cfg(debug_assertions)]
 use log::debug;
@@ -28,7 +28,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         }
     }
 
-    fn bind_tids(&mut self, tid1: pid_t, tid2: pid_t) {
+    fn bind_tids(&mut self, tid1: i32, tid2: i32) {
         let task_map = self
             .args
             .activity_utils

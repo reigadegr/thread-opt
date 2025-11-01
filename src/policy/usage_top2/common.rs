@@ -1,10 +1,5 @@
-use super::super::affinity_policy::{dualo_policy, only7_policy, tid_list_t2_policy};
-
-extern crate alloc;
-use alloc::vec::Vec;
-
+use crate::policy::affinity_policy::{dualo_policy, only7_policy, tid_list_t2_policy};
 use hashbrown::HashMap;
-use libc::pid_t;
 #[cfg(debug_assertions)]
 use log::debug;
 #[cfg(debug_assertions)]
@@ -18,11 +13,11 @@ pub enum CmdType {
 }
 
 // 执行策略
-pub fn execute_policy(task_map: &HashMap<pid_t, [u8; 16]>, first: pid_t, second: pid_t) {
+pub fn execute_policy(task_map: &HashMap<i32, [u8; 16]>, first: i32, second: i32) {
     execute_task(&CmdType::Only7, first);
     execute_task(&CmdType::Dualo, second);
 
-    let filtered_keys: Vec<pid_t> = task_map
+    let filtered_keys: Vec<i32> = task_map
         .keys()
         .filter(|&&tid| tid != first && tid != second)
         .copied()
@@ -41,7 +36,7 @@ pub fn execute_policy(task_map: &HashMap<pid_t, [u8; 16]>, first: pid_t, second:
 }
 
 // 执行线程绑定任务
-fn execute_task(cmd_type: &CmdType, tid: pid_t) {
+fn execute_task(cmd_type: &CmdType, tid: i32) {
     match cmd_type {
         CmdType::Dualo => dualo_policy(tid),
         CmdType::Only7 => only7_policy(tid),

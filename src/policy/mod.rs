@@ -7,9 +7,8 @@ pub mod usage_top2;
 extern crate alloc;
 use alloc::vec::Vec;
 use hashbrown::HashMap;
-use libc::pid_t;
 
-fn get_thread_tids(task_map: &HashMap<pid_t, [u8; 16]>, prefix: &[u8]) -> Vec<pid_t> {
+fn get_thread_tids(task_map: &HashMap<i32, [u8; 16]>, prefix: &[u8]) -> Vec<i32> {
     task_map
         .iter()
         .filter(|(_, name)| name.starts_with(prefix))

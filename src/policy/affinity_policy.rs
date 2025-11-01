@@ -6,10 +6,9 @@ use crate::{
         bind_tid_to_zero_six,
     },
 };
-use libc::pid_t;
 use std::sync::LazyLock;
 
-static ONLY7_POLICY_FN: LazyLock<fn(pid_t)> = LazyLock::new(|| {
+static ONLY7_POLICY_FN: LazyLock<fn(i32)> = LazyLock::new(|| {
     if get_top_group() == [6] {
         return bind_tid_to_top;
     }
@@ -20,7 +19,7 @@ static ONLY7_POLICY_FN: LazyLock<fn(pid_t)> = LazyLock::new(|| {
     bind_tid_to_only7
 });
 
-static ONLY6_POLICY_FN: LazyLock<fn(pid_t)> = LazyLock::new(|| {
+static ONLY6_POLICY_FN: LazyLock<fn(i32)> = LazyLock::new(|| {
     if get_middle_group() == get_background_group() {
         bind_tid_to_only7
     } else {
@@ -28,7 +27,7 @@ static ONLY6_POLICY_FN: LazyLock<fn(pid_t)> = LazyLock::new(|| {
     }
 });
 
-static ZERO_SIX_POLICY_FN: LazyLock<fn(pid_t)> = LazyLock::new(|| {
+static ZERO_SIX_POLICY_FN: LazyLock<fn(i32)> = LazyLock::new(|| {
     if get_top_group() == [6, 7] {
         bind_tid_to_zero_six
     } else {
@@ -36,9 +35,9 @@ static ZERO_SIX_POLICY_FN: LazyLock<fn(pid_t)> = LazyLock::new(|| {
     }
 });
 
-static MODDLE_POLICY_FN: LazyLock<fn(pid_t)> = LazyLock::new(|| bind_tid_to_middle);
+static MODDLE_POLICY_FN: LazyLock<fn(i32)> = LazyLock::new(|| bind_tid_to_middle);
 
-static TID_LIST_T2_FN: LazyLock<fn(&[pid_t])> = LazyLock::new(|| {
+static TID_LIST_T2_FN: LazyLock<fn(&[i32])> = LazyLock::new(|| {
     if get_background_group() == get_middle_group() {
         bind_list_to_middle
     } else {
@@ -46,30 +45,30 @@ static TID_LIST_T2_FN: LazyLock<fn(&[pid_t])> = LazyLock::new(|| {
     }
 });
 
-pub fn top_policy(tid: pid_t) {
+pub fn top_policy(tid: i32) {
     bind_tid_to_top(tid);
 }
 
-pub fn dualo_policy(tid: pid_t) {
+pub fn dualo_policy(tid: i32) {
     ONLY6_POLICY_FN(tid);
 }
 
-pub fn only7_policy(tid: pid_t) {
+pub fn only7_policy(tid: i32) {
     ONLY7_POLICY_FN(tid);
 }
 
-pub fn mono_policy(tid: pid_t) {
+pub fn mono_policy(tid: i32) {
     ZERO_SIX_POLICY_FN(tid);
 }
 
-pub fn middle_policy(tid: pid_t) {
+pub fn middle_policy(tid: i32) {
     MODDLE_POLICY_FN(tid);
 }
 
-pub fn background_policy(tid: pid_t) {
+pub fn background_policy(tid: i32) {
     bind_tid_to_background(tid);
 }
 
-pub fn tid_list_t2_policy(tids: &[pid_t]) {
+pub fn tid_list_t2_policy(tids: &[i32]) {
     TID_LIST_T2_FN(tids);
 }

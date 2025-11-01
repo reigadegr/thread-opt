@@ -1,10 +1,9 @@
 // From shadow3aaa fas-rs
 use super::usage_tracker::UsageTracker;
 use hashbrown::HashMap;
-use libc::pid_t;
 
-pub fn get_top1_tid(target_tids: &[pid_t]) -> pid_t {
-    let all_trackers: HashMap<pid_t, u64> = target_tids
+pub fn get_top1_tid(target_tids: &[i32]) -> i32 {
+    let all_trackers: HashMap<i32, u64> = target_tids
         .iter()
         .map(|&tid| (tid, UsageTracker::new(tid).try_calculate()))
         .collect();
@@ -12,7 +11,7 @@ pub fn get_top1_tid(target_tids: &[pid_t]) -> pid_t {
     find_top1_tids(&all_trackers)
 }
 
-fn find_top1_tids(trackers: &HashMap<pid_t, u64>) -> pid_t {
+fn find_top1_tids(trackers: &HashMap<i32, u64>) -> i32 {
     let mut tid1 = -1;
     let mut usage1: u64 = 0;
 
@@ -25,8 +24,8 @@ fn find_top1_tids(trackers: &HashMap<pid_t, u64>) -> pid_t {
     tid1
 }
 
-pub fn get_top2_tids(target_tids: &[pid_t]) -> (pid_t, pid_t) {
-    let all_trackers: HashMap<pid_t, u64> = target_tids
+pub fn get_top2_tids(target_tids: &[i32]) -> (i32, i32) {
+    let all_trackers: HashMap<i32, u64> = target_tids
         .iter()
         .map(|&tid| (tid, UsageTracker::new(tid).try_calculate()))
         .collect();
@@ -34,7 +33,7 @@ pub fn get_top2_tids(target_tids: &[pid_t]) -> (pid_t, pid_t) {
     find_top2_tids(&all_trackers)
 }
 
-fn find_top2_tids(trackers: &HashMap<pid_t, u64>) -> (pid_t, pid_t) {
+fn find_top2_tids(trackers: &HashMap<i32, u64>) -> (i32, i32) {
     let (mut tid1, mut tid2) = (-1, -1);
 
     let (mut usage1, mut usage2) = (0u64, 0u64);

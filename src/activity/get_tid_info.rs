@@ -7,7 +7,7 @@ use atoi::atoi;
 use compact_str::CompactString;
 use core::time::Duration;
 use hashbrown::{HashMap, HashSet};
-use libc::{DIR, opendir, pid_t, readdir, rewinddir};
+use libc::{DIR, opendir, readdir, rewinddir};
 use likely_stable::unlikely;
 use minstant::Instant;
 use stringzilla::sz;
@@ -16,8 +16,8 @@ use alloc::vec::Vec;
 
 #[derive(Default)]
 pub struct TidInfo {
-    pub task_map: HashMap<pid_t, [u8; 16]>,
-    task_map_pid: pid_t,
+    pub task_map: HashMap<i32, [u8; 16]>,
+    task_map_pid: i32,
 }
 
 impl TidInfo {
@@ -39,7 +39,7 @@ impl TidUtils {
         }
     }
 
-    pub fn get_task_map(&mut self, pid: pid_t, dir_ptr: *mut DIR) -> &HashMap<pid_t, [u8; 16]> {
+    pub fn get_task_map(&mut self, pid: i32, dir_ptr: *mut DIR) -> &HashMap<i32, [u8; 16]> {
         if self.last_refresh_task_map.elapsed() > Duration::from_millis(3000) {
             self.last_refresh_task_map = Instant::now();
             return &self.set_task_map(dir_ptr).task_map;
@@ -86,7 +86,7 @@ impl TidUtils {
     }
 }
 
-pub fn read_task_dir(pid: pid_t) -> Result<HashSet<pid_t>> {
+pub fn read_task_dir(pid: i32) -> Result<HashSet<i32>> {
     let task_dir = get_proc_path::<32, 5>(pid, b"/task");
 
     let dir = unsafe { opendir(task_dir.as_ptr()) };
@@ -107,16 +107,16 @@ pub fn read_task_dir(pid: pid_t) -> Result<HashSet<pid_t>> {
             // 这里，d_name_ptr长度不可能超过6,Linux PID最大32768
             let bytes = core::slice::from_raw_parts(d_name_ptr, 6);
             // 如果以'.'开头，会被fallback为0，最后被过滤
-            Some(atoi::<pid_t>(bytes).unwrap_or(0))
+            Some(atoi::<i32>(bytes).unwrap_or(0))
         })
         .filter(|&s| s != 0)
         .collect()
     };
-    let entries: HashSet<pid_t> = entries.into_iter().collect();
+    let entries: HashSet<i32> = entries.into_iter().collect();
     Ok(entries)
 }
 
-pub fn read_task_dir_cache(dir_ptr: *mut DIR) -> HashSet<pid_t> {
+pub fn read_task_dir_cache(dir_ptr: *mut DIR) -> HashSet<i32> {
     let entries: Vec<_> = unsafe {
         core::iter::from_fn(move || {
             let entry = readdir(dir_ptr);
@@ -128,7 +128,7 @@ pub fn read_task_dir_cache(dir_ptr: *mut DIR) -> HashSet<pid_t> {
             // 这里，d_name_ptr长度不可能超过6,Linux PID最大32768
             let bytes = core::slice::from_raw_parts(d_name_ptr, 6);
             // 如果以'.'开头，会被fallback为0，最后被过滤
-            Some(atoi::<pid_t>(bytes).unwrap_or(0))
+            Some(atoi::<i32>(bytes).unwrap_or(0))
         })
         .filter(|&s| s != 0)
         .collect()
@@ -137,11 +137,11 @@ pub fn read_task_dir_cache(dir_ptr: *mut DIR) -> HashSet<pid_t> {
         rewinddir(dir_ptr);
     }
 
-    let entries: HashSet<pid_t> = entries.into_iter().collect();
+    let entries: HashSet<i32> = entries.into_iter().collect();
     entries
 }
 
-pub fn get_process_name(pid: pid_t) -> Result<CompactString> {
+pub fn get_process_name(pid: i32) -> Result<CompactString> {
     let cmdline = get_proc_path::<32, 8>(pid, b"/cmdline");
 
     let buffer = read_to_byte::<128>(&cmdline)?;
