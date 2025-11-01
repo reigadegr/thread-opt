@@ -5,7 +5,20 @@ use inotify::{Inotify, WatchMask};
 use libc::pid_t;
 use likely_stable::LikelyOption;
 use log::info;
+use ndk_sys::android_get_device_api_level;
 use stringzilla::{StringZilla, sz};
+
+static ANDROID_VERSION: std::sync::LazyLock<i32> = std::sync::LazyLock::new(|| {
+    let api = unsafe { android_get_device_api_level() };
+    match api {
+        36 => 16,
+        _ => 15,
+    }
+});
+
+fn get_android_version() -> i32 {
+    *ANDROID_VERSION
+}
 
 #[derive(Default)]
 pub struct TopPidInfo {
@@ -14,7 +27,11 @@ pub struct TopPidInfo {
 
 impl TopPidInfo {
     pub fn new(dump: &[u8]) -> Self {
-        let pid = Self::parse_a16(dump);
+        let pid = if get_android_version() == 16 {
+            Self::parse_a16(dump)
+        } else {
+            Self::parse_a15(dump)
+        };
         Self { pid }
     }
 
