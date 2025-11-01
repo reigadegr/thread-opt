@@ -5,16 +5,12 @@ use crate::{
 };
 use anyhow::Result;
 use compact_str::CompactString;
-use libc::pid_t;
 use log::info;
-// unsafe extern "C" {
-// fn __llvm_profile_write_file() -> i32;
-// }
 
 pub struct Looper {
     pub activity_utils: ActivityUtils,
     pub global_package: CompactString,
-    pub pid: pid_t,
+    pub pid: i32,
 }
 
 impl Looper {

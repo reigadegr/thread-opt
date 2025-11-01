@@ -1,15 +1,14 @@
 use crate::utils::node_reader::{get_proc_path, read_to_byte};
 use atoi::atoi;
-use libc::pid_t;
 use stringzilla::sz;
 
 #[derive(Debug, Clone)]
 pub struct UsageTracker {
-    tid: pid_t,
+    tid: i32,
 }
 
 impl UsageTracker {
-    pub const fn new(tid: pid_t) -> Self {
+    pub const fn new(tid: i32) -> Self {
         Self { tid }
     }
 
@@ -18,7 +17,7 @@ impl UsageTracker {
     }
 }
 
-fn get_thread_cpu_time(tid: pid_t) -> u64 {
+fn get_thread_cpu_time(tid: i32) -> u64 {
     let stat_path = get_proc_path::<32, 10>(tid, b"/schedstat");
     let buffer = read_to_byte::<32>(&stat_path).unwrap_or([0u8; 32]);
 

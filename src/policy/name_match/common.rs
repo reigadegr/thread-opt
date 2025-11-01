@@ -4,7 +4,7 @@ use super::super::affinity_policy::{
 extern crate alloc;
 use crate::config::ByteArray;
 use hashbrown::HashMap;
-use libc::pid_t;
+
 #[cfg(debug_assertions)]
 use log::debug;
 #[cfg(debug_assertions)]
@@ -67,7 +67,7 @@ impl Policy<'_> {
         CmdType::Middle
     }
 
-    pub fn execute_policy(&self, task_map: &HashMap<pid_t, [u8; 16]>) {
+    pub fn execute_policy(&self, task_map: &HashMap<i32, [u8; 16]>) {
         #[cfg(debug_assertions)]
         let start = Instant::now();
         for (&tid, comm) in task_map {
@@ -88,7 +88,7 @@ impl Policy<'_> {
 }
 
 // 执行线程绑定任务
-fn execute_task(cmd_type: &CmdType, tid: pid_t) {
+fn execute_task(cmd_type: &CmdType, tid: i32) {
     match cmd_type {
         CmdType::Top => top_policy(tid),
         CmdType::Dualo => dualo_policy(tid),

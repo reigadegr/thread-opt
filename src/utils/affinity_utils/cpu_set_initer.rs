@@ -1,4 +1,4 @@
-use libc::{CPU_SET, CPU_ZERO, cpu_set_t, pid_t, sched_setaffinity};
+use libc::{CPU_SET, CPU_ZERO, cpu_set_t, sched_setaffinity};
 
 // 辅助通用函数：初始化 CPU 集
 pub fn create_cpu_set(cpu_indices: &[u8]) -> cpu_set_t {
@@ -14,7 +14,7 @@ pub fn create_cpu_set(cpu_indices: &[u8]) -> cpu_set_t {
 
 // 绑定单个线程到指定的 CPU 核心
 #[allow(dead_code)]
-pub fn bind_tid_to_cpu(cpu_indices: &[u8], tid: pid_t) {
+pub fn bind_tid_to_cpu(cpu_indices: &[u8], tid: i32) {
     unsafe {
         let cpu_set = create_cpu_set(cpu_indices);
         let _ = sched_setaffinity(tid, core::mem::size_of::<cpu_set_t>(), &raw const cpu_set);
@@ -23,7 +23,7 @@ pub fn bind_tid_to_cpu(cpu_indices: &[u8], tid: pid_t) {
 
 // 绑定多个线程到指定的 CPU 核心
 #[allow(dead_code)]
-pub fn bind_tid_list_to_cgroup(cpu_indices: &[u8], tids: &[pid_t]) {
+pub fn bind_tid_list_to_cgroup(cpu_indices: &[u8], tids: &[i32]) {
     unsafe {
         let cpu_set = create_cpu_set(cpu_indices);
         for &tid in tids {

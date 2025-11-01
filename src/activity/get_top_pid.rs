@@ -2,13 +2,13 @@ use crate::utils::sleep::sleep_secs;
 use atoi::atoi;
 use dumpsys_rs::Dumpsys;
 use inotify::{Inotify, WatchMask};
-use libc::pid_t;
 use likely_stable::LikelyOption;
 use log::info;
 use ndk_sys::android_get_device_api_level;
-use stringzilla::{StringZilla, sz};
+use std::sync::LazyLock;
+use stringzilla::{StringZilla, sz::find};
 
-static ANDROID_VERSION: std::sync::LazyLock<i32> = std::sync::LazyLock::new(|| {
+static ANDROID_VERSION: LazyLock<i32> = LazyLock::new(|| {
     let api = unsafe { android_get_device_api_level() };
     match api {
         36 => 16,
@@ -22,7 +22,7 @@ fn get_android_version() -> i32 {
 
 #[derive(Default)]
 pub struct TopPidInfo {
-    pid: pid_t,
+    pid: i32,
 }
 
 impl TopPidInfo {
@@ -35,42 +35,42 @@ impl TopPidInfo {
         Self { pid }
     }
 
-    fn parse_a15(dump: &[u8]) -> pid_t {
-        let multi_window = sz::find(dump, b"Window #1").is_some();
+    fn parse_a15(dump: &[u8]) -> i32 {
+        let multi_window = find(dump, b"Window #1").is_some();
 
         let pid = if multi_window {
             dump.sz_rsplits(&b"\n")
-                .find(|line| sz::find(line, b"Session{").is_some())
+                .find(|line| find(line, b"Session{").is_some())
         } else {
             dump.sz_splits(&b"\n")
-                .find(|line| sz::find(line, b"Session{").is_some())
+                .find(|line| find(line, b"Session{").is_some())
         };
 
         pid.and_then_likely(|line| {
             line.sz_rfind(b":")
                 .and_then_likely(|pos1| line[..pos1].sz_rfind(b" ").map(|pos2| &line[pos2 + 1..]))
         })
-        .and_then_likely(atoi::<pid_t>)
+        .and_then_likely(atoi::<i32>)
         .unwrap_or_default()
     }
 
-    fn parse_a16(dump: &[u8]) -> pid_t {
-        let multi_window = sz::find(dump, b"Window #2").is_some();
+    fn parse_a16(dump: &[u8]) -> i32 {
+        let multi_window = find(dump, b"Window #2").is_some();
 
         let pid = if multi_window {
             dump.sz_rsplits(&b"\n")
-                .filter(|line| sz::find(line, b"Session{").is_some())
+                .filter(|line| find(line, b"Session{").is_some())
                 .nth(1)
         } else {
             dump.sz_splits(&b"\n")
-                .find(|line| sz::find(line, b"Session{").is_some())
+                .find(|line| find(line, b"Session{").is_some())
         };
 
         pid.and_then_likely(|line| {
             line.sz_rfind(b":")
                 .and_then_likely(|pos1| line[..pos1].sz_rfind(b" ").map(|pos2| &line[pos2 + 1..]))
         })
-        .and_then_likely(atoi::<pid_t>)
+        .and_then_likely(atoi::<i32>)
         .unwrap_or_default()
     }
 }
@@ -97,7 +97,7 @@ impl TopAppUtils {
         Self { dumper, inotify }
     }
 
-    pub fn get_top_pid(&mut self) -> pid_t {
+    pub fn get_top_pid(&mut self) -> i32 {
         self.set_top_pid().pid
     }
 

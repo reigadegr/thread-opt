@@ -4,12 +4,12 @@ use super::global_cpu_set::{
 };
 use core::mem::size_of;
 use hashbrown::HashSet;
-use libc::{cpu_set_t, pid_t, sched_setaffinity};
+use libc::{cpu_set_t, sched_setaffinity};
 
 // 宏：生成单个线程绑定函数
 macro_rules! bind_thread {
     ($func_name:ident, $get_cpu_set:expr) => {
-        pub fn $func_name(tid: pid_t) {
+        pub fn $func_name(tid: i32) {
             unsafe {
                 let cpu_set = $get_cpu_set();
                 let _ = sched_setaffinity(tid, size_of::<cpu_set_t>(), cpu_set);
@@ -20,7 +20,7 @@ macro_rules! bind_thread {
 
 macro_rules! bind_list {
     ($func_name:ident, $get_cpu_set:expr) => {
-        pub fn $func_name(tids: &[pid_t]) {
+        pub fn $func_name(tids: &[i32]) {
             unsafe {
                 let cpu_set = $get_cpu_set();
                 for &tid in tids {
@@ -34,7 +34,7 @@ macro_rules! bind_list {
 // 宏：生成多个线程绑定函数
 macro_rules! bind_list_hash_set {
     ($func_name:ident, $get_cpu_set:expr) => {
-        pub fn $func_name(tids: &HashSet<pid_t>) {
+        pub fn $func_name(tids: &HashSet<i32>) {
             unsafe {
                 let cpu_set = $get_cpu_set();
                 for &tid in tids {

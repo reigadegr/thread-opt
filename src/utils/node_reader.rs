@@ -3,7 +3,7 @@ use anyhow::{Result, anyhow};
 use compact_str::CompactString;
 use core::ptr::copy_nonoverlapping;
 use itoa::Buffer;
-use libc::{O_CREAT, O_TRUNC, O_WRONLY, c_void, chmod, chown, open, pid_t, write};
+use libc::{O_CREAT, O_TRUNC, O_WRONLY, c_void, chmod, chown, open, write};
 use likely_stable::unlikely;
 use std::{
     fs::File,
@@ -65,7 +65,7 @@ pub fn lock_val(file: &[u8], msg: &[u8]) -> Result<()> {
     Ok(())
 }
 
-pub fn get_proc_path<const N: usize, const L: usize>(id: pid_t, file: &[u8]) -> [u8; N] {
+pub fn get_proc_path<const N: usize, const L: usize>(id: i32, file: &[u8]) -> [u8; N] {
     let mut buffer = [0u8; N];
     buffer[0..6].copy_from_slice(b"/proc/");
 

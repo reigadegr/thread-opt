@@ -8,7 +8,7 @@ use crate::{
     utils::{guard::DirGuard, node_reader::get_proc_path, sleep::sleep_secs},
 };
 use common::{CmdType, Policy};
-use libc::{DIR, opendir, pid_t};
+use libc::{DIR, opendir};
 use likely_stable::unlikely;
 #[cfg(debug_assertions)]
 use log::debug;
@@ -16,7 +16,7 @@ use log::debug;
 struct StartTask<'b, 'a: 'b> {
     policy: &'b Policy<'b>,
     args: &'b mut StartArgs<'a>,
-    usage_top1: pid_t,
+    usage_top1: i32,
     dir_ptr: *mut DIR,
 }
 
@@ -41,7 +41,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         Policy::new(self.policy).execute_policy(task_map, self.usage_top1, cmd_type);
     }
 
-    fn get_new_tid(&mut self, comm_prefix: &[u8]) -> pid_t {
+    fn get_new_tid(&mut self, comm_prefix: &[u8]) -> i32 {
         let task_map = self
             .args
             .activity_utils
