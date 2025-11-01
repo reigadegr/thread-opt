@@ -14,6 +14,11 @@ pub struct TopPidInfo {
 
 impl TopPidInfo {
     pub fn new(dump: &[u8]) -> Self {
+        let pid = Self::parse_a16(dump);
+        Self { pid }
+    }
+
+    fn parse_a15(dump: &[u8]) -> pid_t {
         let multi_window = sz::find(dump, b"Window #1").is_some();
 
         let pid = if multi_window {
@@ -24,15 +29,32 @@ impl TopPidInfo {
                 .find(|line| sz::find(line, b"Session{").is_some())
         };
 
-        let pid = pid
-            .and_then_likely(|line| {
-                line.sz_rfind(b":").and_then_likely(|pos1| {
-                    line[..pos1].sz_rfind(b" ").map(|pos2| &line[pos2 + 1..])
-                })
-            })
-            .and_then_likely(atoi::<pid_t>)
-            .unwrap_or_default();
-        Self { pid }
+        pid.and_then_likely(|line| {
+            line.sz_rfind(b":")
+                .and_then_likely(|pos1| line[..pos1].sz_rfind(b" ").map(|pos2| &line[pos2 + 1..]))
+        })
+        .and_then_likely(atoi::<pid_t>)
+        .unwrap_or_default()
+    }
+
+    fn parse_a16(dump: &[u8]) -> pid_t {
+        let multi_window = sz::find(dump, b"Window #2").is_some();
+
+        let pid = if multi_window {
+            dump.sz_rsplits(&b"\n")
+                .filter(|line| sz::find(line, b"Session{").is_some())
+                .nth(1)
+        } else {
+            dump.sz_splits(&b"\n")
+                .find(|line| sz::find(line, b"Session{").is_some())
+        };
+
+        pid.and_then_likely(|line| {
+            line.sz_rfind(b":")
+                .and_then_likely(|pos1| line[..pos1].sz_rfind(b" ").map(|pos2| &line[pos2 + 1..]))
+        })
+        .and_then_likely(atoi::<pid_t>)
+        .unwrap_or_default()
     }
 }
 
