@@ -5,20 +5,7 @@ use inotify::{Inotify, WatchMask};
 use likely_stable::LikelyOption;
 use log::info;
 use ndk_sys::android_get_device_api_level;
-use std::sync::LazyLock;
 use stringzilla::stringzilla::{StringZillableBinary, find};
-
-static ANDROID_VERSION: LazyLock<i32> = LazyLock::new(|| {
-    let api = unsafe { android_get_device_api_level() };
-    match api {
-        36 => 16,
-        _ => 15,
-    }
-});
-
-fn get_android_version() -> i32 {
-    *ANDROID_VERSION
-}
 
 #[derive(Default)]
 pub struct TopPidInfo {
@@ -26,8 +13,8 @@ pub struct TopPidInfo {
 }
 
 impl TopPidInfo {
-    pub fn new(dump: &[u8]) -> Self {
-        let pid = if get_android_version() == 16 {
+    pub fn new(dump: &[u8], android_version: u8) -> Self {
+        let pid = if android_version == 16 {
             Self::parse_a16(dump)
         } else {
             Self::parse_a15(dump)
@@ -76,25 +63,47 @@ impl TopPidInfo {
 }
 
 pub struct TopAppUtils {
+    android_version: u8,
     dumper: Dumpsys,
     inotify: Inotify,
 }
 
 impl TopAppUtils {
-    pub fn new() -> Self {
+    fn init_dumper() -> Dumpsys {
+        loop {
+            match Dumpsys::new("window") {
+                Some(d) => break d,
+                None => sleep_secs(1),
+            }
+        }
+    }
+
+    fn init_inotify() -> Inotify {
         let inotify = Inotify::init().unwrap();
         inotify
             .watches()
             .add("/dev/input", WatchMask::ACCESS)
             .unwrap();
+        inotify
+    }
 
-        let dumper = loop {
-            match Dumpsys::new("window") {
-                Some(d) => break d,
-                None => sleep_secs(1),
-            }
-        };
-        Self { dumper, inotify }
+    fn get_android_version() -> u8 {
+        let api = unsafe { android_get_device_api_level() };
+        match api {
+            36 => 16,
+            _ => 15,
+        }
+    }
+
+    pub fn new() -> Self {
+        let dumper = Self::init_dumper();
+        let inotify = Self::init_inotify();
+        let android_version = Self::get_android_version();
+        Self {
+            android_version,
+            dumper,
+            inotify,
+        }
     }
 
     pub fn get_top_pid(&mut self) -> i32 {
@@ -120,6 +129,6 @@ impl TopAppUtils {
                 }
             }
         };
-        TopPidInfo::new(&dump)
+        TopPidInfo::new(&dump, self.android_version)
     }
 }
