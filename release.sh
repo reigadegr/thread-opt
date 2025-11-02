@@ -30,7 +30,4 @@ export RUSTFLAGS="
     -C link-args=-Wl,-x,-z,noexecstack,--pack-dyn-relocs=android+relr,-s,--strip-all,--relax
 " 
 
-export RUSTFLAGS="$RUSTFLAGS -Z time-passes"
-
 python3 ./make.py build --release --nightly
-# cargo +nightly ndk --platform 35 -t arm64-v8a build --target aarch64-linux-android -Z trim-paths -Z build-std=core,alloc,std,panic_abort --release

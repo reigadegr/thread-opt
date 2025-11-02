@@ -1,8 +1,7 @@
-use super::super::affinity_policy::{
+use crate::config::ByteArray;
+use crate::policy::affinity_policy::{
     background_policy, dualo_policy, middle_policy, mono_policy, only7_policy, top_policy,
 };
-extern crate alloc;
-use crate::config::ByteArray;
 use hashbrown::HashMap;
 
 #[cfg(debug_assertions)]

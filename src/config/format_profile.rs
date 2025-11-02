@@ -1,5 +1,3 @@
-extern crate alloc;
-use alloc::string::{String, ToString};
 use taplo::formatter;
 
 pub fn format_toml(input: &str) -> String {

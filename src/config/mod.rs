@@ -3,13 +3,11 @@ use crate::{
     policy::usage_top1::common::CmdType as Top1Enum,
     utils::node_reader::{read_file, write_to_byte},
 };
-use compact_str::CompactString;
-use serde::Deserialize;
-extern crate alloc;
-use alloc::{boxed::Box, vec::Vec};
 use anyhow::Result;
+use compact_str::CompactString;
 use format_profile::format_toml;
 use hashbrown::HashSet;
+use serde::Deserialize;
 use std::sync::LazyLock;
 
 pub type ByteArray = heapless::Vec<u8, 16>;

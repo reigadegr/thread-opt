@@ -1,8 +1,6 @@
 use super::common::{CmdType, Policy};
 use crate::{config, policy::pkg_cfg::StartArgs};
 
-extern crate alloc;
-
 pub fn start_task(
     args: &mut StartArgs<'_>,
     policy: &config::Policy,

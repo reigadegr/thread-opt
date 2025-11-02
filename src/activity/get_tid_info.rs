@@ -11,8 +11,6 @@ use libc::{DIR, opendir, readdir, rewinddir};
 use likely_stable::unlikely;
 use minstant::Instant;
 use stringzilla::sz;
-extern crate alloc;
-use alloc::vec::Vec;
 
 #[derive(Default)]
 pub struct TidInfo {

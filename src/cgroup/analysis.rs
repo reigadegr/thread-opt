@@ -6,8 +6,6 @@ use libc::{DT_DIR, opendir, readdir};
 use likely_stable::{likely, unlikely};
 use log::info;
 use stringzilla::sz;
-extern crate alloc;
-use alloc::{boxed::Box, vec::Vec};
 
 pub static TOP_GROUP: std::sync::LazyLock<Box<[u8]>> = std::sync::LazyLock::new(|| {
     let cores = analysis_cgroup_new("7");
