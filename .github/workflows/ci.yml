@@ -51,10 +51,10 @@ jobs:
           export ANDROID_NDK_HOME=$(realpath ~/ndk_temp)
           export ANDROID_NDK_ROOT=$ANDROID_NDK_HOME
           rm -rf .cargo Cargo.lock
+          mkdir -p output/artifact/release
           sh release.sh | tee output/artifact/release/build_info.txt 2>&1
       - name: Prepare artifacts
         run: |
-          mkdir -p output/artifact/release
           unzip "output/thread-opt_release_*.zip" -d output/artifact/release
       - name: Upload release version
         uses: actions/upload-artifact@v4
