@@ -55,7 +55,9 @@ jobs:
           sh release.sh | tee output/artifact/release/build_info.txt 2>&1
       - name: Prepare artifacts
         run: |
-          unzip "output/thread-opt_release_*.zip" -d output/artifact/release
+          mkdir -p output/artifact/release
+          ls -al output
+          unzip "output/thread-opt*.zip" -d output/artifact/release
       - name: Upload release version
         uses: actions/upload-artifact@v4
         with:
