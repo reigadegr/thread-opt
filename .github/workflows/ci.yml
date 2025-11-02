@@ -43,9 +43,9 @@ jobs:
       - name: Install cargo ndk
         run: cargo install cargo-ndk
       - name: Other deps
-        run: |
-          sudo apt update
-          sudo apt install gcc-multilib llvm clang make cmake
+        uses: awalsh128/cache-apt-pkgs-action@latest 
+        with: 
+          packages: gcc-multilib llvm clang make cmake python3
       - name: Build
         run: |
           export ANDROID_NDK_HOME=$(realpath ~/ndk_temp)
