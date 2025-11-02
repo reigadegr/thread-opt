@@ -6,7 +6,7 @@ use likely_stable::LikelyOption;
 use log::info;
 use ndk_sys::android_get_device_api_level;
 use std::sync::LazyLock;
-use stringzilla::{StringZilla, sz::find};
+use stringzilla::stringzilla::{StringZillableBinary, find};
 
 static ANDROID_VERSION: LazyLock<i32> = LazyLock::new(|| {
     let api = unsafe { android_get_device_api_level() };
