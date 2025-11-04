@@ -1,7 +1,6 @@
 # 单纯线程前缀的匹配，unity游戏
 [[comm_match]]
 packages = [
-    "com.miHoYo.Yuanshen",
     "com.miHoYo.GenshinImpact",
     "com.miHoYo.ys.bilibili",
     "com.miHoYo.yuanshencb",
@@ -110,7 +109,11 @@ background = []
 
 # 需要单独把负载最重的unitymain绑定到cpu7
 [[usage_top1]]
-packages = ["com.tencent.tmgp.cod", "com.tencent.tmgp.cf"]
+packages = [
+    "com.tencent.tmgp.cod",
+    "com.miHoYo.Yuanshen",
+    "com.tencent.tmgp.cf",
+]
 max_comm = ["UnityMain"]
 max_comm_core = "Only7"
 [usage_top1.policy]
