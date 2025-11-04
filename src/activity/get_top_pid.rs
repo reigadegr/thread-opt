@@ -96,9 +96,10 @@ impl TopAppUtils {
     }
 
     pub fn new() -> Self {
+        let android_version = Self::get_android_version();
         let dumper = Self::init_dumper();
         let inotify = Self::init_inotify();
-        let android_version = Self::get_android_version();
+
         Self {
             android_version,
             dumper,
