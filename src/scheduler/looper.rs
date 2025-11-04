@@ -1,7 +1,7 @@
 use crate::{
     activity::{ActivityUtils, get_tid_info::get_process_name, get_tid_info::read_task_dir},
     config::PROFILE,
-    utils::{affinity_utils::global_cpu_utils::bind_list_to_background, sleep::sleep_secs},
+    utils::affinity_utils::global_cpu_utils::bind_list_to_background,
 };
 use anyhow::Result;
 use compact_str::CompactString;
@@ -33,7 +33,6 @@ impl Looper {
 
     pub fn enter_loop(&mut self) {
         'outer: loop {
-            sleep_secs(1);
             {
                 let pid = self.activity_utils.top_app_utils.get_top_pid();
                 if self.pid == pid {

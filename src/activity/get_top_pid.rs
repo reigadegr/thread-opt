@@ -121,6 +121,7 @@ impl TopAppUtils {
                 }
             }
         }
+        sleep_secs(1);
         let dump = loop {
             match self.dumper.dump_to_byte::<65536>(&["visible-apps"]) {
                 Ok(dump) => break dump,

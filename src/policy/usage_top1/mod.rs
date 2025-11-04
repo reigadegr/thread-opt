@@ -5,7 +5,7 @@ use super::get_thread_tids;
 use crate::{
     cpu_common::process_monitor::get_top1_tid,
     policy::pkg_cfg::StartArgs,
-    utils::{guard::DirGuard, node_reader::get_proc_path, sleep::sleep_secs},
+    utils::{guard::DirGuard, node_reader::get_proc_path},
 };
 use common::{CmdType, Policy};
 use libc::{DIR, opendir};
@@ -64,7 +64,6 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         }
         let _dir_ptr_guard = DirGuard::new(self.dir_ptr);
         loop {
-            sleep_secs(1);
             let pid = self.args.activity_utils.top_app_utils.get_top_pid();
             if unlikely(pid != self.args.pid) {
                 return;

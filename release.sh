@@ -1,6 +1,5 @@
 cargo fmt
 rm -rf output
-rm -rf $(find ./target/aarch64-linux-android/release -name "*thread-opt*")
 
 export RUSTFLAGS="
     -Z mir-opt-level=2

@@ -1,1 +1,1 @@
-cargo clippy --fix --allow-dirty --allow-staged -- -W clippy::all -W clippy::pedantic -W clippy::nursery -W clippy::style -W clippy::complexity -W clippy::perf -W clippy::correctness -A clippy::restriction
+cargo ndk --platform 35 -t arm64-v8a clippy --fix --allow-dirty --allow-staged -- -W clippy::all -W clippy::pedantic -W clippy::nursery -W clippy::style -W clippy::complexity -W clippy::perf -W clippy::correctness -A clippy::restriction
