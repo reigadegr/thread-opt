@@ -3,8 +3,9 @@ use super::global_cpu_set::{
     get_only7_cpu_set, get_top_cpu_set, get_zero_six_cpu_set,
 };
 use core::mem::size_of;
-use hashbrown::HashSet;
 use libc::{cpu_set_t, sched_setaffinity};
+use rayon::prelude::*;
+use std::collections::HashSet;
 
 // 宏：生成单个线程绑定函数
 macro_rules! bind_thread {
@@ -23,9 +24,9 @@ macro_rules! bind_list {
         pub fn $func_name(tids: &[i32]) {
             unsafe {
                 let cpu_set = $get_cpu_set();
-                for &tid in tids {
+                tids.par_iter().for_each(|&tid| {
                     let _ = sched_setaffinity(tid, size_of::<cpu_set_t>(), cpu_set);
-                }
+                });
             }
         }
     };
@@ -37,9 +38,9 @@ macro_rules! bind_list_hash_set {
         pub fn $func_name(tids: &HashSet<i32>) {
             unsafe {
                 let cpu_set = $get_cpu_set();
-                for &tid in tids {
+                tids.par_iter().for_each(|&tid| {
                     let _ = sched_setaffinity(tid, size_of::<cpu_set_t>(), cpu_set);
-                }
+                });
             }
         }
     };

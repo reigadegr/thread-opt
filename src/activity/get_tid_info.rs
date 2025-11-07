@@ -6,10 +6,10 @@ use anyhow::{Result, anyhow};
 use atoi::atoi;
 use compact_str::CompactString;
 use core::time::Duration;
-use hashbrown::{HashMap, HashSet};
 use libc::{DIR, opendir, readdir, rewinddir};
 use likely_stable::unlikely;
 use minstant::Instant;
+use std::collections::{HashMap, HashSet};
 use stringzilla::sz;
 
 #[derive(Default)]

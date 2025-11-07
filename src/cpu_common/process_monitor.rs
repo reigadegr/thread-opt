@@ -1,6 +1,6 @@
 // From shadow3aaa fas-rs
 use super::usage_tracker::UsageTracker;
-use hashbrown::HashMap;
+use std::collections::HashMap;
 
 pub fn get_top1_tid(target_tids: &[i32]) -> i32 {
     let all_trackers: HashMap<i32, u64> = target_tids

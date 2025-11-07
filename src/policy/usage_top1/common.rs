@@ -3,11 +3,11 @@ use crate::policy::affinity_policy::{
 };
 
 use crate::config::ByteArray;
-use hashbrown::HashMap;
 #[cfg(debug_assertions)]
 use log::debug;
 #[cfg(debug_assertions)]
 use minstant::Instant;
+use std::collections::HashMap;
 
 // 动态生成 CmdType 枚举
 #[derive(serde::Deserialize, Eq, Hash, PartialEq)]

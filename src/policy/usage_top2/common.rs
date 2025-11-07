@@ -1,9 +1,9 @@
 use crate::policy::affinity_policy::{dualo_policy, only7_policy, tid_list_t2_policy};
-use hashbrown::HashMap;
 #[cfg(debug_assertions)]
 use log::debug;
 #[cfg(debug_assertions)]
 use minstant::Instant;
+use std::collections::HashMap;
 
 // 定义线程类型
 #[derive(serde::Deserialize)]

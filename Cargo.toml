@@ -21,11 +21,6 @@ compact_str = { version = "0.9.0", default-features = false, features = [
     "serde",
 ] }
 dumpsys-rs = { git = "https://github.com/reigadegr/dumpsys-rs" }
-hashbrown = { version = "0.16.0", default-features = false, features = [
-    "default-hasher",
-    "inline-more",
-    "serde",
-] }
 heapless = { version = "0.9", features = ["serde"] }
 inotify = { version = "0.11.0", default-features = false }
 itoa = { version = "1.0.15", features = [] }
@@ -36,6 +31,7 @@ mimalloc = { version = "0.1.48", features = ["no_thp", "override"] }
 minstant = "0.1.7"
 ndk-sys = "0.6.0"
 once_cell = { version = "1.21.3", default-features = false }
+rayon = "1.11.0"
 serde = { version = "1.0.219", default-features = false, features = ["derive"] }
 stringzilla = "4.2.3"
 taplo = { version = "0.14.0", default-features = false }

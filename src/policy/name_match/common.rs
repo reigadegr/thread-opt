@@ -2,7 +2,7 @@ use crate::config::ByteArray;
 use crate::policy::affinity_policy::{
     background_policy, dualo_policy, middle_policy, mono_policy, only7_policy, top_policy,
 };
-use hashbrown::HashMap;
+use std::collections::HashMap;
 
 #[cfg(debug_assertions)]
 use log::debug;

@@ -6,8 +6,8 @@ use crate::{
 use anyhow::Result;
 use compact_str::CompactString;
 use format_profile::format_toml;
-use hashbrown::HashSet;
 use serde::Deserialize;
+use std::collections::HashSet;
 use std::sync::LazyLock;
 
 pub type ByteArray = heapless::Vec<u8, 16>;
