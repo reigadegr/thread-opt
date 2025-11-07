@@ -7,8 +7,7 @@ use anyhow::Result;
 use compact_str::CompactString;
 use format_profile::format_toml;
 use serde::Deserialize;
-use std::collections::HashSet;
-use std::sync::LazyLock;
+use std::{collections::HashSet, sync::LazyLock};
 
 pub type ByteArray = heapless::Vec<u8, 16>;
 pub static PROFILE: LazyLock<Config> = LazyLock::new(|| {

@@ -4,12 +4,12 @@ use crate::{
         background_policy, dualo_policy, middle_policy, mono_policy, only7_policy, top_policy,
     },
 };
-use std::collections::HashMap;
-
 #[cfg(debug_assertions)]
 use log::debug;
 #[cfg(debug_assertions)]
 use minstant::Instant;
+use rayon::prelude::*;
+use std::collections::HashMap;
 
 // 定义线程类型
 enum CmdType {
@@ -71,10 +71,10 @@ impl Policy<'_> {
     pub fn execute_policy(&self, task_map: &HashMap<i32, [u8; 16]>) {
         #[cfg(debug_assertions)]
         let start = Instant::now();
-        for (&tid, comm) in task_map {
+        task_map.par_iter().for_each(|(&tid, comm)| {
             let cmd_type = self.get_cmd_type(comm);
             execute_task(&cmd_type, tid);
-        }
+        });
         #[cfg(debug_assertions)]
         {
             let end = start.elapsed();

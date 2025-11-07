@@ -8,6 +8,7 @@ use crate::{
 use log::debug;
 #[cfg(debug_assertions)]
 use minstant::Instant;
+use rayon::prelude::*;
 use std::collections::HashMap;
 
 // 动态生成 CmdType 枚举
@@ -80,10 +81,13 @@ impl Policy<'_> {
 
         execute_task(cmd_type, first);
 
-        for (&tid, comm) in task_map.iter().filter(|&(&tid, _)| tid != first) {
-            let cmd_type = self.get_cmd_type(comm);
-            execute_task(&cmd_type, tid);
-        }
+        task_map
+            .par_iter()
+            .filter(|&(&tid, _)| tid != first)
+            .for_each(|(&tid, comm)| {
+                let cmd_type = self.get_cmd_type(comm);
+                execute_task(&cmd_type, tid);
+            });
 
         #[cfg(debug_assertions)]
         {
