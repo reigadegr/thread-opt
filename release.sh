@@ -23,6 +23,9 @@ export RUSTFLAGS="
     -C llvm-args=-enable-misched
     -C llvm-args=-enable-post-misched
     -C llvm-args=-enable-dfa-jump-thread
+    -C llvm-args=-enable-ml-inliner=release
+    -C llvm-args=-ml-inliner-model-selector=arm64-mixed
+    -C llvm-args=-ml-inliner-skip-policy=if-caller-not-cold
     -C link-arg=-Wl,--no-rosegment
     -C link-arg=-Wl,--sort-section=alignment
     -C link-args=-Wl,-O2,--gc-sections,--as-needed

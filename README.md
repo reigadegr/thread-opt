@@ -87,7 +87,7 @@ yes | pacman -S llvm clang python glibc make cmake
 > 默认为nightly，default
 
 ```shell
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain nightly --profile default -y
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain nightly --profile minimal -y
 ```
 > 此时需重启终端，来设置环境变量。其他方法也可以
 
