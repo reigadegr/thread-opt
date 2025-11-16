@@ -25,9 +25,8 @@ pub fn read_to_byte<const N: usize>(file: &[u8]) -> Result<[u8; N]> {
     let file = &file[..end];
     let file = from_utf8(file)?;
 
-    let Ok(mut file) = File::open(file) else {
-        return Err(anyhow!("Cannot open file."));
-    };
+    let mut file = File::open(file).map_err(|e| anyhow!("Cannot open file: {e}"))?;
+
     let mut buffer = [0u8; N];
 
     match file.read_exact(&mut buffer) {
