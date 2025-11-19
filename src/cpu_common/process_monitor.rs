@@ -1,12 +1,17 @@
 // From shadow3aaa fas-rs
 use super::usage_tracker::UsageTracker;
+use futures::future::join_all;
 use std::collections::HashMap;
 
-pub fn get_top1_tid(target_tids: &[i32]) -> i32 {
-    let all_trackers: HashMap<i32, u64> = target_tids
+pub async fn get_top1_tid(target_tids: &[i32]) -> i32 {
+    // 把每个 tid 变成异步任务
+    let tasks: Vec<_> = target_tids
         .iter()
-        .map(|&tid| (tid, UsageTracker::new(tid).try_calculate()))
+        .map(|&tid| async move { (tid, UsageTracker::new(tid).try_calculate().await) })
         .collect();
+
+    // 并发等待全部完成
+    let all_trackers: HashMap<i32, u64> = join_all(tasks).await.into_iter().collect();
 
     find_top1_tids(&all_trackers)
 }
@@ -24,12 +29,12 @@ fn find_top1_tids(trackers: &HashMap<i32, u64>) -> i32 {
     tid1
 }
 
-pub fn get_top2_tids(target_tids: &[i32]) -> (i32, i32) {
-    let all_trackers: HashMap<i32, u64> = target_tids
+pub async fn get_top2_tids(target_tids: &[i32]) -> (i32, i32) {
+    let tasks: Vec<_> = target_tids
         .iter()
-        .map(|&tid| (tid, UsageTracker::new(tid).try_calculate()))
+        .map(|&tid| async move { (tid, UsageTracker::new(tid).try_calculate().await) })
         .collect();
-
+    let all_trackers: HashMap<i32, u64> = join_all(tasks).await.into_iter().collect();
     find_top2_tids(&all_trackers)
 }
 

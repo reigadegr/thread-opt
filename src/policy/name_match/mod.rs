@@ -21,7 +21,7 @@ struct StartTask<'b, 'a: 'b> {
 
 impl<'b, 'a: 'b> StartTask<'b, 'a> {
     fn new(start_args: &'b mut StartArgs<'a>, policy: &'b Policy) -> Self {
-        let task_dir = get_proc_path::<32, 5>(start_args.pid, b"/task");
+        let task_dir = get_proc_path::<32>(start_args.pid, b"/task");
         let dir_ptr = unsafe { opendir(task_dir.as_ptr()) };
 
         Self {
@@ -31,7 +31,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         }
     }
 
-    fn start_task(&mut self) {
+    async fn start_task(&mut self) {
         if unlikely(self.dir_ptr.is_null()) {
             return;
         }
@@ -43,11 +43,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
             }
             #[cfg(debug_assertions)]
             let start = Instant::now();
-            let task_map = self
-                .args
-                .activity_utils
-                .tid_utils
-                .get_task_map(pid, self.dir_ptr);
+            let task_map = self.args.activity_utils.tid_utils.get_task_map(pid).await;
             common::Policy::new(self.policy).execute_policy(task_map);
             #[cfg(debug_assertions)]
             {

@@ -28,7 +28,8 @@ use scheduler::Scheduler;
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
-fn main() {
-    init_misc();
-    Scheduler::new().start_run();
+#[tokio::main]
+async fn main() {
+    init_misc().await;
+    Scheduler::new().start_run().await;
 }

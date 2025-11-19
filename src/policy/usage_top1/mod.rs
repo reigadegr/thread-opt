@@ -22,7 +22,7 @@ struct StartTask<'b, 'a: 'b> {
 
 impl<'b, 'a: 'b> StartTask<'b, 'a> {
     fn new(start_args: &'b mut StartArgs<'a>, policy: &'b Policy) -> Self {
-        let task_dir = get_proc_path::<32, 5>(start_args.pid, b"/task");
+        let task_dir = get_proc_path::<32>(start_args.pid, b"/task");
         let dir_ptr = unsafe { opendir(task_dir.as_ptr()) };
         Self {
             policy,
@@ -32,33 +32,35 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
         }
     }
 
-    fn after_usage_task(&mut self, cmd_type: &CmdType) {
+    async fn after_usage_task(&mut self, cmd_type: &CmdType) {
         let task_map = self
             .args
             .activity_utils
             .tid_utils
-            .get_task_map(self.args.pid, self.dir_ptr);
+            .get_task_map(self.args.pid)
+            .await;
         Policy::new(self.policy).execute_policy(task_map, self.usage_top1, cmd_type);
     }
 
-    fn get_new_tid(&mut self, comm_prefix: &[u8]) -> i32 {
+    async fn get_new_tid(&mut self, comm_prefix: &[u8]) -> i32 {
         let task_map = self
             .args
             .activity_utils
             .tid_utils
-            .get_task_map(self.args.pid, self.dir_ptr);
+            .get_task_map(self.args.pid)
+            .await;
         let unname_tids = get_thread_tids(task_map, comm_prefix);
-        get_top1_tid(&unname_tids)
+        get_top1_tid(&unname_tids).await
     }
 
-    fn set_new_tid(&mut self, comm_prefix: &[u8]) {
-        let tid1 = self.get_new_tid(comm_prefix);
+    async fn set_new_tid(&mut self, comm_prefix: &[u8]) {
+        let tid1 = self.get_new_tid(comm_prefix).await;
         self.usage_top1 = tid1;
         #[cfg(debug_assertions)]
         debug!("计算后最终结果为:{0}\n", self.usage_top1);
     }
 
-    fn start_task(&mut self, comm_prefix: &[u8], cmd_type: &CmdType) {
+    async fn start_task(&mut self, comm_prefix: &[u8], cmd_type: &CmdType) {
         if unlikely(self.dir_ptr.is_null()) {
             return;
         }
@@ -68,8 +70,8 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
             if unlikely(pid != self.args.pid) {
                 return;
             }
-            self.set_new_tid(comm_prefix);
-            self.after_usage_task(cmd_type);
+            self.set_new_tid(comm_prefix).await;
+            self.after_usage_task(cmd_type).await;
         }
     }
 }

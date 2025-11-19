@@ -18,7 +18,7 @@ impl Scheduler {
         }
     }
 
-    pub fn start_run(&mut self) {
-        self.looper.enter_loop();
+    pub async fn start_run(&mut self) {
+        self.looper.enter_loop().await;
     }
 }

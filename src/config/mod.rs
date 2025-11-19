@@ -12,10 +12,19 @@ use std::{collections::HashSet, sync::LazyLock};
 pub type ByteArray = heapless::Vec<u8, 16>;
 pub static PROFILE: LazyLock<Config> = LazyLock::new(|| {
     let profile_path = b"/data/adb/modules/thread_opt/thread_opt.toml\0";
-    let profile = read_file::<65536>(profile_path).unwrap();
+    let profile = tokio::task::block_in_place(|| {
+        tokio::runtime::Handle::current().block_on(read_file::<65536>(profile_path))
+    })
+    .unwrap();
+
     let format_rs = format_toml(&profile);
     let profile: Config = toml::from_str(&profile).unwrap();
-    write_to_byte(profile_path, format_rs.as_bytes()).unwrap();
+
+    let _ = tokio::task::block_in_place(|| {
+        tokio::runtime::Handle::current()
+            .block_on(write_to_byte(profile_path, format_rs.as_bytes()))
+    });
+
     profile
 });
 

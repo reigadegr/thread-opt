@@ -20,7 +20,7 @@ impl Looper {
         let _ = self.game_exit();
     }
 
-    pub fn policy_name_match(&mut self, i: &NameMatch) -> bool {
+    pub async fn policy_name_match(&mut self, i: &NameMatch) -> bool {
         for package in &i.packages {
             if package == self.global_package {
                 info!("Detected target App: {}", self.global_package);

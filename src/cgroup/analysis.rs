@@ -1,10 +1,11 @@
 use super::group_info::{get_background_group, get_top_group};
-use crate::utils::{guard::DirGuard, node_reader::read_file};
+use crate::utils::guard::DirGuard;
 use anyhow::{Result, anyhow};
 use compact_str::CompactString;
 use libc::{DT_DIR, opendir, readdir};
 use likely_stable::{likely, unlikely};
 use log::info;
+use std::fs::read_to_string;
 use stringzilla::sz;
 
 pub static TOP_GROUP: std::sync::LazyLock<Box<[u8]>> = std::sync::LazyLock::new(|| {
@@ -114,8 +115,12 @@ pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
                 real_path[..=38].copy_from_slice(&entry[..=38]);
                 real_path[39] = b'/';
                 real_path[40..52].copy_from_slice(&b"related_cpus"[..]);
-                let content =
-                    read_file::<16>(&real_path).unwrap_or_else(|_| CompactString::new("8"));
+
+                let end = sz::find(real_path, b"\0").unwrap_or(64);
+                let real_path = &real_path[..end];
+                let content = std::str::from_utf8(&real_path).unwrap();
+                info!("路劲: {content}");
+                let content = read_to_string(content).unwrap();
                 // 解析文件内容
                 let nums: Vec<&str> = content.split_whitespace().collect();
                 let rs = init_group(target_core, &nums);

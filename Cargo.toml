@@ -16,11 +16,13 @@ path = "src/main.rs"
 
 [dependencies]
 anyhow = { version = "1.0.100", default-features = false }
+async-lazy = "0.1.2"
 atoi = { version = "2.0.0", default-features = false }
 compact_str = { version = "0.9.0", default-features = false, features = [
     "serde",
 ] }
 dumpsys-rs = { git = "https://github.com/reigadegr/dumpsys-rs" }
+futures = "0.3.31"
 heapless = { version = "0.9", features = ["serde"] }
 inotify = { version = "0.11.0", default-features = false }
 itoa = { version = "1.0.15", features = [] }
@@ -36,6 +38,7 @@ serde = { version = "1.0.228", default-features = false, features = ["derive"] }
 stringzilla = "4.2.3"
 taplo = { version = "0.14.0", default-features = false }
 tklog = "0.3.0"
+tokio = { version = "1.48.0", features = ["full"] }
 toml = { version = "0.9.8", default-features = false, features = [
     "parse",
     "serde",

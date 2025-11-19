@@ -1,70 +1,68 @@
-use super::guard::FileGuard;
 use anyhow::{Result, anyhow};
 use compact_str::CompactString;
 use core::ptr::copy_nonoverlapping;
 use itoa::Buffer;
-use libc::{O_CREAT, O_TRUNC, O_WRONLY, c_void, chmod, chown, open, write};
-use likely_stable::unlikely;
+use libc::chmod;
 use std::{
-    fs::File,
+    // fs::File,
     io::{ErrorKind, Read},
     str::from_utf8,
 };
 use stringzilla::sz;
+use tokio::{
+    fs::{File, OpenOptions},
+    io::{AsyncReadExt, AsyncWriteExt},
+};
 
-pub fn read_file<const N: usize>(file: &[u8]) -> Result<CompactString> {
-    let buffer = read_to_byte::<N>(file)?;
+pub async fn lock_value(path: &[u8], value: &[u8]) {
+    unsafe {
+        let _ = chmod(path.as_ptr(), 0o666);
+        let _ = write_to_byte(path, value).await;
+        let _ = chmod(path.as_ptr(), 0o444);
+    }
+}
+
+pub async fn read_file<const N: usize>(file: &[u8]) -> Result<CompactString> {
+    let buffer = read_to_byte::<N>(file).await?;
     let pos = sz::find(buffer, b"\0");
     let buffer = pos.map_or(&buffer[..], |pos| &buffer[..pos]);
     let buffer = CompactString::from_utf8(buffer)?;
     Ok(buffer)
 }
 
-pub fn read_to_byte<const N: usize>(file: &[u8]) -> Result<[u8; N]> {
+pub async fn read_to_byte<const N: usize>(file: &[u8]) -> Result<[u8; N]> {
     let end = sz::find(file, b"\0").unwrap_or(N);
     let file = &file[..end];
     let file = from_utf8(file)?;
 
-    let mut file = File::open(file).map_err(|e| anyhow!("Cannot open file: {e}"))?;
+    let mut file = File::open(file)
+        .await
+        .map_err(|e| anyhow!("Cannot open file: {e}"))?;
 
     let mut buffer = [0u8; N];
 
-    match file.read_exact(&mut buffer) {
-        Ok(()) => Ok(buffer),
+    match file.read_exact(&mut buffer).await {
+        Ok(_) => Ok(buffer),
         Err(e) if e.kind() == ErrorKind::UnexpectedEof => Ok(buffer),
         Err(e) => Err(e.into()),
     }
 }
 
-pub fn write_to_byte(file: &[u8], msg: &[u8]) -> Result<()> {
-    unsafe {
-        let fd = open(file.as_ptr(), O_WRONLY | O_CREAT | O_TRUNC, 0o666);
-        if unlikely(fd == -1) {
-            return Err(anyhow!("Cannot open file."));
-        }
-        let _fd_guard = FileGuard::new(fd);
-        let bytes_write = write(fd, msg.as_ptr().cast::<c_void>(), msg.len());
+pub async fn write_to_byte(file: &[u8], msg: &[u8]) -> Result<()> {
+    let end = sz::find(file, b"\0").unwrap_or(file.len());
+    let file = &file[..end];
+    let file = from_utf8(file)?;
+    let mut file = OpenOptions::new()
+        .write(true)
+        .truncate(true)
+        .open(file)
+        .await?;
 
-        if unlikely(bytes_write == -1) {
-            return Err(anyhow!("Cannot write file."));
-        }
-    }
+    let _ = file.write_all(msg).await;
     Ok(())
 }
 
-pub fn lock_val(file: &[u8], msg: &[u8]) -> Result<()> {
-    unsafe {
-        chown(file.as_ptr(), 0, 0);
-        chmod(file.as_ptr(), 0o644);
-        if write_to_byte(file, msg).is_err() {
-            return Err(anyhow!("Cannot write file."));
-        }
-        chmod(file.as_ptr(), 0o444);
-    }
-    Ok(())
-}
-
-pub fn get_proc_path<const N: usize, const L: usize>(id: i32, file: &[u8]) -> [u8; N] {
+pub fn get_proc_path<const N: usize>(id: i32, file: &[u8]) -> [u8; N] {
     let mut buffer = [0u8; N];
     buffer[0..6].copy_from_slice(b"/proc/");
 
@@ -75,7 +73,11 @@ pub fn get_proc_path<const N: usize, const L: usize>(id: i32, file: &[u8]) -> [u
 
     unsafe {
         copy_nonoverlapping(id.as_ptr(), buffer.as_mut_ptr().add(6), id_length);
-        copy_nonoverlapping(file.as_ptr(), buffer.as_mut_ptr().add(6 + id_length), L);
+        copy_nonoverlapping(
+            file.as_ptr(),
+            buffer.as_mut_ptr().add(6 + id_length),
+            file.len(),
+        );
     }
     buffer
 }

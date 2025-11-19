@@ -12,14 +12,14 @@ impl UsageTracker {
         Self { tid }
     }
 
-    pub fn try_calculate(&self) -> u64 {
-        get_thread_cpu_time(self.tid)
+    pub async fn try_calculate(&self) -> u64 {
+        get_thread_cpu_time(self.tid).await
     }
 }
 
-fn get_thread_cpu_time(tid: i32) -> u64 {
-    let stat_path = get_proc_path::<32, 10>(tid, b"/schedstat");
-    let buffer = read_to_byte::<32>(&stat_path).unwrap_or([0u8; 32]);
+async fn get_thread_cpu_time(tid: i32) -> u64 {
+    let stat_path = get_proc_path::<32>(tid, b"/schedstat");
+    let buffer = read_to_byte::<32>(&stat_path).await.unwrap_or([0u8; 32]);
 
     let pos = sz::find(buffer, b" ");
     let buffer = pos.map_or(&buffer[..], |pos| &buffer[..pos]);

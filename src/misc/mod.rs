@@ -6,7 +6,7 @@ use likely_stable::unlikely;
 use log::info;
 use logger::{init_log, log_metainfo};
 
-pub fn init_misc() {
+pub async fn init_misc() {
     working_in_background();
     init_log();
     set_main_thread_name(b"AffinitySetter\0");
