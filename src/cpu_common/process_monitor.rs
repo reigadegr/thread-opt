@@ -1,27 +1,14 @@
 // From shadow3aaa fas-rs
 use super::usage_tracker::UsageTracker;
+use rayon::prelude::*;
 use std::collections::HashMap;
 
 pub fn get_top1_tid(target_tids: &[i32]) -> i32 {
-    let all_trackers: HashMap<i32, u64> = target_tids
-        .iter()
+    target_tids
+        .par_iter() // 并行采样
         .map(|&tid| (tid, UsageTracker::new(tid).try_calculate()))
-        .collect();
-
-    find_top1_tids(&all_trackers)
-}
-
-fn find_top1_tids(trackers: &HashMap<i32, u64>) -> i32 {
-    let mut tid1 = -1;
-    let mut usage1: u64 = 0;
-
-    for (&tid, &cputime) in trackers {
-        if cputime > usage1 {
-            usage1 = cputime;
-            tid1 = tid;
-        }
-    }
-    tid1
+        .reduce_with(|(t1, u1), (t2, u2)| if u1 > u2 { (t1, u1) } else { (t2, u2) })
+        .map_or(-1, |(tid, _)| tid)
 }
 
 pub fn get_top2_tids(target_tids: &[i32]) -> (i32, i32) {
