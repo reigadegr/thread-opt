@@ -63,7 +63,7 @@ impl TidUtils {
         }
         self.tid_info.task_map.clear();
         for tid in tid_list {
-            let comm_path = get_proc_path::<32, 5>(tid, b"/comm");
+            let comm_path = get_proc_path::<32>(tid, b"/comm");
             let Ok(comm) = read_to_byte::<16>(&comm_path) else {
                 continue;
             };
@@ -79,7 +79,7 @@ impl TidUtils {
 }
 
 pub fn read_task_dir(pid: i32) -> Result<HashSet<i32>> {
-    let task_dir = get_proc_path::<32, 5>(pid, b"/task");
+    let task_dir = get_proc_path::<32>(pid, b"/task");
 
     let dir = unsafe { opendir(task_dir.as_ptr()) };
     if unlikely(dir.is_null()) {
@@ -109,7 +109,7 @@ pub fn read_task_dir(pid: i32) -> Result<HashSet<i32>> {
 }
 
 pub fn get_process_name(pid: i32) -> Result<CompactString> {
-    let cmdline = get_proc_path::<32, 8>(pid, b"/cmdline");
+    let cmdline = get_proc_path::<32>(pid, b"/cmdline");
 
     let buffer = read_to_byte::<128>(&cmdline)?;
 

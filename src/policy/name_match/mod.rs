@@ -16,7 +16,7 @@ struct StartTask<'b, 'a: 'b> {
 
 impl<'b, 'a: 'b> StartTask<'b, 'a> {
     fn new(start_args: &'b mut StartArgs<'a>, policy: &'b Policy) -> Self {
-        let _task_dir = get_proc_path::<32, 5>(start_args.pid, b"/task");
+        let _task_dir = get_proc_path::<32>(start_args.pid, b"/task");
 
         Self {
             policy,

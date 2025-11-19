@@ -64,7 +64,7 @@ pub fn lock_val(file: &[u8], msg: &[u8]) -> Result<()> {
     Ok(())
 }
 
-pub fn get_proc_path<const N: usize, const L: usize>(id: i32, file: &[u8]) -> [u8; N] {
+pub fn get_proc_path<const N: usize>(id: i32, file: &[u8]) -> [u8; N] {
     let mut buffer = [0u8; N];
     buffer[0..6].copy_from_slice(b"/proc/");
 
@@ -75,7 +75,11 @@ pub fn get_proc_path<const N: usize, const L: usize>(id: i32, file: &[u8]) -> [u
 
     unsafe {
         copy_nonoverlapping(id.as_ptr(), buffer.as_mut_ptr().add(6), id_length);
-        copy_nonoverlapping(file.as_ptr(), buffer.as_mut_ptr().add(6 + id_length), L);
+        copy_nonoverlapping(
+            file.as_ptr(),
+            buffer.as_mut_ptr().add(6 + id_length),
+            file.len(),
+        );
     }
     buffer
 }
