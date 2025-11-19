@@ -4,28 +4,20 @@ use super::get_thread_tids;
 use crate::{
     cpu_common::process_monitor::{get_top1_tid, get_top2_tids},
     policy::pkg_cfg::StartArgs,
-    utils::{guard::DirGuard, node_reader::get_proc_path},
 };
 
 use common::execute_policy;
-use libc::{DIR, opendir};
 use likely_stable::unlikely;
 #[cfg(debug_assertions)]
 use log::debug;
 
 struct StartTask<'b, 'a: 'b> {
     args: &'b mut StartArgs<'a>,
-    dir_ptr: *mut DIR,
 }
 
 impl<'b, 'a: 'b> StartTask<'b, 'a> {
-    fn new(start_args: &'b mut StartArgs<'a>) -> Self {
-        let task_dir = get_proc_path::<32, 5>(start_args.pid, b"/task");
-        let dir_ptr = unsafe { opendir(task_dir.as_ptr()) };
-        Self {
-            args: start_args,
-            dir_ptr,
-        }
+    const fn new(start_args: &'b mut StartArgs<'a>) -> Self {
+        Self { args: start_args }
     }
 
     fn bind_tids(&mut self, tid1: i32, tid2: i32) {
@@ -33,7 +25,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
             .args
             .activity_utils
             .tid_utils
-            .get_task_map(self.args.pid, self.dir_ptr);
+            .get_task_map(self.args.pid);
         execute_policy(task_map, tid1, tid2);
     }
 
@@ -42,7 +34,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
             .args
             .activity_utils
             .tid_utils
-            .get_task_map(self.args.pid, self.dir_ptr);
+            .get_task_map(self.args.pid);
 
         let prefix_tids = get_thread_tids(task_map, comm_prefix1);
 
@@ -65,10 +57,6 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
     }
 
     fn start_task(&mut self, comm_prefix1: &[u8], comm_prefix2: Option<&[u8]>) {
-        if unlikely(self.dir_ptr.is_null()) {
-            return;
-        }
-        let _dir_ptr_guard = DirGuard::new(self.dir_ptr);
         loop {
             let pid = self.args.activity_utils.top_app_utils.get_top_pid();
             if unlikely(pid != self.args.pid) {
