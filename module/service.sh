@@ -26,7 +26,7 @@ if [ ! -L $MODDIR/thread_opt.toml ]; then
     rm $MODDIR/thread_opt.toml
     ln -s "$profile_dir/thread_opt.toml" $MODDIR/thread_opt.toml
 fi
-stop gameopt_hal_service-1-0 vendor.urcc-hal-aidl
+stop vendor.urcc-hal-aidl
 killall -9 vendor.oplus.hardware.urcc-service vendor.oplus.hardware.gameopt-service oiface horae
 mask_val_in_path "0" "/sys/module/cpufreq_bouncing/parameters/" "*"
 reset_freq
