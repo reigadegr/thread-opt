@@ -22,7 +22,7 @@ pub fn read_file<const N: usize>(file: &[u8]) -> Result<CompactString> {
 }
 
 pub fn read_to_byte<const N: usize>(file: &[u8]) -> Result<[u8; N]> {
-    let end = sz::find(file, b"\0").unwrap_or(N);
+    let end = sz::find(file, b"\0").unwrap_or(file.len());
     let file = &file[..end];
     let file = OsStr::from_bytes(file);
 
