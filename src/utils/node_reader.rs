@@ -6,9 +6,10 @@ use itoa::Buffer;
 use libc::{O_CREAT, O_TRUNC, O_WRONLY, c_void, chmod, chown, open, write};
 use likely_stable::unlikely;
 use std::{
+    ffi::OsStr,
     fs::File,
     io::{ErrorKind, Read},
-    str::from_utf8,
+    os::unix::ffi::OsStrExt,
 };
 use stringzilla::sz;
 
@@ -23,7 +24,7 @@ pub fn read_file<const N: usize>(file: &[u8]) -> Result<CompactString> {
 pub fn read_to_byte<const N: usize>(file: &[u8]) -> Result<[u8; N]> {
     let end = sz::find(file, b"\0").unwrap_or(N);
     let file = &file[..end];
-    let file = from_utf8(file)?;
+    let file = OsStr::from_bytes(file);
 
     let mut file = File::open(file).map_err(|e| anyhow!("Cannot open file: {e}"))?;
 
