@@ -1,7 +1,6 @@
 use super::guard::FileGuard;
 use anyhow::{Result, anyhow};
 use compact_str::CompactString;
-use core::ptr::copy_nonoverlapping;
 use itoa::Buffer;
 use libc::{O_CREAT, O_TRUNC, O_WRONLY, c_void, chmod, chown, open, write};
 use likely_stable::unlikely;
@@ -67,20 +66,19 @@ pub fn lock_val(file: &[u8], msg: &[u8]) -> Result<()> {
 
 pub fn get_proc_path<const N: usize>(id: i32, file: &[u8]) -> [u8; N] {
     let mut buffer = [0u8; N];
-    buffer[0..6].copy_from_slice(b"/proc/");
+    let prefix = b"/proc/";
+    buffer[..prefix.len()].copy_from_slice(prefix);
 
     let mut itoa_buf = Buffer::new();
     let id = itoa_buf.format(id).as_bytes();
 
     let id_length = id.len();
 
-    unsafe {
-        copy_nonoverlapping(id.as_ptr(), buffer.as_mut_ptr().add(6), id_length);
-        copy_nonoverlapping(
-            file.as_ptr(),
-            buffer.as_mut_ptr().add(6 + id_length),
-            file.len(),
-        );
-    }
+    let start = prefix.len();
+    buffer[start..start + id_length].copy_from_slice(id);
+
+    let suffix_start = start + id_length;
+    buffer[suffix_start..suffix_start + file.len()].copy_from_slice(file);
+
     buffer
 }
