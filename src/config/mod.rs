@@ -9,15 +9,22 @@ use format_profile::format_toml;
 use serde::Deserialize;
 use std::{collections::HashSet, sync::LazyLock};
 
-pub type ByteArray = heapless::Vec<u8, 16>;
-pub static PROFILE: LazyLock<Config> = LazyLock::new(|| {
-    let profile_path = b"/data/adb/modules/thread_opt/thread_opt.toml\0";
-    let profile = read_file::<65536>(profile_path).unwrap();
-    let format_rs = format_toml(&profile);
-    let profile: Config = toml::from_str(&profile).unwrap();
-    write_to_byte(profile_path, format_rs.as_bytes()).unwrap();
-    profile
-});
+const MAX_COMM_SIZE: usize = 16;
+const CONFIG_PATH: &[u8] = b"/data/adb/modules/thread_opt/thread_opt.toml\0";
+
+pub type ByteArray = heapless::Vec<u8, MAX_COMM_SIZE>;
+
+pub static PROFILE: LazyLock<Config> = LazyLock::new(load_profile);
+
+fn load_profile() -> Config {
+    let raw_content = read_file::<65536>(CONFIG_PATH).expect("Failed to read thread_opt.toml");
+
+    let formatted_content = format_toml(&raw_content);
+    write_to_byte(CONFIG_PATH, formatted_content.as_bytes())
+        .expect("Failed to write formatted config back");
+
+    toml::from_str(&raw_content).expect("Failed to parse thread_opt.toml. Please check syntax.")
+}
 
 #[derive(Deserialize)]
 pub struct Config {
@@ -35,7 +42,7 @@ pub struct NameMatch {
 #[derive(Deserialize, Eq, Hash, PartialEq)]
 pub struct UsageTop1 {
     pub packages: Box<[CompactString]>,
-    #[serde(deserialize_with = "deserialize_byte_array_one")]
+    #[serde(deserialize_with = "deserialize_single")]
     pub max_comm: ByteArray,
     pub max_comm_core: Top1Enum,
     pub policy: Policy,
@@ -44,76 +51,67 @@ pub struct UsageTop1 {
 #[derive(Deserialize, Eq, Hash, PartialEq)]
 pub struct UsageTop2 {
     pub packages: Box<[CompactString]>,
-    #[serde(deserialize_with = "deserialize_byte_array_one")]
+    #[serde(deserialize_with = "deserialize_single")]
     pub max_comm: ByteArray,
-    #[serde(default, deserialize_with = "deserialize_byte_array_one_op")]
+    #[serde(default, deserialize_with = "deserialize_optional")]
     pub second_comm: Option<ByteArray>,
 }
 
 #[derive(Deserialize, Eq, Hash, PartialEq)]
 pub struct Policy {
-    #[serde(deserialize_with = "deserialize_byte_array")]
+    #[serde(deserialize_with = "deserialize_vec")]
     pub top: Box<[ByteArray]>,
-    #[serde(deserialize_with = "deserialize_byte_array")]
+    #[serde(deserialize_with = "deserialize_vec")]
     pub dualo: Box<[ByteArray]>,
-    #[serde(deserialize_with = "deserialize_byte_array")]
+    #[serde(deserialize_with = "deserialize_vec")]
     pub only7: Box<[ByteArray]>,
-    #[serde(deserialize_with = "deserialize_byte_array")]
+    #[serde(deserialize_with = "deserialize_vec")]
     pub middle: Box<[ByteArray]>,
-    #[serde(deserialize_with = "deserialize_byte_array")]
+    #[serde(deserialize_with = "deserialize_vec")]
     pub mono: Box<[ByteArray]>,
-    #[serde(deserialize_with = "deserialize_byte_array")]
+    #[serde(deserialize_with = "deserialize_vec")]
     pub background: Box<[ByteArray]>,
 }
 
-fn deserialize_byte_array<'de, D>(deserializer: D) -> Result<Box<[ByteArray]>, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    let strings: Box<[CompactString]> = Vec::deserialize(deserializer)?.into();
-    let mut result = Vec::new();
-    for s in strings {
-        let mut bytes = s.as_bytes();
-        if bytes.len() > 16 {
-            bytes = &bytes[..16];
-        }
-        let vec = heapless::Vec::from_slice(bytes)
-            .map_err(|_| serde::de::Error::custom("String exceeds capacity"))?;
-        result.push(vec);
-    }
-    Ok(result.into())
+fn str_to_byte_array(s: &str) -> Result<ByteArray, String> {
+    let bytes = s.as_bytes();
+    let slice = if bytes.len() > MAX_COMM_SIZE {
+        &bytes[..MAX_COMM_SIZE]
+    } else {
+        bytes
+    };
+
+    heapless::Vec::from_slice(slice).map_err(|e| e.to_string())
 }
 
-fn deserialize_byte_array_one<'de, D>(deserializer: D) -> Result<ByteArray, D::Error>
+fn deserialize_vec<'de, D>(deserializer: D) -> Result<Box<[ByteArray]>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
     let strings: Box<[CompactString]> = Vec::deserialize(deserializer)?.into();
-    if let Some(s) = strings.into_iter().next() {
-        let mut bytes = s.as_bytes();
-        if bytes.len() > 16 {
-            bytes = &bytes[..16];
-        }
-        let vec = heapless::Vec::from_slice(bytes)
-            .map_err(|_| serde::de::Error::custom("String exceeds capacity"))?;
-        return Ok(vec);
-    }
-    Ok(heapless::Vec::new())
+    strings
+        .iter()
+        .map(|s| str_to_byte_array(s).map_err(serde::de::Error::custom))
+        .collect::<Result<Vec<_>, _>>()
+        .map(std::vec::Vec::into_boxed_slice)
 }
 
-fn deserialize_byte_array_one_op<'de, D>(deserializer: D) -> Result<Option<ByteArray>, D::Error>
+fn deserialize_optional<'de, D>(deserializer: D) -> Result<Option<ByteArray>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
     let strings: Box<[CompactString]> = Vec::deserialize(deserializer)?.into();
-    if let Some(s) = strings.into_iter().next() {
-        let mut bytes = s.as_bytes();
-        if bytes.len() > 16 {
-            bytes = &bytes[..16];
-        }
-        let vec = heapless::Vec::from_slice(bytes)
-            .map_err(|_| serde::de::Error::custom("String exceeds capacity"))?;
-        return Ok(Some(vec));
+    match strings.first() {
+        Some(s) => Ok(Some(
+            str_to_byte_array(s).map_err(serde::de::Error::custom)?,
+        )),
+        None => Ok(None),
     }
-    Ok(None)
+}
+
+fn deserialize_single<'de, D>(deserializer: D) -> Result<ByteArray, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    deserialize_optional(deserializer).map(std::option::Option::unwrap_or_default)
 }
