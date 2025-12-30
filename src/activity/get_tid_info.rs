@@ -10,7 +10,10 @@ use libc::{opendir, readdir};
 use likely_stable::unlikely;
 use minstant::Instant;
 use std::{
-    collections::{HashMap, HashSet, hash_map::Entry::Vacant},
+    collections::{
+        HashMap, HashSet,
+        hash_map::Entry::{Occupied, Vacant},
+    },
     ffi::OsStr,
     fs::File,
     io::{ErrorKind, Read, Seek, SeekFrom},
@@ -31,15 +34,18 @@ impl FileCache {
     }
 
     fn read_with_cache<const N: usize>(&mut self, tid: i32) -> Result<[u8; N]> {
-        if let Vacant(e) = self.files.entry(tid) {
-            let path = get_proc_path::<32>(tid, b"/comm");
-            let end = sz::find(path, b"\0").unwrap_or(path.len());
-            let path_str = &path[..end];
-            let path_str = OsStr::from_bytes(path_str);
-            let file = File::open(path_str).map_err(|e| anyhow!("Cannot open file: {e}"))?;
-            e.insert(file);
-        }
-        let file = self.files.get_mut(&tid).unwrap();
+        let file = match self.files.entry(tid) {
+            Vacant(e) => {
+                let path = get_proc_path::<32>(tid, b"/comm");
+                let end = sz::find(path, b"\0").unwrap_or(path.len());
+                let path_str = &path[..end];
+                let path_str = OsStr::from_bytes(path_str);
+                let file = File::open(path_str).map_err(|e| anyhow!("Cannot open file: {e}"))?;
+                e.insert(file)
+            }
+            Occupied(e) => e.into_mut(),
+        };
+
         if let Err(e) = file.seek(SeekFrom::Start(0)) {
             self.files.remove(&tid);
             return Err(e.into());
