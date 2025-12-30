@@ -9,8 +9,50 @@ use core::time::Duration;
 use libc::{opendir, readdir};
 use likely_stable::unlikely;
 use minstant::Instant;
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet, hash_map::Entry::Vacant},
+    ffi::OsStr,
+    fs::File,
+    io::{ErrorKind, Read, Seek, SeekFrom},
+    os::unix::ffi::OsStrExt,
+};
 use stringzilla::sz;
+
+#[derive(Debug)]
+pub struct FileCache {
+    files: HashMap<[u8; 32], File>,
+}
+
+impl FileCache {
+    fn new() -> Self {
+        Self {
+            files: HashMap::new(),
+        }
+    }
+
+    fn read_with_cache<const N: usize>(&mut self, path: [u8; 32]) -> Result<[u8; N]> {
+        if let Vacant(e) = self.files.entry(path) {
+            let end = sz::find(path, b"\0").unwrap_or(path.len());
+            let path_str = &path[..end];
+            let path_str = OsStr::from_bytes(path_str);
+            let file = File::open(path_str).map_err(|e| anyhow!("Cannot open file: {e}"))?;
+            e.insert(file);
+        }
+        let file = self.files.get_mut(&path).unwrap();
+        file.seek(SeekFrom::Start(0))?;
+
+        let mut buffer = [0u8; N];
+        match file.read_exact(&mut buffer) {
+            Ok(()) => Ok(buffer),
+            Err(e) if e.kind() == ErrorKind::UnexpectedEof => Ok(buffer),
+            Err(e) => Err(e.into()),
+        }
+    }
+
+    pub fn clear(&mut self) {
+        self.files.clear();
+    }
+}
 
 #[derive(Default)]
 pub struct TidInfo {
@@ -27,6 +69,7 @@ impl TidInfo {
 pub struct TidUtils {
     pub tid_info: TidInfo,
     last_refresh_task_map: Instant,
+    pub file_cache: FileCache,
 }
 
 impl TidUtils {
@@ -34,6 +77,7 @@ impl TidUtils {
         Self {
             tid_info: TidInfo::new(),
             last_refresh_task_map: Instant::now(),
+            file_cache: FileCache::new(),
         }
     }
 
@@ -64,7 +108,7 @@ impl TidUtils {
         self.tid_info.task_map.clear();
         for tid in tid_list {
             let comm_path = get_proc_path::<32>(tid, b"/comm");
-            let Ok(comm) = read_to_byte::<16>(&comm_path) else {
+            let Ok(comm) = self.file_cache.read_with_cache::<16>(comm_path) else {
                 continue;
             };
             self.tid_info.task_map.insert(tid, comm);

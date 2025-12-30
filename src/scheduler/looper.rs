@@ -28,6 +28,7 @@ impl Looper {
         bind_list_to_background(&tid_list);
         self.pid = -1;
         self.activity_utils.tid_utils.tid_info.task_map.clear();
+        self.activity_utils.tid_utils.file_cache.clear();
         Ok(())
     }
 
