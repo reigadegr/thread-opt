@@ -16,6 +16,7 @@ path = "src/main.rs"
 
 [dependencies]
 anyhow = { version = "1.0.100", default-features = false }
+arc-swap = "1.8.0"
 atoi = { version = "2.0.0", default-features = false }
 compact_str = { version = "0.9.0", default-features = false, features = [
     "serde",

@@ -4,13 +4,12 @@ use crate::{
     utils::node_reader::{read_file, write_to_byte},
 };
 use anyhow::Result;
+use arc_swap::{ArcSwap, Guard};
 use compact_str::CompactString;
 use format_profile::format_toml;
-use serde::Deserialize;
-use std::{
-    collections::HashSet,
-    sync::atomic::{AtomicPtr, Ordering},
-};
+use log::{error, info};
+use serde::{Deserialize, de::Error};
+use std::{collections::HashSet, sync::Arc};
 
 const MAX_COMM_SIZE: usize = 16;
 const CONFIG_PATH: &[u8] = b"/data/adb/modules/thread_opt/thread_opt.toml\0";
@@ -18,7 +17,7 @@ const CONFIG_PATH: &[u8] = b"/data/adb/modules/thread_opt/thread_opt.toml\0";
 pub type ByteArray = heapless::Vec<u8, MAX_COMM_SIZE>;
 
 pub struct AtomicConfig {
-    ptr: AtomicPtr<Config>,
+    inner: ArcSwap<Config>,
 }
 
 impl AtomicConfig {
@@ -34,12 +33,12 @@ impl AtomicConfig {
             .expect("Failed to parse thread_opt.toml. Please check syntax.");
 
         Self {
-            ptr: AtomicPtr::new(Box::into_raw(Box::new(config))),
+            inner: ArcSwap::from(Arc::new(config)),
         }
     }
 
-    pub fn get(&self) -> &Config {
-        unsafe { &*self.ptr.load(Ordering::Acquire) }
+    pub fn get(&self) -> Guard<Arc<Config>> {
+        self.inner.load()
     }
 
     pub fn reload(&self) {
@@ -47,23 +46,17 @@ impl AtomicConfig {
             let raw_content = read_file::<65536>(CONFIG_PATH)
                 .expect("Failed to read thread_opt.toml during reload");
 
-            // 热更新时不回写，防止触发无限循环 (读->写->触发inotify->读...)
             let new_config = toml::from_str(&raw_content)
                 .expect("Failed to parse thread_opt.toml during reload");
 
-            Box::new(new_config)
+            Arc::new(new_config)
         }) {
-            Ok(new_config_box) => {
-                // 原子替换指针
-                let old_ptr = self
-                    .ptr
-                    .swap(Box::into_raw(new_config_box), Ordering::Release);
-
-                let _ = unsafe { Box::from_raw(old_ptr) };
-                log::info!("Config profile reloaded successfully via atomic swap.");
+            Ok(new_config_arc) => {
+                self.inner.store(new_config_arc);
+                info!("Config profile reloaded successfully via ArcSwap.");
             }
             Err(_) => {
-                log::error!("Failed to reload config: Parsing panicked.");
+                error!("Failed to reload config: Parsing panicked.");
             }
         }
     }
@@ -134,9 +127,9 @@ where
     let strings: Box<[CompactString]> = Vec::deserialize(deserializer)?.into();
     strings
         .iter()
-        .map(|s| str_to_byte_array(s).map_err(serde::de::Error::custom))
+        .map(|s| str_to_byte_array(s).map_err(Error::custom))
         .collect::<Result<Vec<_>, _>>()
-        .map(std::vec::Vec::into_boxed_slice)
+        .map(Vec::into_boxed_slice)
 }
 
 fn deserialize_optional<'de, D>(deserializer: D) -> Result<Option<ByteArray>, D::Error>
@@ -145,9 +138,7 @@ where
 {
     let strings: Box<[CompactString]> = Vec::deserialize(deserializer)?.into();
     match strings.first() {
-        Some(s) => Ok(Some(
-            str_to_byte_array(s).map_err(serde::de::Error::custom)?,
-        )),
+        Some(s) => Ok(Some(str_to_byte_array(s).map_err(Error::custom)?)),
         None => Ok(None),
     }
 }
@@ -156,5 +147,5 @@ fn deserialize_single<'de, D>(deserializer: D) -> Result<ByteArray, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
-    deserialize_optional(deserializer).map(std::option::Option::unwrap_or_default)
+    deserialize_optional(deserializer).map(Option::unwrap_or_default)
 }
