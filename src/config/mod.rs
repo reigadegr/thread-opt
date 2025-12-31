@@ -7,23 +7,66 @@ use anyhow::Result;
 use compact_str::CompactString;
 use format_profile::format_toml;
 use serde::Deserialize;
-use std::{collections::HashSet, sync::LazyLock};
+use std::{
+    collections::HashSet,
+    sync::atomic::{AtomicPtr, Ordering},
+};
 
 const MAX_COMM_SIZE: usize = 16;
 const CONFIG_PATH: &[u8] = b"/data/adb/modules/thread_opt/thread_opt.toml\0";
 
 pub type ByteArray = heapless::Vec<u8, MAX_COMM_SIZE>;
 
-pub static PROFILE: LazyLock<Config> = LazyLock::new(load_profile);
+pub struct AtomicConfig {
+    ptr: AtomicPtr<Config>,
+}
 
-fn load_profile() -> Config {
-    let raw_content = read_file::<65536>(CONFIG_PATH).expect("Failed to read thread_opt.toml");
+impl AtomicConfig {
+    pub fn init() -> Self {
+        let raw_content = read_file::<65536>(CONFIG_PATH).expect("Failed to read thread_opt.toml");
 
-    let formatted_content = format_toml(&raw_content);
-    write_to_byte(CONFIG_PATH, formatted_content.as_bytes())
-        .expect("Failed to write formatted config back");
+        // 启动时格式化并回写
+        let formatted_content = format_toml(&raw_content);
+        write_to_byte(CONFIG_PATH, formatted_content.as_bytes())
+            .expect("Failed to write formatted config back");
 
-    toml::from_str(&raw_content).expect("Failed to parse thread_opt.toml. Please check syntax.")
+        let config = toml::from_str(&raw_content)
+            .expect("Failed to parse thread_opt.toml. Please check syntax.");
+
+        Self {
+            ptr: AtomicPtr::new(Box::into_raw(Box::new(config))),
+        }
+    }
+
+    pub fn get(&self) -> &Config {
+        unsafe { &*self.ptr.load(Ordering::Acquire) }
+    }
+
+    pub fn reload(&self) {
+        match std::panic::catch_unwind(|| {
+            let raw_content = read_file::<65536>(CONFIG_PATH)
+                .expect("Failed to read thread_opt.toml during reload");
+
+            // 热更新时不回写，防止触发无限循环 (读->写->触发inotify->读...)
+            let new_config = toml::from_str(&raw_content)
+                .expect("Failed to parse thread_opt.toml during reload");
+
+            Box::new(new_config)
+        }) {
+            Ok(new_config_box) => {
+                // 原子替换指针
+                let old_ptr = self
+                    .ptr
+                    .swap(Box::into_raw(new_config_box), Ordering::Release);
+
+                let _ = unsafe { Box::from_raw(old_ptr) };
+                log::info!("Config profile reloaded successfully via atomic swap.");
+            }
+            Err(_) => {
+                log::error!("Failed to reload config: Parsing panicked.");
+            }
+        }
+    }
 }
 
 #[derive(Deserialize)]
