@@ -3,6 +3,7 @@ use crate::policy::affinity_policy::{dualo_policy, only7_policy, tid_list_t2_pol
 use log::debug;
 #[cfg(debug_assertions)]
 use minstant::Instant;
+use rayon::prelude::*;
 use std::collections::HashMap;
 
 // 定义线程类型
@@ -18,9 +19,9 @@ pub fn execute_policy(task_map: &HashMap<i32, [u8; 16]>, first: i32, second: i32
     execute_task(&CmdType::Dualo, second);
 
     let filtered_keys: Vec<i32> = task_map
-        .keys()
-        .filter(|&&tid| tid != first && tid != second)
-        .copied()
+        .par_iter()
+        .map(|(&tid, _)| tid)
+        .filter(|&tid| tid != first && tid != second)
         .collect();
 
     #[cfg(debug_assertions)]

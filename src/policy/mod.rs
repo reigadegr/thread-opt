@@ -4,11 +4,12 @@ pub mod pkg_cfg;
 pub mod usage_top1;
 pub mod usage_top2;
 
+use rayon::prelude::*;
 use std::collections::HashMap;
 
 fn get_thread_tids(task_map: &HashMap<i32, [u8; 16]>, prefix: &[u8]) -> Vec<i32> {
     task_map
-        .iter()
+        .par_iter()
         .filter(|(_, name)| name.starts_with(prefix))
         .map(|(&tid, _)| tid)
         .collect()
