@@ -1,9 +1,8 @@
 pub mod looper;
 pub mod name_match;
-use crate::activity::ActivityUtils;
-use crate::config::AtomicConfig;
+use crate::{activity::ActivityUtils, config::AtomicConfig};
 use inotify::{Inotify, WatchMask};
-use log::info;
+use log::{error, info};
 use looper::Looper;
 pub mod usage_top1;
 pub mod usage_top2;
@@ -38,27 +37,26 @@ impl Scheduler {
             let mut inotify = match Inotify::init() {
                 Ok(i) => i,
                 Err(e) => {
-                    log::error!("Failed to initialize inotify for config watcher: {e}");
+                    error!("Failed to initialize inotify for config watcher: {e}");
                     return;
                 }
             };
 
             if let Err(e) = inotify.watches().add(config_path, WatchMask::CLOSE_WRITE) {
-                log::error!("Failed to add watch for config file: {e}");
+                error!("Failed to add watch for config file: {e}");
                 return;
             }
 
             info!("Config watcher started");
 
-            let mut buffer = [0u8; 1024];
             loop {
-                match inotify.read_events_blocking(&mut buffer) {
+                match inotify.read_events_blocking(&mut [0; 1024]) {
                     Ok(_events) => {
                         std::thread::sleep(std::time::Duration::from_millis(50));
                         config_ref.reload();
                     }
                     Err(e) => {
-                        log::error!("Failed to read inotify events: {e}");
+                        error!("Failed to read inotify events: {e}");
                         std::thread::sleep(std::time::Duration::from_secs(1));
                     }
                 }
