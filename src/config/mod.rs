@@ -1,39 +1,37 @@
 pub mod format_profile;
-use crate::{
-    policy::usage_top1::common::CmdType as Top1Enum,
-    utils::node_reader::{read_file, write_to_byte},
-};
+use crate::policy::usage_top1::common::CmdType as Top1Enum;
 use anyhow::Result;
 use arc_swap::{ArcSwap, Guard};
 use compact_str::CompactString;
 use format_profile::format_toml;
 use log::{error, info};
 use serde::{Deserialize, de::Error};
-use std::{collections::HashSet, sync::Arc};
+use std::{collections::HashSet, env, fs, sync::Arc};
 
 const MAX_COMM_SIZE: usize = 16;
-const CONFIG_PATH: &[u8] = b"/data/adb/modules/thread_opt/thread_opt.toml\0";
 
 pub type ByteArray = heapless::Vec<u8, MAX_COMM_SIZE>;
 
 pub struct AtomicConfig {
     inner: ArcSwap<Config>,
+    profile: String,
 }
 
 impl AtomicConfig {
     pub fn init() -> Self {
-        let raw_content = read_file::<65536>(CONFIG_PATH).expect("Failed to read thread_opt.toml");
-
-        // 启动时格式化并回写
+        let profile = env::args()
+            .nth(1)
+            .unwrap_or_else(|| "/data/adb/modules/thread_opt/thread_opt.toml".to_string());
+        let raw_content = fs::read_to_string(&profile).expect("Failed to read thread_opt.toml");
         let formatted_content = format_toml(&raw_content);
-        write_to_byte(CONFIG_PATH, formatted_content.as_bytes())
-            .expect("Failed to write formatted config back");
+        let _ = fs::write(&profile, formatted_content);
 
         let config = toml::from_str(&raw_content)
             .expect("Failed to parse thread_opt.toml. Please check syntax.");
 
         Self {
             inner: ArcSwap::from(Arc::new(config)),
+            profile,
         }
     }
 
@@ -43,7 +41,7 @@ impl AtomicConfig {
 
     pub fn reload(&self) {
         match std::panic::catch_unwind(|| {
-            let raw_content = read_file::<65536>(CONFIG_PATH)
+            let raw_content = fs::read_to_string(&self.profile)
                 .expect("Failed to read thread_opt.toml during reload");
 
             let new_config = toml::from_str(&raw_content)
