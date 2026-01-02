@@ -16,7 +16,7 @@ if [ ! -L $MODDIR/thread_opt.toml ]; then
     rm $MODDIR/thread_opt.toml
     ln -s "$profile_dir/thread_opt.toml" $MODDIR/thread_opt.toml
 fi
-stop vendor.urcc-hal-aidl
+stop vendor.urcc-hal-aidl oiface
 mask_val_in_path "0" "/sys/module/cpufreq_bouncing/parameters/" "*"
 
 killall -15 thread-opt; rm $LOG

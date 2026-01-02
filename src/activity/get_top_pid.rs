@@ -1,4 +1,4 @@
-use crate::utils::sleep::sleep_secs;
+use crate::utils::sleep::sleep_millis;
 use atoi::atoi;
 use dumpsys_rs::Dumpsys;
 use inotify::{Inotify, WatchMask};
@@ -73,7 +73,7 @@ impl TopAppUtils {
         loop {
             match Dumpsys::new("window") {
                 Some(d) => break d,
-                None => sleep_secs(1),
+                None => sleep_millis(1000),
             }
         }
     }
@@ -117,17 +117,17 @@ impl TopAppUtils {
                 Ok(_) => break,
                 Err(e) => {
                     info!("Failed to read events: {e}, retrying");
-                    sleep_secs(1);
+                    sleep_millis(200);
                 }
             }
         }
-        sleep_secs(1);
+        sleep_millis(900);
         let dump = loop {
             match self.dumper.dump_to_byte::<65536>(&["visible-apps"]) {
                 Ok(dump) => break dump,
                 Err(e) => {
                     info!("Failed to dump windows: {e}, retrying");
-                    sleep_secs(1);
+                    sleep_millis(200);
                 }
             }
         };

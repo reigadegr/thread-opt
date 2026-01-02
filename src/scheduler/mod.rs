@@ -1,6 +1,6 @@
 pub mod looper;
 pub mod name_match;
-use crate::{activity::ActivityUtils, config::AtomicConfig};
+use crate::{activity::ActivityUtils, config::AtomicConfig, utils::sleep::sleep_millis};
 use inotify::{Inotify, WatchMask};
 use log::{error, info};
 use looper::Looper;
@@ -52,12 +52,12 @@ impl Scheduler {
             loop {
                 match inotify.read_events_blocking(&mut [0; 1024]) {
                     Ok(_events) => {
-                        std::thread::sleep(std::time::Duration::from_millis(50));
+                        sleep_millis(50);
                         config_ref.reload();
                     }
                     Err(e) => {
                         error!("Failed to read inotify events: {e}");
-                        std::thread::sleep(std::time::Duration::from_secs(1));
+                        sleep_millis(1000);
                     }
                 }
             }

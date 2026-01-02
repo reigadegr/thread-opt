@@ -1,5 +1,8 @@
 use crate::{
-    activity::{ActivityUtils, get_tid_info::get_process_name, get_tid_info::read_task_dir},
+    activity::{
+        ActivityUtils,
+        get_tid_info::{get_process_name, read_task_dir},
+    },
     config::AtomicConfig,
     utils::affinity_utils::global_cpu_utils::bind_list_to_background,
 };
