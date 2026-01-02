@@ -8,6 +8,7 @@ use compact_str::CompactString;
 use core::time::Duration;
 use libc::{opendir, readdir};
 use likely_stable::unlikely;
+use log::warn;
 use minstant::Instant;
 use std::{
     collections::{
@@ -109,15 +110,17 @@ impl TidUtils {
     }
 
     pub fn set_task_map(&mut self, pid: i32) -> &TidInfo {
-        let tid_list = read_task_dir(pid).unwrap();
+        let tid_list = match read_task_dir(pid) {
+            Ok(list) => list,
+            Err(e) => {
+                warn!("Failed to read task directory for pid {pid}: {e}");
+                self.tid_info.task_map.clear();
+                return &self.tid_info;
+            }
+        };
 
         #[cfg(debug_assertions)]
         let start = minstant::Instant::now();
-        #[cfg(debug_assertions)]
-        {
-            let end = start.elapsed();
-            log::debug!("转换HashSet时间: {end:?}");
-        }
         self.tid_info.task_map.clear();
         for tid in tid_list {
             let Ok(comm) = self.file_cache.read_with_cache::<16>(tid) else {
