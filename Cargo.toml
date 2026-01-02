@@ -33,6 +33,7 @@ minstant = "0.1.7"
 ndk-sys = "0.6.0"
 once_cell = { version = "1.21.3", default-features = false }
 rayon = "1.11.0"
+rustix = { version = "1.1.3", features = ["fs", "process"] }
 serde = { version = "1.0.228", default-features = false, features = ["derive"] }
 stringzilla = "4.5.1"
 taplo = { version = "0.14.0", default-features = false }
