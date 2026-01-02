@@ -1,23 +1,24 @@
 pub mod looper;
 pub mod name_match;
+pub mod usage_top1;
+pub mod usage_top2;
+
 use crate::{activity::ActivityUtils, config::AtomicConfig, utils::sleep::sleep_millis};
 use inotify::{Inotify, WatchMask};
 use log::{error, info};
 use looper::Looper;
-pub mod usage_top1;
-pub mod usage_top2;
+use std::sync::Arc;
 
 pub struct Scheduler {
     looper: Looper,
-    atomic_config: AtomicConfig,
+    atomic_config: Arc<AtomicConfig>,
 }
 
 impl Scheduler {
     #[must_use]
     pub fn new() -> Self {
-        let atomic_config = AtomicConfig::init();
+        let atomic_config = Arc::new(AtomicConfig::init());
         let activity_utils = ActivityUtils::new();
-
         let looper = Looper::new(activity_utils);
 
         Self {
@@ -27,11 +28,9 @@ impl Scheduler {
     }
 
     fn start_config_watcher(&self) {
-        let config_ptr = &raw const self.atomic_config as usize;
+        let config = Arc::clone(&self.atomic_config);
 
         std::thread::spawn(move || {
-            let config_ref = unsafe { &*(config_ptr as *const AtomicConfig) };
-
             let config_path = "/data/adb/modules/thread_opt/thread_opt.toml";
 
             let mut inotify = match Inotify::init() {
@@ -51,9 +50,9 @@ impl Scheduler {
 
             loop {
                 match inotify.read_events_blocking(&mut [0; 1024]) {
-                    Ok(_events) => {
+                    Ok(_) => {
                         sleep_millis(50);
-                        config_ref.reload();
+                        config.reload();
                     }
                     Err(e) => {
                         error!("Failed to read inotify events: {e}");

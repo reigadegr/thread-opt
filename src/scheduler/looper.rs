@@ -9,6 +9,7 @@ use crate::{
 use anyhow::Result;
 use compact_str::CompactString;
 use log::info;
+use std::sync::Arc;
 
 pub struct Looper {
     pub activity_utils: ActivityUtils,
@@ -36,7 +37,7 @@ impl Looper {
     }
 
     // 修复 E0596: 这里必须是 &mut self，因为内部修改了 self.pid 和 self.global_package
-    pub fn enter_loop(&mut self, config_manager: &AtomicConfig) {
+    pub fn enter_loop(&mut self, config_manager: &Arc<AtomicConfig>) {
         'outer: loop {
             {
                 let pid = self.activity_utils.top_app_utils.get_top_pid();
