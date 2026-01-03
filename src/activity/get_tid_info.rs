@@ -151,7 +151,7 @@ pub fn read_task_dir(pid: i32) -> Result<HashSet<i32>> {
     let mut dir =
         fs::Dir::read_from(fd).map_err(|e| anyhow!("Failed to create dir stream: {e}"))?;
 
-    let entries: Vec<_> = core::iter::from_fn(|| match dir.next() {
+    let entries: HashSet<i32> = core::iter::from_fn(|| match dir.next() {
         None => None,
         Some(Ok(entry)) => {
             let name = entry.file_name().to_bytes();
@@ -165,7 +165,7 @@ pub fn read_task_dir(pid: i32) -> Result<HashSet<i32>> {
     .filter(|&s| s != 0)
     .collect();
 
-    Ok(entries.into_iter().collect())
+    Ok(entries)
 }
 
 pub fn get_process_name(pid: i32) -> Result<CompactString> {
