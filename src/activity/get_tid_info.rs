@@ -151,26 +151,21 @@ pub fn read_task_dir(pid: i32) -> Result<HashSet<i32>> {
     let mut dir =
         fs::Dir::read_from(fd).map_err(|e| anyhow!("Failed to create dir stream: {e}"))?;
 
-    let mut entries = HashSet::new();
-
-    loop {
-        match dir.next() {
-            None => break,
-            Some(Ok(entry)) => {
-                let name = entry.file_name().to_bytes();
-
-                if name.starts_with(b".") {
-                    continue;
-                }
-
-                if let Some(tid) = atoi::<i32>(name) {
-                    entries.insert(tid);
-                }
+    let entries: Vec<_> = core::iter::from_fn(|| match dir.next() {
+        None => None,
+        Some(Ok(entry)) => {
+            let name = entry.file_name().to_bytes();
+            if name.starts_with(b".") {
+                return Some(0);
             }
-            Some(Err(_)) => {}
+            Some(atoi::<i32>(name).unwrap_or(0))
         }
-    }
-    Ok(entries)
+        Some(Err(_)) => Some(0),
+    })
+    .filter(|&s| s != 0)
+    .collect();
+
+    Ok(entries.into_iter().collect())
 }
 
 pub fn get_process_name(pid: i32) -> Result<CompactString> {
