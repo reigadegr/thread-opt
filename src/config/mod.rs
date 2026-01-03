@@ -51,7 +51,7 @@ impl AtomicConfig {
         }) {
             Ok(new_config_arc) => {
                 self.inner.store(new_config_arc);
-                info!("Config profile reloaded successfully via ArcSwap.");
+                info!("Config profile reloaded successfully.");
             }
             Err(_) => {
                 error!("Failed to reload config: Parsing panicked.");

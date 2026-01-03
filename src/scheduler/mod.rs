@@ -7,7 +7,7 @@ use crate::{activity::ActivityUtils, config::AtomicConfig, utils::sleep::sleep_m
 use inotify::{Inotify, WatchMask};
 use log::{error, info};
 use looper::Looper;
-use std::sync::Arc;
+use std::{env, sync::Arc};
 
 pub struct Scheduler {
     looper: Looper,
@@ -31,8 +31,9 @@ impl Scheduler {
         let config = Arc::clone(&self.atomic_config);
 
         std::thread::spawn(move || {
-            let config_path = "/data/adb/modules/thread_opt/thread_opt.toml";
-
+            let config_path = env::args()
+                .nth(1)
+                .unwrap_or_else(|| "/data/adb/modules/thread_opt/thread_opt.toml".to_string());
             let mut inotify = match Inotify::init() {
                 Ok(i) => i,
                 Err(e) => {
