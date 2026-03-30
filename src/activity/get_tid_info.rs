@@ -1,16 +1,68 @@
-use crate::utils::{
-    guard::DirGuard,
-    node_reader::{get_proc_path, read_to_byte},
-};
+use crate::utils::node_reader::{get_proc_path, read_to_byte};
 use anyhow::{Result, anyhow};
 use atoi::atoi;
 use compact_str::CompactString;
 use core::time::Duration;
-use libc::{DIR, opendir, readdir, rewinddir};
-use likely_stable::unlikely;
+use log::warn;
 use minstant::Instant;
-use std::collections::{HashMap, HashSet};
+use rustix::fs::{self, CWD, Mode, OFlags};
+use std::{
+    collections::{
+        HashMap, HashSet,
+        hash_map::Entry::{Occupied, Vacant},
+    },
+    ffi::OsStr,
+    fs::File,
+    io::{ErrorKind, Read, Seek, SeekFrom},
+    os::unix::ffi::OsStrExt,
+};
 use stringzilla::sz;
+
+#[derive(Debug)]
+pub struct FileCache {
+    files: HashMap<i32, File>,
+}
+
+impl FileCache {
+    fn new() -> Self {
+        Self {
+            files: HashMap::new(),
+        }
+    }
+
+    fn read_with_cache<const N: usize>(&mut self, tid: i32) -> Result<[u8; N]> {
+        let file = match self.files.entry(tid) {
+            Vacant(e) => {
+                let path = get_proc_path::<32>(tid, b"/comm");
+                let end = sz::find(path, b"\0").unwrap_or(path.len());
+                let path_str = &path[..end];
+                let path_str = OsStr::from_bytes(path_str);
+                let file = File::open(path_str).map_err(|e| anyhow!("Cannot open file: {e}"))?;
+                e.insert(file)
+            }
+            Occupied(e) => e.into_mut(),
+        };
+
+        if let Err(e) = file.seek(SeekFrom::Start(0)) {
+            self.files.remove(&tid);
+            return Err(e.into());
+        }
+
+        let mut buffer = [0u8; N];
+        match file.read_exact(&mut buffer) {
+            Ok(()) => Ok(buffer),
+            Err(e) if e.kind() == ErrorKind::UnexpectedEof => Ok(buffer),
+            Err(e) => {
+                self.files.remove(&tid);
+                Err(e.into())
+            }
+        }
+    }
+
+    pub fn clear(&mut self) {
+        self.files.clear();
+    }
+}
 
 #[derive(Default)]
 pub struct TidInfo {
@@ -27,6 +79,7 @@ impl TidInfo {
 pub struct TidUtils {
     pub tid_info: TidInfo,
     last_refresh_task_map: Instant,
+    pub file_cache: FileCache,
 }
 
 impl TidUtils {
@@ -34,13 +87,14 @@ impl TidUtils {
         Self {
             tid_info: TidInfo::new(),
             last_refresh_task_map: Instant::now(),
+            file_cache: FileCache::new(),
         }
     }
 
-    pub fn get_task_map(&mut self, pid: i32, dir_ptr: *mut DIR) -> &HashMap<i32, [u8; 16]> {
+    pub fn get_task_map(&mut self, pid: i32) -> &HashMap<i32, [u8; 16]> {
         if self.last_refresh_task_map.elapsed() > Duration::from_millis(3000) {
             self.last_refresh_task_map = Instant::now();
-            return &self.set_task_map(dir_ptr).task_map;
+            return &self.set_task_map(pid).task_map;
         }
 
         if self.tid_info.task_map_pid == pid {
@@ -48,29 +102,24 @@ impl TidUtils {
         }
         self.tid_info.task_map_pid = pid;
 
-        &self.set_task_map(dir_ptr).task_map
+        &self.set_task_map(pid).task_map
     }
 
-    pub fn set_task_map(&mut self, dir_ptr: *mut DIR) -> &TidInfo {
-        let tid_list = read_task_dir_cache(dir_ptr);
+    pub fn set_task_map(&mut self, pid: i32) -> &TidInfo {
+        let tid_list = match read_task_dir(pid) {
+            Ok(list) => list,
+            Err(e) => {
+                warn!("Failed to read task directory for pid {pid}: {e}");
+                self.tid_info.task_map.clear();
+                return &self.tid_info;
+            }
+        };
 
         #[cfg(debug_assertions)]
         let start = minstant::Instant::now();
-        #[cfg(debug_assertions)]
-        {
-            let end = start.elapsed();
-            log::debug!("转换HashSet时间: {end:?}");
-        }
-        // self.tid_info
-        // .task_map
-        // .retain(|tid, _| tid_list.contains(tid));
         self.tid_info.task_map.clear();
         for tid in tid_list {
-            // if self.tid_info.task_map.contains_key(&tid) {
-            // continue;
-            // }
-            let comm_path = get_proc_path::<32, 5>(tid, b"/comm");
-            let Ok(comm) = read_to_byte::<16>(&comm_path) else {
+            let Ok(comm) = self.file_cache.read_with_cache::<16>(tid) else {
                 continue;
             };
             self.tid_info.task_map.insert(tid, comm);
@@ -85,62 +134,42 @@ impl TidUtils {
 }
 
 pub fn read_task_dir(pid: i32) -> Result<HashSet<i32>> {
-    let task_dir = get_proc_path::<32, 5>(pid, b"/task");
+    let task_dir = get_proc_path::<32>(pid, b"/task");
+    let end = sz::find(task_dir, b"\0").unwrap_or(task_dir.len());
+    let path_slice = &task_dir[..end];
 
-    let dir = unsafe { opendir(task_dir.as_ptr()) };
-    if unlikely(dir.is_null()) {
-        return Err(anyhow!("Cannot read task_dir."));
-    }
-    let _dir_ptr_guard = DirGuard::new(dir);
-    let entries: Vec<_> = unsafe {
-        let dir_ptr = dir;
+    let path = OsStr::from_bytes(path_slice);
 
-        core::iter::from_fn(move || {
-            let entry = readdir(dir_ptr);
-            if unlikely(entry.is_null()) {
-                return None;
+    let fd = fs::openat(
+        CWD,
+        path,
+        OFlags::RDONLY | OFlags::DIRECTORY | OFlags::CLOEXEC,
+        Mode::empty(),
+    )
+    .map_err(|e| anyhow!("Failed to open task dir: {e}"))?;
+
+    let mut dir =
+        fs::Dir::read_from(fd).map_err(|e| anyhow!("Failed to create dir stream: {e}"))?;
+
+    let entries: HashSet<i32> = core::iter::from_fn(|| match dir.next() {
+        None => None,
+        Some(Ok(entry)) => {
+            let name = entry.file_name().to_bytes();
+            if name.starts_with(b".") {
+                return Some(0);
             }
+            Some(atoi::<i32>(name).unwrap_or(0))
+        }
+        Some(Err(_)) => Some(0),
+    })
+    .filter(|&s| s != 0)
+    .collect();
 
-            let d_name_ptr = (*entry).d_name.as_ptr();
-            // 这里，d_name_ptr长度不可能超过6,Linux PID最大32768
-            let bytes = core::slice::from_raw_parts(d_name_ptr, 6);
-            // 如果以'.'开头，会被fallback为0，最后被过滤
-            Some(atoi::<i32>(bytes).unwrap_or(0))
-        })
-        .filter(|&s| s != 0)
-        .collect()
-    };
-    let entries: HashSet<i32> = entries.into_iter().collect();
     Ok(entries)
 }
 
-pub fn read_task_dir_cache(dir_ptr: *mut DIR) -> HashSet<i32> {
-    let entries: Vec<_> = unsafe {
-        core::iter::from_fn(move || {
-            let entry = readdir(dir_ptr);
-            if unlikely(entry.is_null()) {
-                return None;
-            }
-
-            let d_name_ptr = (*entry).d_name.as_ptr();
-            // 这里，d_name_ptr长度不可能超过6,Linux PID最大32768
-            let bytes = core::slice::from_raw_parts(d_name_ptr, 6);
-            // 如果以'.'开头，会被fallback为0，最后被过滤
-            Some(atoi::<i32>(bytes).unwrap_or(0))
-        })
-        .filter(|&s| s != 0)
-        .collect()
-    };
-    unsafe {
-        rewinddir(dir_ptr);
-    }
-
-    let entries: HashSet<i32> = entries.into_iter().collect();
-    entries
-}
-
 pub fn get_process_name(pid: i32) -> Result<CompactString> {
-    let cmdline = get_proc_path::<32, 8>(pid, b"/cmdline");
+    let cmdline = get_proc_path::<32>(pid, b"/cmdline");
 
     let buffer = read_to_byte::<128>(&cmdline)?;
 

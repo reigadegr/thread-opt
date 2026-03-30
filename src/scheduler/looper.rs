@@ -1,11 +1,15 @@
 use crate::{
-    activity::{ActivityUtils, get_tid_info::get_process_name, get_tid_info::read_task_dir},
-    config::PROFILE,
+    activity::{
+        ActivityUtils,
+        get_tid_info::{get_process_name, read_task_dir},
+    },
+    config::AtomicConfig,
     utils::affinity_utils::global_cpu_utils::bind_list_to_background,
 };
 use anyhow::Result;
 use compact_str::CompactString;
 use log::info;
+use std::sync::Arc;
 
 pub struct Looper {
     pub activity_utils: ActivityUtils,
@@ -28,10 +32,12 @@ impl Looper {
         bind_list_to_background(&tid_list);
         self.pid = -1;
         self.activity_utils.tid_utils.tid_info.task_map.clear();
+        self.activity_utils.tid_utils.file_cache.clear();
         Ok(())
     }
 
-    pub fn enter_loop(&mut self) {
+    // 修复 E0596: 这里必须是 &mut self，因为内部修改了 self.pid 和 self.global_package
+    pub fn enter_loop(&mut self, config_manager: &Arc<AtomicConfig>) {
         'outer: loop {
             {
                 let pid = self.activity_utils.top_app_utils.get_top_pid();
@@ -43,19 +49,22 @@ impl Looper {
                 self.global_package = name;
             }
 
-            for i in &PROFILE.comm_match {
+            // 获取配置
+            let config = config_manager.get();
+
+            for i in &config.comm_match {
                 if self.policy_name_match(i) {
                     continue 'outer;
                 }
             }
 
-            for i in &PROFILE.usage_top1 {
+            for i in &config.usage_top1 {
                 if self.policy_usage_top1(i) {
                     continue 'outer;
                 }
             }
 
-            for i in &PROFILE.usage_top2 {
+            for i in &config.usage_top2 {
                 if self.policy_usage_top2(i) {
                     continue 'outer;
                 }

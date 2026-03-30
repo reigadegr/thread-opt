@@ -1,14 +1,14 @@
 use super::guard::FileGuard;
 use anyhow::{Result, anyhow};
 use compact_str::CompactString;
-use core::ptr::copy_nonoverlapping;
 use itoa::Buffer;
 use libc::{O_CREAT, O_TRUNC, O_WRONLY, c_void, chmod, chown, open, write};
 use likely_stable::unlikely;
 use std::{
+    ffi::OsStr,
     fs::File,
     io::{ErrorKind, Read},
-    str::from_utf8,
+    os::unix::ffi::OsStrExt,
 };
 use stringzilla::sz;
 
@@ -21,13 +21,12 @@ pub fn read_file<const N: usize>(file: &[u8]) -> Result<CompactString> {
 }
 
 pub fn read_to_byte<const N: usize>(file: &[u8]) -> Result<[u8; N]> {
-    let end = sz::find(file, b"\0").unwrap_or(N);
+    let end = sz::find(file, b"\0").unwrap_or(file.len());
     let file = &file[..end];
-    let file = from_utf8(file)?;
+    let file = OsStr::from_bytes(file);
 
-    let Ok(mut file) = File::open(file) else {
-        return Err(anyhow!("Cannot open file."));
-    };
+    let mut file = File::open(file).map_err(|e| anyhow!("Cannot open file: {e}"))?;
+
     let mut buffer = [0u8; N];
 
     match file.read_exact(&mut buffer) {
@@ -65,18 +64,21 @@ pub fn lock_val(file: &[u8], msg: &[u8]) -> Result<()> {
     Ok(())
 }
 
-pub fn get_proc_path<const N: usize, const L: usize>(id: i32, file: &[u8]) -> [u8; N] {
+pub fn get_proc_path<const N: usize>(id: i32, file: &[u8]) -> [u8; N] {
     let mut buffer = [0u8; N];
-    buffer[0..6].copy_from_slice(b"/proc/");
+    let prefix = b"/proc/";
+    buffer[..prefix.len()].copy_from_slice(prefix);
 
     let mut itoa_buf = Buffer::new();
     let id = itoa_buf.format(id).as_bytes();
 
     let id_length = id.len();
 
-    unsafe {
-        copy_nonoverlapping(id.as_ptr(), buffer.as_mut_ptr().add(6), id_length);
-        copy_nonoverlapping(file.as_ptr(), buffer.as_mut_ptr().add(6 + id_length), L);
-    }
+    let start = prefix.len();
+    buffer[start..start + id_length].copy_from_slice(id);
+
+    let suffix_start = start + id_length;
+    buffer[suffix_start..suffix_start + file.len()].copy_from_slice(file);
+
     buffer
 }

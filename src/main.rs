@@ -1,4 +1,5 @@
 #![warn(
+    clippy::all,
     clippy::nursery,
     clippy::pedantic,
     clippy::style,

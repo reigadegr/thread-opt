@@ -2,13 +2,8 @@ pub mod cfg_start;
 pub mod common;
 
 use super::get_thread_tids;
-use crate::{
-    cpu_common::process_monitor::get_top1_tid,
-    policy::pkg_cfg::StartArgs,
-    utils::{guard::DirGuard, node_reader::get_proc_path},
-};
+use crate::{cpu_common::process_monitor::get_top1_tid, policy::pkg_cfg::StartArgs};
 use common::{CmdType, Policy};
-use libc::{DIR, opendir};
 use likely_stable::unlikely;
 #[cfg(debug_assertions)]
 use log::debug;
@@ -17,18 +12,14 @@ struct StartTask<'b, 'a: 'b> {
     policy: &'b Policy<'b>,
     args: &'b mut StartArgs<'a>,
     usage_top1: i32,
-    dir_ptr: *mut DIR,
 }
 
 impl<'b, 'a: 'b> StartTask<'b, 'a> {
-    fn new(start_args: &'b mut StartArgs<'a>, policy: &'b Policy) -> Self {
-        let task_dir = get_proc_path::<32, 5>(start_args.pid, b"/task");
-        let dir_ptr = unsafe { opendir(task_dir.as_ptr()) };
+    const fn new(start_args: &'b mut StartArgs<'a>, policy: &'b Policy) -> Self {
         Self {
             policy,
             args: start_args,
             usage_top1: 0,
-            dir_ptr,
         }
     }
 
@@ -37,7 +28,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
             .args
             .activity_utils
             .tid_utils
-            .get_task_map(self.args.pid, self.dir_ptr);
+            .get_task_map(self.args.pid);
         Policy::new(self.policy).execute_policy(task_map, self.usage_top1, cmd_type);
     }
 
@@ -46,7 +37,7 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
             .args
             .activity_utils
             .tid_utils
-            .get_task_map(self.args.pid, self.dir_ptr);
+            .get_task_map(self.args.pid);
         let unname_tids = get_thread_tids(task_map, comm_prefix);
         get_top1_tid(&unname_tids)
     }
@@ -59,10 +50,6 @@ impl<'b, 'a: 'b> StartTask<'b, 'a> {
     }
 
     fn start_task(&mut self, comm_prefix: &[u8], cmd_type: &CmdType) {
-        if unlikely(self.dir_ptr.is_null()) {
-            return;
-        }
-        let _dir_ptr_guard = DirGuard::new(self.dir_ptr);
         loop {
             let pid = self.args.activity_utils.top_app_utils.get_top_pid();
             if unlikely(pid != self.args.pid) {

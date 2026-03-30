@@ -1,7 +1,5 @@
-use libc::sleep;
+use std::{thread, time::Duration};
 
-pub fn sleep_secs(millis_second: u32) {
-    unsafe {
-        sleep(millis_second);
-    }
+pub fn sleep_millis(milliseconds: u64) {
+    thread::sleep(Duration::from_millis(milliseconds));
 }

@@ -18,7 +18,7 @@ impl UsageTracker {
 }
 
 fn get_thread_cpu_time(tid: i32) -> u64 {
-    let stat_path = get_proc_path::<32, 10>(tid, b"/schedstat");
+    let stat_path = get_proc_path::<32>(tid, b"/schedstat");
     let buffer = read_to_byte::<32>(&stat_path).unwrap_or([0u8; 32]);
 
     let pos = sz::find(buffer, b" ");
