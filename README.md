@@ -94,7 +94,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-t
 ```shell
 rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android
 
-rustup component add rust-src
+rustup component add rust-src rustfmt clippy
 
 cargo install cargo-ndk
 ```
