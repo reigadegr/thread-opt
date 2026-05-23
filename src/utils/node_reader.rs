@@ -10,13 +10,13 @@ use compact_str::CompactString;
 use itoa::Buffer;
 use libc::{O_CREAT, O_TRUNC, O_WRONLY, c_void, open, write};
 use likely_stable::unlikely;
-use stringzilla::sz;
+use memchr::memchr;
 
 use super::guard::FileGuard;
 
 pub fn read_file<const N: usize>(file: &[u8]) -> Result<CompactString> {
     let buffer = read_to_byte::<N>(file)?;
-    let pos = sz::find(buffer, b"\0");
+    let pos = memchr(b'\0', &buffer);
     let buffer = match pos {
         Some(pos) => &buffer[..pos],
         None => &buffer[..],
@@ -26,7 +26,7 @@ pub fn read_file<const N: usize>(file: &[u8]) -> Result<CompactString> {
 }
 
 pub fn read_to_byte<const N: usize>(file: &[u8]) -> Result<[u8; N]> {
-    let end = match sz::find(file, b"\0") {
+    let end = match memchr(b'\0', file) {
         Some(end) => end,
         None => file.len(),
     };

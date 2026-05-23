@@ -1,5 +1,5 @@
 use atoi::atoi;
-use stringzilla::sz;
+use memchr::memchr;
 
 use crate::utils::node_reader::{get_proc_path, read_to_byte};
 
@@ -24,7 +24,7 @@ fn get_thread_cpu_time(tid: i32) -> u64 {
         return 0;
     };
 
-    let pos = sz::find(buffer, b" ");
+    let pos = memchr(b' ', &buffer);
     let buffer = match pos {
         Some(pos) => &buffer[..pos],
         None => &buffer[..],

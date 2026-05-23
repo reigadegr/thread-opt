@@ -14,9 +14,9 @@ use anyhow::{Result, anyhow};
 use atoi::atoi;
 use compact_str::CompactString;
 use log::warn;
+use memchr::memchr;
 use minstant::Instant;
 use rustix::fs::{self, CWD, Mode, OFlags};
-use stringzilla::sz;
 
 use crate::utils::node_reader::{get_proc_path, read_to_byte};
 
@@ -36,7 +36,7 @@ impl FileCache {
         let file = match self.files.entry(tid) {
             Vacant(e) => {
                 let path = get_proc_path::<32>(tid, b"/comm");
-                let Some(end) = sz::find(path, b"\0") else {
+                let Some(end) = memchr(b'\0', &path) else {
                     return Err(anyhow!("Invalid proc path for tid {tid}"));
                 };
                 let path_str = &path[..end];
@@ -139,7 +139,7 @@ impl TidUtils {
 
 pub fn read_task_dir(pid: i32) -> Result<HashSet<i32>> {
     let task_dir = get_proc_path::<32>(pid, b"/task");
-    let Some(end) = sz::find(task_dir, b"\0") else {
+    let Some(end) = memchr(b'\0', &task_dir) else {
         return read_task_dir_from_path(&task_dir);
     };
     let path_slice = &task_dir[..end];
@@ -186,14 +186,14 @@ pub fn get_process_name(pid: i32) -> Result<CompactString> {
 
     let buffer = read_to_byte::<128>(&cmdline)?;
 
-    let pos = sz::find(buffer, b":");
+    let pos = memchr(b':', &buffer);
     if let Some(sub) = pos {
         let buffer = &buffer[..sub];
         let buffer = CompactString::from_utf8(buffer)?;
         return Ok(buffer);
     }
 
-    let pos = sz::find(buffer, b"\0");
+    let pos = memchr(b'\0', &buffer);
     let Some(pos) = pos else {
         let buffer = CompactString::from_utf8(&buffer[..])?;
         return Ok(buffer);

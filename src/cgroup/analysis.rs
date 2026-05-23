@@ -3,7 +3,6 @@ use compact_str::CompactString;
 use libc::{DT_DIR, opendir, readdir};
 use likely_stable::{likely, unlikely};
 use log::info;
-use stringzilla::sz;
 
 use super::group_info::{get_background_group, get_top_group};
 use crate::utils::{guard::DirGuard, node_reader::read_file};
@@ -114,7 +113,7 @@ pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
                 // 这里，最大为related_cpus的长度，12
                 let bytes = core::slice::from_raw_parts(d_name_ptr, 12);
 
-                if likely(sz::find(bytes, b"related_cpus").is_none()) {
+                if likely(bytes != b"related_cpus") {
                     continue;
                 }
                 let mut real_path = [0u8; 64];
