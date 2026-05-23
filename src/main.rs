@@ -1,19 +1,3 @@
-#![warn(
-    clippy::all,
-    clippy::nursery,
-    clippy::pedantic,
-    clippy::style,
-    clippy::complexity,
-    clippy::perf,
-    clippy::correctness,
-    clippy::suspicious
-)]
-#![allow(
-    clippy::similar_names,
-    clippy::missing_safety_doc,
-    clippy::missing_panics_doc
-)]
-
 mod activity;
 mod cgroup;
 mod config;
@@ -29,7 +13,8 @@ use scheduler::Scheduler;
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     init_misc();
-    Scheduler::new().start_run();
+    Scheduler::new()?.start_run();
+    Ok(())
 }

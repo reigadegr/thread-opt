@@ -14,6 +14,26 @@ categories = ["utils"]
 name = "thread-opt"
 path = "src/main.rs"
 
+[lints.clippy]
+all = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+style = { level = "warn", priority = -1 }
+complexity = { level = "warn", priority = -1 }
+perf = { level = "warn", priority = -1 }
+correctness = { level = "warn", priority = -1 }
+suspicious = { level = "warn", priority = -1 }
+unwrap_used = { level = "warn", priority = -1 }
+expect_used = { level = "warn", priority = -1 }
+similar_names = "allow"
+missing_errors_doc = "allow"
+missing_safety_doc = "allow"
+missing_panics_doc = "allow"
+cast_precision_loss = "allow"
+struct_excessive_bools = "allow"
+option_if_let_else = "allow"
+manual_unwrap_or_default = "allow"
+
 [dependencies]
 anyhow = { version = "1.0.102", default-features = false }
 arc-swap = "1.9.1"
@@ -28,7 +48,7 @@ itoa = { version = "1.0.18", features = [] }
 libc = { version = "0.2.186", default-features = false }
 likely_stable = "0.1.3"
 log = "0.4.29"
-mimalloc = { version = "0.1.50", features = ["v2", "no_thp", "override"] }
+mimalloc = { version = "0.1.51", features = ["v2", "no_thp", "override"] }
 minstant = "0.1.7"
 ndk-sys = "0.6.0"
 once_cell = { version = "1.21.4", default-features = false }

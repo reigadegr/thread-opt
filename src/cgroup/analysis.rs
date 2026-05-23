@@ -19,7 +19,13 @@ pub static TOP_GROUP: std::sync::LazyLock<Box<[u8]>> = std::sync::LazyLock::new(
 });
 
 pub static BACKEND_GROUP: std::sync::LazyLock<Box<[u8]>> =
-    std::sync::LazyLock::new(|| analysis_cgroup_new("0").unwrap());
+    std::sync::LazyLock::new(|| match analysis_cgroup_new("0") {
+        Ok(cores) => cores,
+        Err(e) => {
+            info!("BACKEND_GROUP initializing with default core 0: {e}");
+            Box::new([0])
+        }
+    });
 
 pub static MIDDLE_GROUP: std::sync::LazyLock<Box<[u8]>> = std::sync::LazyLock::new(|| {
     let mut all_core =
@@ -114,8 +120,10 @@ pub fn analysis_cgroup_new(target_core: &str) -> Result<Box<[u8]>> {
                 real_path[..=38].copy_from_slice(&entry[..=38]);
                 real_path[39] = b'/';
                 real_path[40..52].copy_from_slice(&b"related_cpus"[..]);
-                let content =
-                    read_file::<16>(&real_path).unwrap_or_else(|_| CompactString::new("8"));
+                let content = match read_file::<16>(&real_path) {
+                    Ok(content) => content,
+                    Err(_) => CompactString::new("8"),
+                };
                 // 解析文件内容
                 let nums: Vec<&str> = content.split_whitespace().collect();
                 let rs = init_group(target_core, &nums);

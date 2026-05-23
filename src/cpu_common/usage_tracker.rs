@@ -19,9 +19,17 @@ impl UsageTracker {
 
 fn get_thread_cpu_time(tid: i32) -> u64 {
     let stat_path = get_proc_path::<32>(tid, b"/schedstat");
-    let buffer = read_to_byte::<32>(&stat_path).unwrap_or([0u8; 32]);
+    let Ok(buffer) = read_to_byte::<32>(&stat_path) else {
+        return 0;
+    };
 
     let pos = sz::find(buffer, b" ");
-    let buffer = pos.map_or(&buffer[..], |pos| &buffer[..pos]);
-    atoi::<u64>(buffer).unwrap_or(0)
+    let buffer = match pos {
+        Some(pos) => &buffer[..pos],
+        None => &buffer[..],
+    };
+    let Some(usage) = atoi::<u64>(buffer) else {
+        return 0;
+    };
+    usage
 }

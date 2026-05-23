@@ -9,6 +9,7 @@ use serde::{Deserialize, de::Error};
 use std::{collections::HashSet, env, fs, sync::Arc};
 
 const MAX_COMM_SIZE: usize = 16;
+const DEFAULT_PROFILE: &str = "/data/adb/modules/thread_opt/thread_opt.toml";
 
 pub type ByteArray = heapless::Vec<u8, MAX_COMM_SIZE>;
 
@@ -18,21 +19,18 @@ pub struct AtomicConfig {
 }
 
 impl AtomicConfig {
-    pub fn init() -> Self {
-        let profile = env::args()
-            .nth(1)
-            .unwrap_or_else(|| "/data/adb/modules/thread_opt/thread_opt.toml".to_string());
-        let raw_content = fs::read_to_string(&profile).expect("Failed to read thread_opt.toml");
+    pub fn init() -> Result<Self> {
+        let profile = profile_path();
+        let raw_content = fs::read_to_string(&profile)?;
         let formatted_content = format_toml(&raw_content);
         let _ = fs::write(&profile, formatted_content);
 
-        let config = toml::from_str(&raw_content)
-            .expect("Failed to parse thread_opt.toml. Please check syntax.");
+        let config = toml::from_str(&raw_content)?;
 
-        Self {
+        Ok(Self {
             inner: ArcSwap::from(Arc::new(config)),
             profile,
-        }
+        })
     }
 
     pub fn get(&self) -> Guard<Arc<Config>> {
@@ -40,23 +38,37 @@ impl AtomicConfig {
     }
 
     pub fn reload(&self) {
-        match std::panic::catch_unwind(|| {
-            let raw_content = fs::read_to_string(&self.profile)
-                .expect("Failed to read thread_opt.toml during reload");
-
-            let new_config = toml::from_str(&raw_content)
-                .expect("Failed to parse thread_opt.toml during reload");
-
-            Arc::new(new_config)
-        }) {
-            Ok(new_config_arc) => {
-                self.inner.store(new_config_arc);
-                info!("Config profile reloaded successfully.");
+        let raw_content = match fs::read_to_string(&self.profile) {
+            Ok(raw_content) => raw_content,
+            Err(e) => {
+                error!(
+                    "Failed to reload config: cannot read {}: {e}.",
+                    self.profile
+                );
+                return;
             }
-            Err(_) => {
-                error!("Failed to reload config: Parsing panicked.");
+        };
+
+        let new_config = match toml::from_str(&raw_content) {
+            Ok(new_config) => new_config,
+            Err(e) => {
+                error!(
+                    "Failed to reload config: cannot parse {}: {e}.",
+                    self.profile
+                );
+                return;
             }
-        }
+        };
+
+        self.inner.store(Arc::new(new_config));
+        info!("Config profile reloaded successfully.");
+    }
+}
+
+pub fn profile_path() -> String {
+    match env::args().nth(1) {
+        Some(profile) => profile,
+        None => DEFAULT_PROFILE.to_string(),
     }
 }
 
@@ -145,5 +157,8 @@ fn deserialize_single<'de, D>(deserializer: D) -> Result<ByteArray, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
-    deserialize_optional(deserializer).map(Option::unwrap_or_default)
+    deserialize_optional(deserializer).map(|value| match value {
+        Some(value) => value,
+        None => ByteArray::default(),
+    })
 }

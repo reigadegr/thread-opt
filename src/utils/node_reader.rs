@@ -2,7 +2,7 @@ use super::guard::FileGuard;
 use anyhow::{Result, anyhow};
 use compact_str::CompactString;
 use itoa::Buffer;
-use libc::{O_CREAT, O_TRUNC, O_WRONLY, c_void, chmod, chown, open, write};
+use libc::{O_CREAT, O_TRUNC, O_WRONLY, c_void, open, write};
 use likely_stable::unlikely;
 use std::{
     ffi::OsStr,
@@ -15,13 +15,19 @@ use stringzilla::sz;
 pub fn read_file<const N: usize>(file: &[u8]) -> Result<CompactString> {
     let buffer = read_to_byte::<N>(file)?;
     let pos = sz::find(buffer, b"\0");
-    let buffer = pos.map_or(&buffer[..], |pos| &buffer[..pos]);
+    let buffer = match pos {
+        Some(pos) => &buffer[..pos],
+        None => &buffer[..],
+    };
     let buffer = CompactString::from_utf8(buffer)?;
     Ok(buffer)
 }
 
 pub fn read_to_byte<const N: usize>(file: &[u8]) -> Result<[u8; N]> {
-    let end = sz::find(file, b"\0").unwrap_or(file.len());
+    let end = match sz::find(file, b"\0") {
+        Some(end) => end,
+        None => file.len(),
+    };
     let file = &file[..end];
     let file = OsStr::from_bytes(file);
 
@@ -48,18 +54,6 @@ pub fn write_to_byte(file: &[u8], msg: &[u8]) -> Result<()> {
         if unlikely(bytes_write == -1) {
             return Err(anyhow!("Cannot write file."));
         }
-    }
-    Ok(())
-}
-
-pub fn lock_val(file: &[u8], msg: &[u8]) -> Result<()> {
-    unsafe {
-        chown(file.as_ptr(), 0, 0);
-        chmod(file.as_ptr(), 0o644);
-        if write_to_byte(file, msg).is_err() {
-            return Err(anyhow!("Cannot write file."));
-        }
-        chmod(file.as_ptr(), 0o444);
     }
     Ok(())
 }

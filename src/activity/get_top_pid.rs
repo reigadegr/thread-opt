@@ -3,7 +3,7 @@ use atoi::atoi;
 use dumpsys_rs::Dumpsys;
 use inotify::{Inotify, WatchMask};
 use likely_stable::LikelyOption;
-use log::info;
+use log::{error, info};
 use ndk_sys::android_get_device_api_level;
 use stringzilla::stringzilla::{StringZillableBinary, find};
 
@@ -33,12 +33,17 @@ impl TopPidInfo {
                 .find(|line| find(line, b"Session{").is_some())
         };
 
-        pid.and_then_likely(|line| {
-            line.sz_rfind(b":")
-                .and_then_likely(|pos1| line[..pos1].sz_rfind(b" ").map(|pos2| &line[pos2 + 1..]))
-        })
-        .and_then_likely(atoi::<i32>)
-        .unwrap_or_default()
+        match pid
+            .and_then_likely(|line| {
+                line.sz_rfind(b":").and_then_likely(|pos1| {
+                    line[..pos1].sz_rfind(b" ").map(|pos2| &line[pos2 + 1..])
+                })
+            })
+            .and_then_likely(atoi::<i32>)
+        {
+            Some(pid) => pid,
+            None => i32::default(),
+        }
     }
 
     fn parse_a16(dump: &[u8]) -> i32 {
@@ -53,12 +58,17 @@ impl TopPidInfo {
                 .find(|line| find(line, b"Session{").is_some())
         };
 
-        pid.and_then_likely(|line| {
-            line.sz_rfind(b":")
-                .and_then_likely(|pos1| line[..pos1].sz_rfind(b" ").map(|pos2| &line[pos2 + 1..]))
-        })
-        .and_then_likely(atoi::<i32>)
-        .unwrap_or_default()
+        match pid
+            .and_then_likely(|line| {
+                line.sz_rfind(b":").and_then_likely(|pos1| {
+                    line[..pos1].sz_rfind(b" ").map(|pos2| &line[pos2 + 1..])
+                })
+            })
+            .and_then_likely(atoi::<i32>)
+        {
+            Some(pid) => pid,
+            None => i32::default(),
+        }
     }
 }
 
@@ -79,12 +89,24 @@ impl TopAppUtils {
     }
 
     fn init_inotify() -> Inotify {
-        let inotify = Inotify::init().unwrap();
-        inotify
-            .watches()
-            .add("/dev/input", WatchMask::ACCESS)
-            .unwrap();
-        inotify
+        loop {
+            let inotify = match Inotify::init() {
+                Ok(inotify) => inotify,
+                Err(e) => {
+                    error!("Failed to initialize input inotify: {e}, retrying");
+                    sleep_millis(1000);
+                    continue;
+                }
+            };
+
+            match inotify.watches().add("/dev/input", WatchMask::ACCESS) {
+                Ok(_) => return inotify,
+                Err(e) => {
+                    error!("Failed to watch /dev/input: {e}, retrying");
+                    sleep_millis(1000);
+                }
+            }
+        }
     }
 
     fn get_android_version() -> u8 {

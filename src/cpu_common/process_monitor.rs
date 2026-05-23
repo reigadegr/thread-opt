@@ -4,16 +4,19 @@ use rayon::prelude::*;
 // std::collections::HashMap 不再需要
 
 pub fn get_top1_tid(target_tids: &[i32]) -> i32 {
-    target_tids
+    match target_tids
         .par_iter()
         .map(|&tid| (tid, UsageTracker::new(tid).try_calculate()))
         .reduce_with(|(t1, u1), (t2, u2)| if u1 > u2 { (t1, u1) } else { (t2, u2) })
-        .map_or(-1, |(tid, _)| tid)
+    {
+        Some((tid, _)) => tid,
+        None => -1,
+    }
 }
 
 /// 优化后的 `get_top2_tids，使用并行` fold-reduce 模式
 pub fn get_top2_tids(target_tids: &[i32]) -> (i32, i32) {
-    target_tids
+    match target_tids
         .par_iter()
         // 1. 并行地创建 (tid, usage) 元组流
         .map(|&tid| (tid, UsageTracker::new(tid).try_calculate()))
@@ -45,5 +48,8 @@ pub fn get_top2_tids(target_tids: &[i32]) -> (i32, i32) {
             (all[0], all[1])
         })
         // 4. 处理输入为空的情况，并从最终结果中提取 tid
-        .map_or((-1, -1), |((tid1, _), (tid2, _))| (tid1, tid2))
+    {
+        Some(((tid1, _), (tid2, _))) => (tid1, tid2),
+        None => (-1, -1),
+    }
 }

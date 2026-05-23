@@ -45,7 +45,10 @@ impl Looper {
                     continue 'outer;
                 }
                 self.pid = pid;
-                let name = get_process_name(pid).unwrap_or_default();
+                let name = match get_process_name(pid) {
+                    Ok(name) => name,
+                    Err(_) => CompactString::default(),
+                };
                 self.global_package = name;
             }
 

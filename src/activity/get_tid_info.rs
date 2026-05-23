@@ -34,7 +34,9 @@ impl FileCache {
         let file = match self.files.entry(tid) {
             Vacant(e) => {
                 let path = get_proc_path::<32>(tid, b"/comm");
-                let end = sz::find(path, b"\0").unwrap_or(path.len());
+                let Some(end) = sz::find(path, b"\0") else {
+                    return Err(anyhow!("Invalid proc path for tid {tid}"));
+                };
                 let path_str = &path[..end];
                 let path_str = OsStr::from_bytes(path_str);
                 let file = File::open(path_str).map_err(|e| anyhow!("Cannot open file: {e}"))?;
@@ -92,7 +94,7 @@ impl TidUtils {
     }
 
     pub fn get_task_map(&mut self, pid: i32) -> &HashMap<i32, [u8; 16]> {
-        if self.last_refresh_task_map.elapsed() > Duration::from_millis(3000) {
+        if self.last_refresh_task_map.elapsed() > Duration::from_secs(3) {
             self.last_refresh_task_map = Instant::now();
             return &self.set_task_map(pid).task_map;
         }
@@ -135,9 +137,15 @@ impl TidUtils {
 
 pub fn read_task_dir(pid: i32) -> Result<HashSet<i32>> {
     let task_dir = get_proc_path::<32>(pid, b"/task");
-    let end = sz::find(task_dir, b"\0").unwrap_or(task_dir.len());
+    let Some(end) = sz::find(task_dir, b"\0") else {
+        return read_task_dir_from_path(&task_dir);
+    };
     let path_slice = &task_dir[..end];
 
+    read_task_dir_from_path(path_slice)
+}
+
+fn read_task_dir_from_path(path_slice: &[u8]) -> Result<HashSet<i32>> {
     let path = OsStr::from_bytes(path_slice);
 
     let fd = fs::openat(
@@ -158,7 +166,10 @@ pub fn read_task_dir(pid: i32) -> Result<HashSet<i32>> {
             if name.starts_with(b".") {
                 return Some(0);
             }
-            Some(atoi::<i32>(name).unwrap_or(0))
+            let Some(tid) = atoi::<i32>(name) else {
+                return Some(0);
+            };
+            Some(tid)
         }
         Some(Err(_)) => Some(0),
     })
@@ -181,7 +192,11 @@ pub fn get_process_name(pid: i32) -> Result<CompactString> {
     }
 
     let pos = sz::find(buffer, b"\0");
-    let buffer = pos.map_or(&buffer[..], |pos| &buffer[..pos]);
+    let Some(pos) = pos else {
+        let buffer = CompactString::from_utf8(&buffer[..])?;
+        return Ok(buffer);
+    };
+    let buffer = &buffer[..pos];
 
     let buffer = CompactString::from_utf8(buffer)?;
     Ok(buffer)

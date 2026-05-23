@@ -3,11 +3,16 @@ pub mod name_match;
 pub mod usage_top1;
 pub mod usage_top2;
 
-use crate::{activity::ActivityUtils, config::AtomicConfig, utils::sleep::sleep_millis};
+use crate::{
+    activity::ActivityUtils,
+    config::{AtomicConfig, profile_path},
+    utils::sleep::sleep_millis,
+};
+use anyhow::Result;
 use inotify::{Inotify, WatchMask};
 use log::{error, info};
 use looper::Looper;
-use std::{env, sync::Arc};
+use std::sync::Arc;
 
 pub struct Scheduler {
     looper: Looper,
@@ -15,25 +20,22 @@ pub struct Scheduler {
 }
 
 impl Scheduler {
-    #[must_use]
-    pub fn new() -> Self {
-        let atomic_config = Arc::new(AtomicConfig::init());
+    pub fn new() -> Result<Self> {
+        let atomic_config = Arc::new(AtomicConfig::init()?);
         let activity_utils = ActivityUtils::new();
         let looper = Looper::new(activity_utils);
 
-        Self {
+        Ok(Self {
             looper,
             atomic_config,
-        }
+        })
     }
 
     fn start_config_watcher(&self) {
         let config = Arc::clone(&self.atomic_config);
 
         std::thread::spawn(move || {
-            let config_path = env::args()
-                .nth(1)
-                .unwrap_or_else(|| "/data/adb/modules/thread_opt/thread_opt.toml".to_string());
+            let config_path = profile_path();
             let mut inotify = match Inotify::init() {
                 Ok(i) => i,
                 Err(e) => {
