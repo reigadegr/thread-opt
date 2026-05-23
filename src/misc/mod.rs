@@ -1,10 +1,11 @@
 pub mod logger;
-use crate::{cgroup::group_info::print_group_core, utils::node_reader::write_to_byte};
 use itoa::Buffer;
 use libc::getpid;
 use likely_stable::unlikely;
 use log::info;
 use logger::{init_log, log_metainfo};
+
+use crate::{cgroup::group_info::print_group_core, utils::node_reader::write_to_byte};
 
 pub fn init_misc() {
     working_in_background();

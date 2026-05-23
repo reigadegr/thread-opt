@@ -1,11 +1,13 @@
+use core::mem::size_of;
+use std::collections::HashSet;
+
+use libc::{cpu_set_t, sched_setaffinity};
+use rayon::prelude::*;
+
 use super::global_cpu_set::{
     get_background_cpu_set, get_dualo_cpu_set, get_middle_background_cpu_set, get_middle_cpu_set,
     get_only7_cpu_set, get_top_cpu_set, get_zero_six_cpu_set,
 };
-use core::mem::size_of;
-use libc::{cpu_set_t, sched_setaffinity};
-use rayon::prelude::*;
-use std::collections::HashSet;
 
 // 宏：生成单个线程绑定函数
 macro_rules! bind_thread {

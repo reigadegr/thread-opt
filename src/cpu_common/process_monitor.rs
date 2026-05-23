@@ -1,6 +1,7 @@
 // From shadow3aaa fas-rs
-use super::usage_tracker::UsageTracker;
 use rayon::prelude::*;
+
+use super::usage_tracker::UsageTracker;
 // std::collections::HashMap 不再需要
 
 pub fn get_top1_tid(target_tids: &[i32]) -> i32 {

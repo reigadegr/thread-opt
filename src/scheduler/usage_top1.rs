@@ -1,3 +1,5 @@
+use log::info;
+
 use super::Looper;
 use crate::{
     config::{self, UsageTop1},
@@ -6,7 +8,6 @@ use crate::{
         usage_top1::{self, common::CmdType},
     },
 };
-use log::info;
 
 impl Looper {
     fn bind_usage_top1<F>(

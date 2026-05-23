@@ -1,7 +1,9 @@
+use std::sync::LazyLock;
+
+use libc::cpu_set_t;
+
 use super::cpu_set_initer::create_cpu_set;
 use crate::cgroup::group_info::{get_background_group, get_middle_group, get_top_group};
-use libc::cpu_set_t;
-use std::sync::LazyLock;
 
 // 定义静态变量的宏
 macro_rules! cpuset_once_lazy {

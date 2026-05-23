@@ -1,11 +1,4 @@
-use crate::utils::node_reader::{get_proc_path, read_to_byte};
-use anyhow::{Result, anyhow};
-use atoi::atoi;
-use compact_str::CompactString;
 use core::time::Duration;
-use log::warn;
-use minstant::Instant;
-use rustix::fs::{self, CWD, Mode, OFlags};
 use std::{
     collections::{
         HashMap, HashSet,
@@ -16,7 +9,16 @@ use std::{
     io::{ErrorKind, Read, Seek, SeekFrom},
     os::unix::ffi::OsStrExt,
 };
+
+use anyhow::{Result, anyhow};
+use atoi::atoi;
+use compact_str::CompactString;
+use log::warn;
+use minstant::Instant;
+use rustix::fs::{self, CWD, Mode, OFlags};
 use stringzilla::sz;
+
+use crate::utils::node_reader::{get_proc_path, read_to_byte};
 
 #[derive(Debug)]
 pub struct FileCache {

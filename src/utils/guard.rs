@@ -1,4 +1,5 @@
 use core::ptr::NonNull;
+
 use libc::{DIR, c_int, close, closedir};
 
 pub struct DirGuard(Option<NonNull<DIR>>);

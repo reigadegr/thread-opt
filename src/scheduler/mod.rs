@@ -3,16 +3,18 @@ pub mod name_match;
 pub mod usage_top1;
 pub mod usage_top2;
 
+use std::sync::Arc;
+
+use anyhow::Result;
+use inotify::{Inotify, WatchMask};
+use log::{error, info};
+use looper::Looper;
+
 use crate::{
     activity::ActivityUtils,
     config::{AtomicConfig, profile_path},
     utils::sleep::sleep_millis,
 };
-use anyhow::Result;
-use inotify::{Inotify, WatchMask};
-use log::{error, info};
-use looper::Looper;
-use std::sync::Arc;
 
 pub struct Scheduler {
     looper: Looper,

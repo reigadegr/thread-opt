@@ -1,3 +1,9 @@
+use std::sync::Arc;
+
+use anyhow::Result;
+use compact_str::CompactString;
+use log::info;
+
 use crate::{
     activity::{
         ActivityUtils,
@@ -6,10 +12,6 @@ use crate::{
     config::AtomicConfig,
     utils::affinity_utils::global_cpu_utils::bind_list_to_background,
 };
-use anyhow::Result;
-use compact_str::CompactString;
-use log::info;
-use std::sync::Arc;
 
 pub struct Looper {
     pub activity_utils: ActivityUtils,

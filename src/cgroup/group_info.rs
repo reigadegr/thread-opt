@@ -1,5 +1,6 @@
-use super::analysis::{BACKEND_GROUP, MIDDLE_GROUP, TOP_GROUP};
 use log::info;
+
+use super::analysis::{BACKEND_GROUP, MIDDLE_GROUP, TOP_GROUP};
 
 pub fn get_top_group() -> &'static [u8] {
     &TOP_GROUP

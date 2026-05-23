@@ -1,13 +1,14 @@
 pub mod cfg_start;
 mod common;
 
-use crate::{policy::pkg_cfg::StartArgs, utils::node_reader::get_proc_path};
 use common::Policy;
 use likely_stable::unlikely;
 #[cfg(debug_assertions)]
 use log::debug;
 #[cfg(debug_assertions)]
 use minstant::Instant;
+
+use crate::{policy::pkg_cfg::StartArgs, utils::node_reader::get_proc_path};
 
 struct StartTask<'b, 'a: 'b> {
     policy: &'b Policy<'b>,

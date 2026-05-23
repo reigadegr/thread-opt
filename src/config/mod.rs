@@ -1,12 +1,14 @@
 pub mod format_profile;
-use crate::policy::usage_top1::common::CmdType as Top1Enum;
+use std::{collections::HashSet, env, fs, sync::Arc};
+
 use anyhow::Result;
 use arc_swap::{ArcSwap, Guard};
 use compact_str::CompactString;
 use format_profile::format_toml;
 use log::{error, info};
 use serde::{Deserialize, de::Error};
-use std::{collections::HashSet, env, fs, sync::Arc};
+
+use crate::policy::usage_top1::common::CmdType as Top1Enum;
 
 const MAX_COMM_SIZE: usize = 16;
 const DEFAULT_PROFILE: &str = "/data/adb/modules/thread_opt/thread_opt.toml";

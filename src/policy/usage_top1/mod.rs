@@ -1,12 +1,13 @@
 pub mod cfg_start;
 pub mod common;
 
-use super::get_thread_tids;
-use crate::{cpu_common::process_monitor::get_top1_tid, policy::pkg_cfg::StartArgs};
 use common::{CmdType, Policy};
 use likely_stable::unlikely;
 #[cfg(debug_assertions)]
 use log::debug;
+
+use super::get_thread_tids;
+use crate::{cpu_common::process_monitor::get_top1_tid, policy::pkg_cfg::StartArgs};
 
 struct StartTask<'b, 'a: 'b> {
     policy: &'b Policy<'b>,

@@ -1,10 +1,12 @@
-use crate::policy::affinity_policy::{dualo_policy, only7_policy, tid_list_t2_policy};
+use std::collections::HashMap;
+
 #[cfg(debug_assertions)]
 use log::debug;
 #[cfg(debug_assertions)]
 use minstant::Instant;
 use rayon::prelude::*;
-use std::collections::HashMap;
+
+use crate::policy::affinity_policy::{dualo_policy, only7_policy, tid_list_t2_policy};
 
 // 定义线程类型
 #[derive(serde::Deserialize)]

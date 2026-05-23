@@ -1,11 +1,12 @@
-use super::group_info::{get_background_group, get_top_group};
-use crate::utils::{guard::DirGuard, node_reader::read_file};
 use anyhow::{Result, anyhow};
 use compact_str::CompactString;
 use libc::{DT_DIR, opendir, readdir};
 use likely_stable::{likely, unlikely};
 use log::info;
 use stringzilla::sz;
+
+use super::group_info::{get_background_group, get_top_group};
+use crate::utils::{guard::DirGuard, node_reader::read_file};
 
 pub static TOP_GROUP: std::sync::LazyLock<Box<[u8]>> = std::sync::LazyLock::new(|| {
     let cores = analysis_cgroup_new("7");

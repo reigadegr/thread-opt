@@ -1,6 +1,7 @@
-use crate::utils::node_reader::{get_proc_path, read_to_byte};
 use atoi::atoi;
 use stringzilla::sz;
+
+use crate::utils::node_reader::{get_proc_path, read_to_byte};
 
 #[derive(Debug, Clone)]
 pub struct UsageTracker {

@@ -1,3 +1,5 @@
+use std::sync::LazyLock;
+
 use crate::{
     cgroup::group_info::{get_background_group, get_middle_group, get_top_group},
     utils::affinity_utils::global_cpu_utils::{
@@ -6,7 +8,6 @@ use crate::{
         bind_tid_to_zero_six,
     },
 };
-use std::sync::LazyLock;
 
 static ONLY7_POLICY_FN: LazyLock<fn(i32)> = LazyLock::new(|| {
     if get_top_group() == [6] {

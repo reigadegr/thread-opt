@@ -1,4 +1,3 @@
-use crate::utils::sleep::sleep_millis;
 use atoi::atoi;
 use dumpsys_rs::Dumpsys;
 use inotify::{Inotify, WatchMask};
@@ -6,6 +5,8 @@ use likely_stable::LikelyOption;
 use log::{error, info};
 use ndk_sys::android_get_device_api_level;
 use stringzilla::stringzilla::{StringZillableBinary, find};
+
+use crate::utils::sleep::sleep_millis;
 
 #[derive(Default)]
 pub struct TopPidInfo {

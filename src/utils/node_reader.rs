@@ -1,16 +1,18 @@
-use super::guard::FileGuard;
-use anyhow::{Result, anyhow};
-use compact_str::CompactString;
-use itoa::Buffer;
-use libc::{O_CREAT, O_TRUNC, O_WRONLY, c_void, open, write};
-use likely_stable::unlikely;
 use std::{
     ffi::OsStr,
     fs::File,
     io::{ErrorKind, Read},
     os::unix::ffi::OsStrExt,
 };
+
+use anyhow::{Result, anyhow};
+use compact_str::CompactString;
+use itoa::Buffer;
+use libc::{O_CREAT, O_TRUNC, O_WRONLY, c_void, open, write};
+use likely_stable::unlikely;
 use stringzilla::sz;
+
+use super::guard::FileGuard;
 
 pub fn read_file<const N: usize>(file: &[u8]) -> Result<CompactString> {
     let buffer = read_to_byte::<N>(file)?;

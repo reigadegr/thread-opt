@@ -1,15 +1,17 @@
+use std::collections::HashMap;
+
+#[cfg(debug_assertions)]
+use log::debug;
+#[cfg(debug_assertions)]
+use minstant::Instant;
+use rayon::prelude::*;
+
 use crate::{
     config::ByteArray,
     policy::affinity_policy::{
         background_policy, dualo_policy, middle_policy, mono_policy, only7_policy, top_policy,
     },
 };
-#[cfg(debug_assertions)]
-use log::debug;
-#[cfg(debug_assertions)]
-use minstant::Instant;
-use rayon::prelude::*;
-use std::collections::HashMap;
 
 // 定义线程类型
 enum CmdType {

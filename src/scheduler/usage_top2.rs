@@ -1,9 +1,10 @@
+use log::info;
+
 use super::Looper;
 use crate::{
     config::UsageTop2,
     policy::{pkg_cfg::StartArgs, usage_top2::cfg_start},
 };
-use log::info;
 
 impl Looper {
     fn bind_usage_top2<F>(&mut self, start_task: F, comm1: &[u8], comm2: Option<&[u8]>)
