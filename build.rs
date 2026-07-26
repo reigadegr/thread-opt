@@ -1,7 +1,7 @@
 #![deny(clippy::pedantic)]
 #![warn(clippy::nursery)]
 use anyhow::Result;
-use vergen::{BuildBuilder, CargoBuilder, Emitter, RustcBuilder, SysinfoBuilder};
+use vergen::{Build, Cargo, Emitter, Rustc, Sysinfo};
 
 fn main() -> Result<()> {
     vergen()?;
@@ -9,10 +9,10 @@ fn main() -> Result<()> {
 }
 
 fn vergen() -> Result<()> {
-    let build = BuildBuilder::all_build()?;
-    let cargo = CargoBuilder::all_cargo()?;
-    let rustc = RustcBuilder::all_rustc()?;
-    let si = SysinfoBuilder::all_sysinfo()?;
+    let build = Build::all_build();
+    let cargo = Cargo::all_cargo();
+    let rustc = Rustc::all_rustc();
+    let si = Sysinfo::all_sysinfo();
 
     Emitter::default()
         .add_instructions(&build)?
