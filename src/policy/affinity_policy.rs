@@ -3,9 +3,9 @@ use std::sync::LazyLock;
 use crate::{
     cgroup::group_info::{get_background_group, get_middle_group, get_top_group},
     utils::affinity_utils::global_cpu_utils::{
-        bind_list_to_middle, bind_list_to_middle_background, bind_tid_to_background,
-        bind_tid_to_dualo, bind_tid_to_middle, bind_tid_to_only7, bind_tid_to_top,
-        bind_tid_to_zero_six,
+        bind_list_to_middle, bind_list_to_middle_background, bind_tid_to_all,
+        bind_tid_to_background, bind_tid_to_dualo, bind_tid_to_middle, bind_tid_to_only7,
+        bind_tid_to_top, bind_tid_to_zero_six,
     },
 };
 
@@ -48,6 +48,10 @@ static TID_LIST_T2_FN: LazyLock<fn(&[i32])> = LazyLock::new(|| {
 
 pub fn top_policy(tid: i32) {
     bind_tid_to_top(tid);
+}
+
+pub fn all_policy(tid: i32) {
+    bind_tid_to_all(tid);
 }
 
 pub fn dualo_policy(tid: i32) {

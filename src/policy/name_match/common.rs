@@ -9,12 +9,14 @@ use rayon::prelude::*;
 use crate::{
     config::ByteArray,
     policy::affinity_policy::{
-        background_policy, dualo_policy, middle_policy, mono_policy, only7_policy, top_policy,
+        all_policy, background_policy, dualo_policy, middle_policy, mono_policy, only7_policy,
+        top_policy,
     },
 };
 
 // 定义线程类型
 enum CmdType {
+    All,
     Top,
     Middle,
     Mono,
@@ -24,6 +26,7 @@ enum CmdType {
 }
 
 pub struct Policy<'a> {
+    pub all: &'a [ByteArray],
     pub top: &'a [ByteArray],
     pub dualo: &'a [ByteArray],
     pub only7: &'a [ByteArray],
@@ -35,6 +38,7 @@ pub struct Policy<'a> {
 impl Policy<'_> {
     pub const fn new(policy: &Self) -> Self {
         Self {
+            all: policy.all,
             top: policy.top,
             dualo: policy.dualo,
             only7: policy.only7,
@@ -45,6 +49,9 @@ impl Policy<'_> {
     }
 
     fn get_cmd_type(&self, comm: &[u8]) -> CmdType {
+        if self.all.iter().any(|prefix| comm.starts_with(prefix)) {
+            return CmdType::All;
+        }
         if self.top.iter().any(|prefix| comm.starts_with(prefix)) {
             return CmdType::Top;
         }
@@ -93,6 +100,7 @@ impl Policy<'_> {
 // 执行线程绑定任务
 fn execute_task(cmd_type: &CmdType, tid: i32) {
     match cmd_type {
+        CmdType::All => all_policy(tid),
         CmdType::Top => top_policy(tid),
         CmdType::Dualo => dualo_policy(tid),
         CmdType::Only7 => only7_policy(tid),

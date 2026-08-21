@@ -5,8 +5,8 @@ use libc::{cpu_set_t, sched_setaffinity};
 use rayon::prelude::*;
 
 use super::global_cpu_set::{
-    get_background_cpu_set, get_dualo_cpu_set, get_middle_background_cpu_set, get_middle_cpu_set,
-    get_only7_cpu_set, get_top_cpu_set, get_zero_six_cpu_set,
+    get_all_cpu_set, get_background_cpu_set, get_dualo_cpu_set, get_middle_background_cpu_set,
+    get_middle_cpu_set, get_only7_cpu_set, get_top_cpu_set, get_zero_six_cpu_set,
 };
 
 // 宏：生成单个线程绑定函数
@@ -50,6 +50,7 @@ macro_rules! bind_list_hash_set {
 
 // 生成单个绑定函数
 bind_thread!(bind_tid_to_top, get_top_cpu_set);
+bind_thread!(bind_tid_to_all, get_all_cpu_set);
 bind_thread!(bind_tid_to_only7, get_only7_cpu_set);
 bind_thread!(bind_tid_to_dualo, get_dualo_cpu_set);
 bind_thread!(bind_tid_to_zero_six, get_zero_six_cpu_set);

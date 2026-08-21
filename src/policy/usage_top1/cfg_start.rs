@@ -8,6 +8,7 @@ pub fn start_task(
     cmd_type: &CmdType,
 ) {
     let policy = Policy {
+        all: &policy.all,
         top: &policy.top,
         dualo: &policy.dualo,
         only7: &policy.only7,

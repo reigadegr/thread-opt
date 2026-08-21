@@ -1,6 +1,6 @@
 use log::info;
 
-use super::analysis::{BACKEND_GROUP, MIDDLE_GROUP, TOP_GROUP};
+use super::analysis::{ALL_CPU_INDICES, BACKEND_GROUP, MIDDLE_GROUP, TOP_GROUP};
 
 pub fn get_top_group() -> &'static [u8] {
     &TOP_GROUP
@@ -12,6 +12,10 @@ pub fn get_middle_group() -> &'static [u8] {
 
 pub fn get_background_group() -> &'static [u8] {
     &BACKEND_GROUP
+}
+
+pub fn get_all_cpu_indices() -> &'static [u8] {
+    &ALL_CPU_INDICES
 }
 
 pub fn print_group_core() {

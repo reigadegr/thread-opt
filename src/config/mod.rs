@@ -107,6 +107,8 @@ pub struct UsageTop2 {
 
 #[derive(Deserialize, Eq, Hash, PartialEq)]
 pub struct Policy {
+    #[serde(default, deserialize_with = "deserialize_vec")]
+    pub all: Box<[ByteArray]>,
     #[serde(deserialize_with = "deserialize_vec")]
     pub top: Box<[ByteArray]>,
     #[serde(deserialize_with = "deserialize_vec")]
@@ -163,4 +165,28 @@ where
         Some(value) => value,
         None => ByteArray::default(),
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Policy;
+
+    #[test]
+    fn policy_without_all_field_remains_compatible() {
+        let policy: Policy = match toml::from_str(
+            r"
+                top = []
+                dualo = []
+                only7 = []
+                middle = []
+                mono = []
+                background = []
+            ",
+        ) {
+            Ok(policy) => policy,
+            Err(error) => panic!("test policy should deserialize: {error}"),
+        };
+
+        assert!(policy.all.is_empty());
+    }
 }

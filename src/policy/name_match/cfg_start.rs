@@ -3,6 +3,7 @@ use crate::{config, policy::pkg_cfg::StartArgs};
 
 pub fn start_task(args: &mut StartArgs<'_>, policy: &config::Policy) {
     let policy = Policy {
+        all: &policy.all,
         top: &policy.top,
         dualo: &policy.dualo,
         only7: &policy.only7,

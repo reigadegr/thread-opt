@@ -1,13 +1,32 @@
+use std::sync::LazyLock;
+
 use anyhow::{Result, anyhow};
 use compact_str::CompactString;
-use libc::{DT_DIR, opendir, readdir};
+use libc::{DT_DIR, cpu_set_t, opendir, readdir};
 use likely_stable::{likely, unlikely};
 use log::info;
 
 use super::group_info::{get_background_group, get_top_group};
 use crate::utils::{guard::DirGuard, node_reader::read_file};
 
-pub static TOP_GROUP: std::sync::LazyLock<Box<[u8]>> = std::sync::LazyLock::new(|| {
+pub static ALL_CPU_INDICES: LazyLock<Box<[u8]>> = LazyLock::new(|| {
+    let cpu_count = unsafe { libc::sysconf(libc::_SC_NPROCESSORS_ONLN) };
+    let max_cpus = core::mem::size_of::<cpu_set_t>() * 8;
+    let cpu_count = match usize::try_from(cpu_count) {
+        Ok(cpu_count) => cpu_count.min(max_cpus),
+        Err(_) => 0,
+    };
+
+    all_cpu_indices_for_count(cpu_count)
+});
+
+fn all_cpu_indices_for_count(cpu_count: usize) -> Box<[u8]> {
+    (1..cpu_count)
+        .filter_map(|cpu| u8::try_from(cpu).ok())
+        .collect()
+}
+
+pub static TOP_GROUP: LazyLock<Box<[u8]>> = LazyLock::new(|| {
     let cores = analysis_cgroup_new("7");
     if let Ok(cores) = cores {
         if *cores == [4, 5, 6, 7] {
@@ -18,16 +37,15 @@ pub static TOP_GROUP: std::sync::LazyLock<Box<[u8]>> = std::sync::LazyLock::new(
     Box::new([6])
 });
 
-pub static BACKEND_GROUP: std::sync::LazyLock<Box<[u8]>> =
-    std::sync::LazyLock::new(|| match analysis_cgroup_new("0") {
-        Ok(cores) => cores,
-        Err(e) => {
-            info!("BACKEND_GROUP initializing with default core 0: {e}");
-            Box::new([0])
-        }
-    });
+pub static BACKEND_GROUP: LazyLock<Box<[u8]>> = LazyLock::new(|| match analysis_cgroup_new("0") {
+    Ok(cores) => cores,
+    Err(e) => {
+        info!("BACKEND_GROUP initializing with default core 0: {e}");
+        Box::new([0])
+    }
+});
 
-pub static MIDDLE_GROUP: std::sync::LazyLock<Box<[u8]>> = std::sync::LazyLock::new(|| {
+pub static MIDDLE_GROUP: LazyLock<Box<[u8]>> = LazyLock::new(|| {
     let mut all_core =
         unsafe { heapless::Vec::<u8, 8>::from_slice(&[0, 1, 2, 3, 4, 5, 6, 7]).unwrap_unchecked() };
     let background_values = get_background_group();
@@ -147,4 +165,17 @@ fn init_group(core: &str, nums: &Vec<&str>) -> Result<Box<[u8]>> {
         need_init.push(i);
     }
     Ok(need_init.into_boxed_slice())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::all_cpu_indices_for_count;
+
+    #[test]
+    fn all_cpu_indices_exclude_cpu0() {
+        assert_eq!(
+            all_cpu_indices_for_count(8).as_ref(),
+            &[1, 2, 3, 4, 5, 6, 7]
+        );
+    }
 }

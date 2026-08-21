@@ -3,7 +3,9 @@ use std::sync::LazyLock;
 use libc::cpu_set_t;
 
 use super::cpu_set_initer::create_cpu_set;
-use crate::cgroup::group_info::{get_background_group, get_middle_group, get_top_group};
+use crate::cgroup::group_info::{
+    get_all_cpu_indices, get_background_group, get_middle_group, get_top_group,
+};
 
 // 定义静态变量的宏
 macro_rules! cpuset_once_lazy {
@@ -23,6 +25,7 @@ macro_rules! cpuset_getter {
 
 // 使用宏定义静态变量
 cpuset_once_lazy!(TOP_CPU_SET, get_top_group());
+cpuset_once_lazy!(ALL_CPU_SET, get_all_cpu_indices());
 cpuset_once_lazy!(ONLY7_CPU_SET, &[7]);
 cpuset_once_lazy!(ONLY6_CPU_SET, &[6]);
 cpuset_once_lazy!(ZERO_SIX_CPU_SET, &[1, 2, 3, 4, 5, 6]);
@@ -35,6 +38,7 @@ cpuset_once_lazy!(
 
 // 使用宏定义获取函数
 cpuset_getter!(get_top_cpu_set, TOP_CPU_SET);
+cpuset_getter!(get_all_cpu_set, ALL_CPU_SET);
 cpuset_getter!(get_only7_cpu_set, ONLY7_CPU_SET);
 cpuset_getter!(get_dualo_cpu_set, ONLY6_CPU_SET);
 cpuset_getter!(get_zero_six_cpu_set, ZERO_SIX_CPU_SET);
