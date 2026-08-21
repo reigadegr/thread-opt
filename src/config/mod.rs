@@ -6,7 +6,10 @@ use arc_swap::{ArcSwap, Guard};
 use compact_str::CompactString;
 use format_profile::format_toml;
 use log::{error, info};
-use serde::{Deserialize, de::Error};
+use serde::{
+    Deserialize,
+    de::{Error, SeqAccess, Visitor},
+};
 
 use crate::policy::usage_top1::common::CmdType as Top1Enum;
 
@@ -134,27 +137,52 @@ fn str_to_byte_array(s: &str) -> Result<ByteArray, String> {
     heapless::Vec::from_slice(slice).map_err(|e| e.to_string())
 }
 
+struct ByteArrayListVisitor;
+
+impl<'de> Visitor<'de> for ByteArrayListVisitor {
+    type Value = Vec<ByteArray>;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter.write_str("a sequence of thread name prefixes")
+    }
+
+    fn visit_seq<A>(self, mut sequence: A) -> Result<Self::Value, A::Error>
+    where
+        A: SeqAccess<'de>,
+    {
+        let mut prefixes = if let Some(capacity) = sequence.size_hint() {
+            Vec::with_capacity(capacity)
+        } else {
+            Vec::new()
+        };
+
+        while let Some(prefix) = sequence.next_element::<CompactString>()? {
+            prefixes.push(str_to_byte_array(&prefix).map_err(Error::custom)?);
+        }
+
+        Ok(prefixes)
+    }
+}
+
+fn deserialize_byte_arrays<'de, D>(deserializer: D) -> Result<Vec<ByteArray>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    deserializer.deserialize_seq(ByteArrayListVisitor)
+}
+
 fn deserialize_vec<'de, D>(deserializer: D) -> Result<Box<[ByteArray]>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
-    let strings: Box<[CompactString]> = Vec::deserialize(deserializer)?.into();
-    strings
-        .iter()
-        .map(|s| str_to_byte_array(s).map_err(Error::custom))
-        .collect::<Result<Vec<_>, _>>()
-        .map(Vec::into_boxed_slice)
+    deserialize_byte_arrays(deserializer).map(Vec::into_boxed_slice)
 }
 
 fn deserialize_optional<'de, D>(deserializer: D) -> Result<Option<ByteArray>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
-    let strings: Box<[CompactString]> = Vec::deserialize(deserializer)?.into();
-    match strings.first() {
-        Some(s) => Ok(Some(str_to_byte_array(s).map_err(Error::custom)?)),
-        None => Ok(None),
-    }
+    Ok(deserialize_byte_arrays(deserializer)?.into_iter().next())
 }
 
 fn deserialize_single<'de, D>(deserializer: D) -> Result<ByteArray, D::Error>
@@ -169,7 +197,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::Policy;
+    use super::{MAX_COMM_SIZE, Policy, UsageTop2};
 
     #[test]
     fn policy_without_all_field_remains_compatible() {
@@ -188,5 +216,23 @@ mod tests {
         };
 
         assert!(policy.all.is_empty());
+    }
+
+    #[test]
+    fn thread_name_prefixes_are_truncated_and_optional_values_use_the_first_item() {
+        let config: UsageTop2 = match toml::from_str(
+            r#"
+                packages = ["com.example.game"]
+                max_comm = ["abcdefghijklmnop-extra"]
+                second_comm = ["first", "ignored"]
+            "#,
+        ) {
+            Ok(config) => config,
+            Err(error) => panic!("usage_top2 should deserialize: {error}"),
+        };
+
+        assert_eq!(config.max_comm.as_slice(), b"abcdefghijklmnop");
+        assert_eq!(config.max_comm.len(), MAX_COMM_SIZE);
+        assert_eq!(config.second_comm.as_deref(), Some(&b"first"[..]));
     }
 }
