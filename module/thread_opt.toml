@@ -25,13 +25,18 @@ background = []
 
 # 单纯线程前缀的匹配，ue游戏
 [[comm_match]]
-packages = ["com.kurogame.mingchao", "com.tencent.mf.uam"]
+packages = [
+    "com.kurogame.mingchao",
+    "com.hottagames.yh.laohu",
+    "com.tencent.mf.uam",
+    "com.tencent.nrc",
+]
 [comm_match.policy]
 all = []
 top = ["Pool"]
-dualo = ["RHIThread"]
+dualo = ["RenderThread"]
 only7 = ["GameThread"]
-middle = ["RenderThread"]
+middle = []
 mono = []
 background = []
 
