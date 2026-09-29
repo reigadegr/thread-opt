@@ -1,5 +1,5 @@
 use atoi::atoi;
-use dumpsys_rs::Dumpsys;
+use dumpsys_rs::BoundDumpsys;
 use inotify::{Inotify, WatchMask};
 use likely_stable::LikelyOption;
 use log::{error, info};
@@ -75,16 +75,19 @@ impl TopPidInfo {
 
 pub struct TopAppUtils {
     android_version: u8,
-    dumper: Dumpsys,
+    dumper: BoundDumpsys,
     inotify: Inotify,
 }
 
 impl TopAppUtils {
-    fn init_dumper() -> Dumpsys {
+    fn init_dumper() -> BoundDumpsys {
         loop {
-            match Dumpsys::new("window") {
-                Some(d) => break d,
-                None => sleep_millis(1000),
+            match BoundDumpsys::new("window") {
+                Ok(dumper) => break dumper,
+                Err(e) => {
+                    error!("Failed to bind dumpsys window service: {e}, retrying");
+                    sleep_millis(1000);
+                }
             }
         }
     }
