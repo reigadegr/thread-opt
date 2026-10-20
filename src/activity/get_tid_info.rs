@@ -11,7 +11,6 @@ use std::{
 };
 
 use anyhow::{Result, anyhow};
-use atoi::atoi;
 use compact_str::CompactString;
 use log::warn;
 use memchr::memchr;
@@ -168,7 +167,7 @@ fn read_task_dir_from_path(path_slice: &[u8]) -> Result<HashSet<i32>> {
             if name.starts_with(b".") {
                 return Some(0);
             }
-            let Some(tid) = atoi::<i32>(name) else {
+            let Some(tid) = atoi_simd::parse::<i32, false, false>(name).ok() else {
                 return Some(0);
             };
             Some(tid)

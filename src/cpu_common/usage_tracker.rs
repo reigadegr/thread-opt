@@ -1,4 +1,3 @@
-use atoi::atoi;
 use memchr::memchr;
 
 use crate::utils::node_reader::{get_proc_path, read_to_byte};
@@ -29,7 +28,7 @@ fn get_thread_cpu_time(tid: i32) -> u64 {
         Some(pos) => &buffer[..pos],
         None => &buffer[..],
     };
-    let Some(usage) = atoi::<u64>(buffer) else {
+    let Some(usage) = atoi_simd::parse::<u64, false, false>(buffer).ok() else {
         return 0;
     };
     usage
