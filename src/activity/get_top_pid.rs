@@ -109,8 +109,6 @@ impl TopAppUtils {
                 }
             }
         };
-        let info = TopPidInfo::new(&dump);
-        info!("当前前台 PID: {}", info.pid);
-        info
+        TopPidInfo::new(&dump)
     }
 }
