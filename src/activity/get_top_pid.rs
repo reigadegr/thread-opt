@@ -1,5 +1,4 @@
 use dumpsys_rs::BoundDumpsys;
-use inotify::{Inotify, WatchMask};
 use log::{error, info};
 use regex::Regex;
 use std::sync::LazyLock;
@@ -42,7 +41,6 @@ impl TopPidInfo {
 
 pub struct TopAppUtils {
     dumper: BoundDumpsys,
-    inotify: Inotify,
 }
 
 impl TopAppUtils {
@@ -58,47 +56,16 @@ impl TopAppUtils {
         }
     }
 
-    fn init_inotify() -> Inotify {
-        loop {
-            let inotify = match Inotify::init() {
-                Ok(inotify) => inotify,
-                Err(e) => {
-                    error!("Failed to initialize input inotify: {e}, retrying");
-                    sleep_millis(1000);
-                    continue;
-                }
-            };
-
-            match inotify.watches().add("/dev/input", WatchMask::ACCESS) {
-                Ok(_) => return inotify,
-                Err(e) => {
-                    error!("Failed to watch /dev/input: {e}, retrying");
-                    sleep_millis(1000);
-                }
-            }
-        }
-    }
-
     pub fn new() -> Self {
         let dumper = Self::init_dumper();
-        let inotify = Self::init_inotify();
-        Self { dumper, inotify }
+        Self { dumper }
     }
 
-    pub fn get_top_pid(&mut self) -> i32 {
+    pub fn get_top_pid(&self) -> i32 {
         self.set_top_pid().pid
     }
 
-    pub fn set_top_pid(&mut self) -> TopPidInfo {
-        // loop {
-        // match self.inotify.read_events_blocking(&mut [0; 1024]) {
-        // Ok(_) => break,
-        // Err(e) => {
-        // info!("Failed to read events: {e}, retrying");
-        // sleep_millis(200);
-        // }
-        // }
-        // }
+    pub fn set_top_pid(&self) -> TopPidInfo {
         sleep_millis(900);
         let dump = loop {
             match self.dumper.dump_to_byte::<1024>(&["lru"]) {
