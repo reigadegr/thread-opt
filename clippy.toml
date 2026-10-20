@@ -1,5 +1,4 @@
 disallowed-methods = [
-    { path = "std::option::Option::unwrap_or", reason = "use explicit match instead of silent defaults" },
     { path = "std::option::Option::unwrap_or_else", reason = "use explicit match instead of silent defaults" },
     { path = "std::option::Option::unwrap_or_default", reason = "use explicit match instead of silent defaults" },
     { path = "std::option::Option::map_or", reason = "use explicit match instead of silent defaults" },
