@@ -1,1 +1,7 @@
-cargo ndk --platform 35 -t arm64-v8a clippy --fix --allow-dirty --allow-staged -- -W clippy::all -W clippy::pedantic -W clippy::nursery -W clippy::style -W clippy::complexity -W clippy::perf -W clippy::correctness -A clippy::restriction
+#!/bin/sh
+export RUSTFLAGS="
+    --cfg tokio_unstable
+    -C link-arg=-fuse-ld=mold
+    -C link-args=-Wl,--gc-sections,--as-needed
+"
+cargo clippy --workspace --fix --allow-dirty --allow-staged --all --all-targets --all-features --no-deps
