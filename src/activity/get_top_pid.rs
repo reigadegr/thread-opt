@@ -1,40 +1,36 @@
+use atoi::atoi;
 use dumpsys_rs::BoundDumpsys;
+use likely_stable::LikelyOption;
 use log::{error, info};
-use regex::Regex;
-use std::sync::LazyLock;
+use memchr::{memchr, memmem, memrchr};
 
 use crate::utils::sleep::sleep_millis;
 
 /// 匹配 `dumpsys activity lru` 中的前台 TOP 行，抓取 PID：
 /// `#59: fg       TOP  LCMNFUATI 28546:bin.mt.plus/u0a328 act:activities|recents`
-///
-/// - `[ \t]*` 而非 `\s*`，避免 `(?m)` 下 `^` 跨行吞掉空行
-/// - `\s+fg\s+TOP\b` 排除 `vis + 2 TOP` 之类非前台行
-/// - 唯一捕获组 `(\d+)` 就是 PID；`[A-Za-z0-9_.]+/` 用非捕获写法，
-///   仅作为锚点排除 `act:activities|recents` 这类假冒号
-static FG_TOP_RE: LazyLock<Regex> = LazyLock::new(|| {
-    let pattern = r"(?m)^[ \t]*#\d+:\s+fg\s+TOP\b.*?\s(\d+):[A-Za-z0-9_.]+/";
-    match Regex::new(pattern) {
-        Ok(re) => re,
-        Err(e) => panic!("FG_TOP_RE 正则字面量非法: {e}"),
-    }
-});
 
 #[derive(Default)]
 pub struct TopPidInfo {
     pid: i32,
 }
 
+fn extract_pid(line: &[u8]) -> Option<i32> {
+    let top = memmem::find(line, b" TOP")?;
+    let colon = top + memchr(b':', &line[top..])?;
+    let space = memrchr(b' ', &line[..colon])?;
+    let digits = &line[space + 1..colon];
+
+    atoi_simd::parse::<i32, false, false>(digits).ok()
+}
+
 impl TopPidInfo {
     pub fn new(dump: &[u8]) -> Self {
-        let text = String::from_utf8_lossy(dump);
-        let pid = match FG_TOP_RE.captures(&text) {
-            Some(caps) => match caps[1].parse::<i32>() {
-                Ok(pid) => pid,
-                Err(_) => i32::default(),
-            },
-            None => i32::default(),
-        };
+        let top_flag = memmem::Finder::new(b" TOP");
+        let pid = dump
+            .split(|b| *b == b'\n')
+            .find(|line| top_flag.find(line).is_some())
+            .and_then_likely(extract_pid)
+            .unwrap_or(0);
         Self { pid }
     }
 }
