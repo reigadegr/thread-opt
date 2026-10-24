@@ -1,5 +1,4 @@
 use dumpsys_rs::BoundDumpsys;
-use likely_stable::LikelyOption;
 use log::{error, info};
 use memchr::{memchr, memmem, memrchr};
 
@@ -13,24 +12,23 @@ pub struct TopPidInfo {
     pid: i32,
 }
 
-fn extract_pid(line: &[u8]) -> Option<i32> {
-    let top = memmem::find(line, b" TOP")?;
-    let colon = top + memchr(b':', &line[top..])?;
+/// 命中 `" TOP "` 后只回溯到所在行，取最后一个空格到 `:` 之间的数字。
+/// 整块只做一次 `memmem` 子串搜索，命中行不会被重复扫描。
+fn extract_pid(dump: &[u8]) -> Option<i32> {
+    let hit = memmem::find(dump, b" TOP ")?;
+    let rest = &dump[hit..];
+    let eol = memchr(b'\n', rest).unwrap_or(rest.len());
+    let line = &rest[..eol];
+    let colon = memchr(b':', line)?;
     let space = memrchr(b' ', &line[..colon])?;
-    let digits = &line[space + 1..colon];
-
-    atoi_simd::parse::<i32, false, false>(digits).ok()
+    atoi_simd::parse::<i32, false, false>(&line[space + 1..colon]).ok()
 }
 
 impl TopPidInfo {
     pub fn new(dump: &[u8]) -> Self {
-        let top_flag = memmem::Finder::new(b" TOP");
-        let pid = dump
-            .split(|b| *b == b'\n')
-            .find(|line| top_flag.find(line).is_some())
-            .and_then_likely(extract_pid)
-            .unwrap_or(0);
-        Self { pid }
+        Self {
+            pid: extract_pid(dump).unwrap_or(0),
+        }
     }
 }
 
